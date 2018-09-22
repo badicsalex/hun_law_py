@@ -35,11 +35,11 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
 
 MagyarKozlonyToC = namedtuple('MagyarKozlonyToC', ['lines'])
 MagyarKozlonyLaws = namedtuple('MagyarKozlonyLaws', ['lines'])
-MagyarKozlonyDecrees = namedtuple('MagyarKozlonyDecrees', ['lines'])
+
 SECTION_TYPES = {
     'Tartalomjegyzék': MagyarKozlonyToC,
     'II. Törvények': MagyarKozlonyLaws,
-    'III. Kormányrendeletek': MagyarKozlonyDecrees,
+    # TODO: tons of stuff, like 'III. Kormányrendeletek', 'V. A Kormány tagjainak rendeletei'
 }
 
 @Extractor(KozlonyPagesWithHeaderAndFooter)
