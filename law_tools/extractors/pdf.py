@@ -80,9 +80,11 @@ def FileToTextboxPdfExtractor(f):
     yield PdfOfTextBoxes(device.pages)
 
 
-IndentedLine = namedtuple('IndentedLine', ['content', 'indent', 'y'])
+IndentedLine = namedtuple('IndentedLine', ['content', 'indent'])
 PageOfLines = namedtuple('PageOfLines', ['lines'])
 PdfOfLines = namedtuple('PdfOfLines', ['pages'])
+
+EMPTY_LINE = IndentedLine('', 0)
 
 @Extractor(PdfOfTextBoxes)
 def PdfLineifier(potb):
@@ -100,10 +102,17 @@ def PdfLineifier(potb):
                 # TODO
                 textboxes_as_dicts[tb.y][tb.x + 0.0001] = tb.content
 
+        prev_y = 0
         for y in sorted(textboxes_as_dicts, reverse=True):
+            # TODO: do't hardcode the 20, but use actual textbox dimensions
+            if prev_y != 0 and (prev_y - y) > 20:
+                processed_page.lines.append(EMPTY_LINE)
+            prev_y = y
+
             textboxes_in_line = textboxes_as_dicts[y]
             content = ' '.join([textboxes_in_line[x] for x in sorted(textboxes_in_line)])
             indent = min(textboxes_in_line)
-            processed_page.lines.append(IndentedLine(content, indent, y))
+            processed_page.lines.append(IndentedLine(content, indent))
+
         result.pages.append(processed_page)
     yield result

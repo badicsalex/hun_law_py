@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from . import Extractor
-from .pdf import PdfOfLines, IndentedLine
+from .pdf import PdfOfLines, IndentedLine, EMPTY_LINE
 
 def is_magyar_kozlony(pdf_file):
     if 'MAGYAR  KÖZLÖNY' in pdf_file.pages[0].lines[0].content:
@@ -19,13 +19,17 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
 
     # The first page is special:
     # MAGYAR  KÖZLÖNY 107 . szám
+    #
     # A MAGYAR KÖZTÁRSASÁG HIVATALOS LAPJA
     # 2011. szeptember 19., hétfõ
+    #
 
-    result_pages = [PageWithHeader(pdf_file.pages[0].lines[:3], pdf_file.pages[0].lines[3:])]
+    result_pages = [PageWithHeader(pdf_file.pages[0].lines[:5], pdf_file.pages[0].lines[5:])]
     for page in pdf_file.pages:
-        # Others are TODO
-        result_pages.append(PageWithHeader(page.lines[:1], page.lines[1:]))
+        # Others are
+        # 15202 M A G Y A R   K Ö Z L Ö N Y  •  2011. évi 71 . szám
+        #
+        result_pages.append(PageWithHeader(page.lines[:2], page.lines[2:]))
     yield KozlonyPagesWithHeaderAndFooter(result_pages)
 
 MagyarKozlonyToC = namedtuple('MagyarKozlonyToC', ['lines'])
@@ -59,4 +63,7 @@ def MagyarKozlonySectionExtractor(kozlony):
             if current_section_type is None:
                 raise ValueError("Unknown starting section: '{}'".format(page.lines[0]))
             content_of_current_section.extend(page.lines)
+        # This is where we do away with the "Page" abstraction, and further processing
+        # can only use EMPTY_LINE to have some separation info.
+        content_of_current_section.append(EMPTY_LINE)
     yield SECTION_TYPES[current_section_type](content_of_current_section)
