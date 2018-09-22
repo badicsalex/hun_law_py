@@ -111,6 +111,11 @@ def PdfLineifier(potb):
 
             textboxes_in_line = textboxes_as_dicts[y]
             content = ' '.join([textboxes_in_line[x] for x in sorted(textboxes_in_line)])
+            # The following line does:
+            # - Repalce any string of whitespaces  to a single space
+            # - strip the string
+            # Thanks, stackoverflow.
+            content = ' '.join(content.split())
             indent = min(textboxes_in_line)
             processed_page.lines.append(IndentedLine(content, indent))
 

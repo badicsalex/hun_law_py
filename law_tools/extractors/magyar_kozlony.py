@@ -4,7 +4,7 @@ from . import Extractor
 from .pdf import PdfOfLines, IndentedLine, EMPTY_LINE
 
 def is_magyar_kozlony(pdf_file):
-    if 'MAGYAR  KÖZLÖNY' in pdf_file.pages[0].lines[0].content:
+    if 'MAGYAR KÖZLÖNY' in pdf_file.pages[0].lines[0].content:
         return True
     return False
 
@@ -18,10 +18,11 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
     # TODO: assert the header.
 
     # The first page is special:
-    # MAGYAR  KÖZLÖNY 107 . szám
+
+    # MAGYAR KÖZLÖNY 71 . szám
     #
     # A MAGYAR KÖZTÁRSASÁG HIVATALOS LAPJA
-    # 2011. szeptember 19., hétfõ
+    # 2011. június 28., kedd
     #
 
     result_pages = [PageWithHeader(pdf_file.pages[0].lines[:5], pdf_file.pages[0].lines[5:])]
