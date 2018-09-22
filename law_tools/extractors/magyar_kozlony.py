@@ -46,7 +46,10 @@ SECTION_TYPES = {
 def MagyarKozlonySectionExtractor(kozlony):
     current_section_type = None
     content_of_current_section = []
-    for page in kozlony.pages:
+
+    # Don't parse the last page, as that's just a note from the editor and publisher
+    # TODO: assert for this
+    for page in kozlony.pages[:-1]:
         for section_type in SECTION_TYPES:
             # This is not somethign line 'page.lines[0] in SECTION_TYPES to allow for more
             # complex conditions, like regex section types later.
