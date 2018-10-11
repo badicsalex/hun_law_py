@@ -40,7 +40,7 @@ class PDFMinerAdapter(PDFTextDevice):
             if isnumber(s):
                 # horizontal repositioning
                 reposition_diff = s * net_scaling
-                if reposition_diff < -1.5:
+                if reposition_diff < -1.8:
                     # This is two cases as one right now:
                     # 1) Tabulating and things like table of contents. We flatten it to space for now, for
                     #    easier downstream processing. This may change if messy things (like characters not
