@@ -1,3 +1,5 @@
+import enum
+import re
 from collections import namedtuple
 
 from . import Extractor
@@ -34,11 +36,11 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
     yield KozlonyPagesWithHeaderAndFooter(result_pages)
 
 MagyarKozlonyToC = namedtuple('MagyarKozlonyToC', ['lines'])
-MagyarKozlonyLaws = namedtuple('MagyarKozlonyLaws', ['lines'])
+MagyarKozlonyLawsSection = namedtuple('MagyarKozlonyLawsSection', ['lines'])
 
 SECTION_TYPES = {
     'Tartalomjegyzék': MagyarKozlonyToC,
-    'II. Törvények': MagyarKozlonyLaws,
+    'II. Törvények': MagyarKozlonyLawsSection,
     # TODO: tons of stuff, like 'III. Kormányrendeletek', 'V. A Kormány tagjainak rendeletei'
 }
 
@@ -71,3 +73,67 @@ def MagyarKozlonySectionExtractor(kozlony):
         # can only use EMPTY_LINE to have some separation info.
         content_of_current_section.append(EMPTY_LINE)
     yield SECTION_TYPES[current_section_type](content_of_current_section)
+
+MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', 'subject', 'body'])
+
+@Extractor(MagyarKozlonyLawsSection)
+def MagyarKozlonyLawExtractor(laws_section):
+    States = enum.Enum("States",
+        [
+            "WAITING_FOR_HEADER",
+            "HEADER",
+            "BODY_BEFORE_ASTERISK_FOOTER",
+            "BODY_AFTER_ASTERISK_FOOTER",
+        ]
+    )
+    header_starting_re = re.compile('^[12][09][0-9][0-9]. évi [IVXLC]+. törvény')
+    footer_re = re.compile('köztársasági elnök az Országgyûlés elnöke')
+
+    identifier = ''
+    subject = ''
+    body = []
+
+    state = States.WAITING_FOR_HEADER
+    for line in laws_section.lines:
+        if state == States.WAITING_FOR_HEADER:
+            if not header_starting_re.match(line.content):
+                continue
+            identifier = line.content
+            state = States.HEADER
+            continue
+
+        if state == States.HEADER:
+            if subject != '':
+                subject = subject + ' ' + line.content
+            else:
+                subject = line.content
+            if subject[-1] == '*':
+                subject = subject[:-1]
+                state = States.BODY_BEFORE_ASTERISK_FOOTER
+            continue
+
+        if state == States.BODY_BEFORE_ASTERISK_FOOTER or state == States.BODY_AFTER_ASTERISK_FOOTER:
+            body.append(line)
+            if len(body) < 4:
+                continue
+
+            if state == States.BODY_BEFORE_ASTERISK_FOOTER:
+                if body[-3] == EMPTY_LINE and body[-1] == EMPTY_LINE and body[-2][0] == '*':
+                    body = body[:-3]
+                    state = States.BODY_AFTER_ASTERISK_FOOTER
+                    continue
+
+            if body[-3] == EMPTY_LINE and footer_re.match(body[-1].content):
+                body = [l for l in body[:-3] if l != EMPTY_LINE]
+                yield MagyarKozlonyLawRawText(
+                    identifier,
+                    subject,
+                    body
+                )
+                identifier = ''
+                subject = ''
+                body = []
+                state = States.WAITING_FOR_HEADER
+            continue
+
+        raise ValueError("What state is this.")
