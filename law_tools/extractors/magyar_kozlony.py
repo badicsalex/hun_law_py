@@ -51,7 +51,7 @@ def MagyarKozlonySectionExtractor(kozlony):
     # TODO: assert for this
     for page in kozlony.pages[:-1]:
         for section_type in SECTION_TYPES:
-            # This is not somethign line 'page.lines[0] in SECTION_TYPES to allow for more
+            # This is not something like 'page.lines[0] in SECTION_TYPES' to allow for more
             # complex conditions, like regex section types later.
             if page.lines[0].content != section_type:
                 continue
