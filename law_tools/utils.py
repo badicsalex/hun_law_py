@@ -1,4 +1,5 @@
 from collections import  namedtuple
+from string import ascii_uppercase
 
 IndentedLine = namedtuple('IndentedLine', ['content', 'indent'])
 EMPTY_LINE = IndentedLine('', 0)
@@ -106,3 +107,10 @@ def int_to_text_roman(i):
                 result = result + text
                 break
     return result
+
+HUNGARIAN_UPPERCASE_CHARS = set(ascii_uppercase + 'ÉÁŐÚŰÖÜÓÍ')
+def is_uppercase_hun(s):
+    for c in s:
+        if c not in HUNGARIAN_UPPERCASE_CHARS:
+            return False
+    return True
