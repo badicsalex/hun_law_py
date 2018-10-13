@@ -126,7 +126,7 @@ def MagyarKozlonyLawExtractor(laws_section):
             # in extractors before this one, based on other cues.
             # Also let's just hope there are no two small laws on a single page
             if state == States.BODY_BEFORE_ASTERISK_FOOTER:
-                if body[-3] == EMPTY_LINE and body[-1] == EMPTY_LINE and body[-2][0] == '*':
+                if body[-3] == EMPTY_LINE and body[-1] == EMPTY_LINE and body[-2].content[0] == '*':
                     body = body[:-3]
                     state = States.BODY_AFTER_ASTERISK_FOOTER
                     continue
