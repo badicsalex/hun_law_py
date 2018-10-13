@@ -127,17 +127,16 @@ def MagyarKozlonyLawExtractor(laws_section):
             # Also let's just hope there are no two small laws on a single page
             if state == States.BODY_BEFORE_ASTERISK_FOOTER:
                 if body[-3] == EMPTY_LINE and body[-1] == EMPTY_LINE and body[-2].content[0] == '*':
-                    body = body[:-3]
+                    body = body[:-3] + [EMPTY_LINE]
                     state = States.BODY_AFTER_ASTERISK_FOOTER
                     continue
 
             if body[-3] == EMPTY_LINE and footer_re.match(body[-1].content):
                 # TODO: Extract footer
-                body = [l for l in body[:-3] if l != EMPTY_LINE]
                 yield MagyarKozlonyLawRawText(
                     identifier,
                     subject,
-                    body
+                    body[:-3]
                 )
                 identifier = ''
                 subject = ''
