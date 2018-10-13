@@ -8,6 +8,7 @@ from pdfminer.pdffont import PDFUnicodeNotDefined
 
 from . import Extractor
 from .file import BinaryFile
+from law_tools.utils  import IndentedLine, EMPTY_LINE
 
 TextBox = namedtuple('TextBox', ['x', 'y', 'content'])
 PageOfTextBoxes = namedtuple('PageOfTextBoxes', ['textboxes'])
@@ -82,11 +83,8 @@ def FileToTextboxPdfExtractor(f):
     yield PdfOfTextBoxes(device.pages)
 
 
-IndentedLine = namedtuple('IndentedLine', ['content', 'indent'])
 PageOfLines = namedtuple('PageOfLines', ['lines'])
 PdfOfLines = namedtuple('PdfOfLines', ['pages'])
-
-EMPTY_LINE = IndentedLine('', 0)
 
 @Extractor(PdfOfTextBoxes)
 def PdfLineifier(potb):

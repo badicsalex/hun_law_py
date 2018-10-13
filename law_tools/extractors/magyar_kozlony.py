@@ -3,7 +3,8 @@ import re
 from collections import namedtuple
 
 from . import Extractor
-from .pdf import PdfOfLines, IndentedLine, EMPTY_LINE
+from .pdf import PdfOfLines
+from law_tools.utils import IndentedLine, EMPTY_LINE
 
 def is_magyar_kozlony(pdf_file):
     #TODO: Lets hope justified text detector works, and it's not something like

@@ -1,7 +1,6 @@
 from collections import namedtuple
 
 from . import Extractor
-from .pdf import PdfOfLines, IndentedLine, EMPTY_LINE
 from .magyar_kozlony import MagyarKozlonyLawRawText
 
 HungarianRawLaw = namedtuple('HungarianRawLaw', ['identifier', 'subject', 'body'])
