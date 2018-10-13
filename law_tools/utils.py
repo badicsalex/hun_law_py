@@ -20,9 +20,9 @@ INT_TO_TEXT_HUN_DICT_ORDINAL = None
 
 def init_text_to_int_dict():
     # "Good enough for the demo, 1o1"
-    global TEXT_TO_INT_HUN_INITED
+    global TEXT_TO_INT_HUN_DICT_ORDINAL
     global INT_TO_TEXT_HUN_DICT_ORDINAL
-    TEXT_TO_INT_HUN_INITED = {}
+    TEXT_TO_INT_HUN_DICT_ORDINAL = {}
     INT_TO_TEXT_HUN_DICT_ORDINAL = {}
     SPECIAL_VALUES = {
         1: 'első',
@@ -50,6 +50,7 @@ def init_text_to_int_dict():
         ('kilencedik', 9),
     )
     TENS_DIGIT = (
+        ('', 0),
         ('tizen', 10),
         ('huszon', 20),
         ('harminc', 30),
@@ -66,22 +67,25 @@ def init_text_to_int_dict():
             if value in SPECIAL_VALUES:
                 continue
             text = tens_text + ones_text
-            TEXT_TO_INT_DICT_ORDINAL[text] = value
+            TEXT_TO_INT_HUN_DICT_ORDINAL[text] = value
             INT_TO_TEXT_HUN_DICT_ORDINAL[value] = text
 
-    for value, text in SPECIAL_VALUES.values():
-        TEXT_TO_INT_DICT_ORDINAL[text] = value
+    for value, text in SPECIAL_VALUES.items():
+        TEXT_TO_INT_HUN_DICT_ORDINAL[text] = value
         INT_TO_TEXT_HUN_DICT_ORDINAL[value] = text
 
 def text_to_int_hun(s):
-    global TEXT_TO_INT_DICT_ORDINAL
-    if TEXT_TO_INT_DICT_ORDINAL is None:
+    global TEXT_TO_INT_HUN_DICT_ORDINAL
+    if TEXT_TO_INT_HUN_DICT_ORDINAL is None:
         init_text_to_int_dict()
-    if si.lower() not in TEXT_TO_INT_DICT_ORDINAL:
+    if si.lower() not in TEXT_TO_INT_HUN_DICT_ORDINAL:
         raise ValueError("{} is not a number in written form".format(s))
-    return TEXT_TO_INT_DICT_ORDINAL[s.lower()]
+    return TEXT_TO_INT_HUN_DICT_ORDINAL[s.lower()]
 
 def int_to_text_hun(i):
+    global INT_TO_TEXT_HUN_DICT_ORDINAL
+    if INT_TO_TEXT_HUN_DICT_ORDINAL is None:
+        init_text_to_int_dict()
     if i not in INT_TO_TEXT_HUN_DICT_ORDINAL:
         raise ValueError("{} is out of range for conversion into text form".format(i))
     return INT_TO_TEXT_HUN_DICT_ORDINAL[i]
