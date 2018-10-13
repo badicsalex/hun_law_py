@@ -118,6 +118,9 @@ def PdfLineifier(potb):
             # Thanks, stackoverflow.
             content = ' '.join(content.split())
             indent = min(textboxes_in_line)
+            # TODO: this is a quick hack for one of the character coding fcukups.
+            # Maybe I should have done the other chars too, but only this caused problems.
+            content = content.replace("Õ", "Ő") # Note the squiggly on top of the first ő
             processed_page.lines.append(IndentedLine(content, indent))
 
         result.pages.append(processed_page)
