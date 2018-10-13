@@ -89,3 +89,20 @@ def int_to_text_hun(i):
     if i not in INT_TO_TEXT_HUN_DICT_ORDINAL:
         raise ValueError("{} is out of range for conversion into text form".format(i))
     return INT_TO_TEXT_HUN_DICT_ORDINAL[i]
+
+def int_to_text_roman(i):
+    # TODO: assert for i is int, and is not tooo big.
+    numerals = (
+        ("M", 1000), ("CM", 900), ("D", 500), ("CD", 400),
+        ("C", 100), ("XC", 90), ("L", 50), ("XL", 40),
+        ("X", 10), ("IX", 9), ("V", 5), ("IV", 4),
+        ("I", 1)
+    )
+    result = ''
+    while i>0:
+        for text, val in numerals:
+            if val<=i:
+                i = i - val
+                result = result + text
+                break
+    return result
