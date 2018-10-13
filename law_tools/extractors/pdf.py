@@ -64,10 +64,12 @@ class PDFMinerAdapter(PDFTextDevice):
                     except PDFUnicodeNotDefined:
                         # Some chars are simply not mapped in pdfminer, like little centered dot and whatnot >_>
                         # They are not in important places anyway, so whatever
+                        # TODO: fix these characters either here, on in pdfminer itself
                         uni_c = '[X]'
                     actual_chars.append(uni_c)
 
         self.add_textbox(textstate.matrix[4], textstate.matrix[5], ''.join(actual_chars))
+    # TODO: parse lines, so that footers can be detected more easily
 
 
 @Extractor(BinaryFile)
@@ -99,7 +101,8 @@ def PdfLineifier(potb):
                 textboxes_as_dicts[tb.y][tb.x] = tb.content
             else:
                 # Workaround for weirdness where two textboxes are printed on the same coordinate
-                # TODO
+                # They are probably some kind of left-and right justification
+                # TODO: handle correctly
                 textboxes_as_dicts[tb.y][tb.x + 0.0001] = tb.content
 
         prev_y = 0

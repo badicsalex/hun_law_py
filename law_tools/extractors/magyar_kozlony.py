@@ -6,6 +6,8 @@ from . import Extractor
 from .pdf import PdfOfLines, IndentedLine, EMPTY_LINE
 
 def is_magyar_kozlony(pdf_file):
+    #TODO: Lets hope justified text detector works, and it's not something like
+    # 'M A G Y A R K O Z L O N Y
     if 'MAGYAR KÖZLÖNY' in pdf_file.pages[0].lines[0].content:
         return True
     return False
@@ -107,6 +109,8 @@ def MagyarKozlonyLawExtractor(laws_section):
                 subject = subject + ' ' + line.content
             else:
                 subject = line.content
+            # TODO: this is alwo a huge hack, because it depend on there being a footer about
+            # when the law or amendment was enacted and by whom.
             if subject[-1] == '*':
                 subject = subject[:-1]
                 state = States.BODY_BEFORE_ASTERISK_FOOTER
@@ -114,9 +118,13 @@ def MagyarKozlonyLawExtractor(laws_section):
 
         if state == States.BODY_BEFORE_ASTERISK_FOOTER or state == States.BODY_AFTER_ASTERISK_FOOTER:
             body.append(line)
+            # TODO: this is also a hack that depends on the things below being true
             if len(body) < 4:
                 continue
 
+            # TODO: this whole asterisk footer whatever is ugly. The footer should be detected
+            # in extractors before this one, based on other cues.
+            # Also let's just hope there are no two small laws on a single page
             if state == States.BODY_BEFORE_ASTERISK_FOOTER:
                 if body[-3] == EMPTY_LINE and body[-1] == EMPTY_LINE and body[-2][0] == '*':
                     body = body[:-3]
@@ -124,6 +132,7 @@ def MagyarKozlonyLawExtractor(laws_section):
                     continue
 
             if body[-3] == EMPTY_LINE and footer_re.match(body[-1].content):
+                # TODO: Extract footer
                 body = [l for l in body[:-3] if l != EMPTY_LINE]
                 yield MagyarKozlonyLawRawText(
                     identifier,
@@ -136,4 +145,7 @@ def MagyarKozlonyLawExtractor(laws_section):
                 state = States.WAITING_FOR_HEADER
             continue
 
+        # TODO: extract Annexes
+
         raise ValueError("What state is this.")
+    # TODO: assert for correct state
