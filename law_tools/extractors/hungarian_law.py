@@ -2,13 +2,13 @@ from collections import namedtuple
 
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
-
-HungarianRawLaw = namedtuple('HungarianRawLaw', ['identifier', 'subject', 'body'])
-HungarianRawAmendment = namedtuple('HungarianRawAmendment', ['identifier', 'subject', 'body'])
+from law_tools.hun_law.structure import Act
 
 @Extractor(MagyarKozlonyLawRawText)
 def MagyarKozlonyLawClassifier(raw):
+    # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
     if raw.subject.endswith('módosításáról'):
-        yield HungarianRawAmendment(raw.identifier, raw.subject, raw.body)
+        # TODO: yield Amendment
+        pass
     else:
-        yield HungarianRawLaw(raw.identifier, raw.subject, raw.body)
+        yield Act(raw.identifier, raw.subject, raw.body)
