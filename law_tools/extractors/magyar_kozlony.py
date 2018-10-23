@@ -2,19 +2,23 @@ import enum
 import re
 from collections import namedtuple
 
+from law_tools.utils import EMPTY_LINE
+
 from . import Extractor
 from .pdf import PdfOfLines
-from law_tools.utils import IndentedLine, EMPTY_LINE
+
 
 def is_magyar_kozlony(pdf_file):
-    #TODO: Lets hope justified text detector works, and it's not something like
+    # TODO: Lets hope justified text detector works, and it's not something like
     # 'M A G Y A R K O Z L O N Y
     if 'MAGYAR KÖZLÖNY' in pdf_file.pages[0].lines[0].content:
         return True
     return False
 
+
 PageWithHeader = namedtuple('PageWithHeader', ['header', 'lines'])
 KozlonyPagesWithHeaderAndFooter = namedtuple('FullKozlonyPagesWithHeaderAndFooter', ['pages'])
+
 
 @Extractor(PdfOfLines)
 def MagyarKozlonyHeaderExtractor(pdf_file):
@@ -38,6 +42,7 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
         result_pages.append(PageWithHeader(page.lines[:2], page.lines[2:]))
     yield KozlonyPagesWithHeaderAndFooter(result_pages)
 
+
 MagyarKozlonyToC = namedtuple('MagyarKozlonyToC', ['lines'])
 MagyarKozlonyLawsSection = namedtuple('MagyarKozlonyLawsSection', ['lines'])
 
@@ -46,6 +51,7 @@ SECTION_TYPES = {
     'II. Törvények': MagyarKozlonyLawsSection,
     # TODO: tons of stuff, like 'III. Kormányrendeletek', 'V. A Kormány tagjainak rendeletei'
 }
+
 
 @Extractor(KozlonyPagesWithHeaderAndFooter)
 def MagyarKozlonySectionExtractor(kozlony):
@@ -77,7 +83,9 @@ def MagyarKozlonySectionExtractor(kozlony):
         content_of_current_section.append(EMPTY_LINE)
     yield SECTION_TYPES[current_section_type](content_of_current_section)
 
+
 MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', 'subject', 'body'])
+
 
 @Extractor(MagyarKozlonyLawsSection)
 def MagyarKozlonyLawExtractor(laws_section):
@@ -117,7 +125,7 @@ def MagyarKozlonyLawExtractor(laws_section):
                 state = States.BODY_BEFORE_ASTERISK_FOOTER
             continue
 
-        if state == States.BODY_BEFORE_ASTERISK_FOOTER or state == States.BODY_AFTER_ASTERISK_FOOTER:
+        if state in (States.BODY_BEFORE_ASTERISK_FOOTER, States.BODY_AFTER_ASTERISK_FOOTER):
             body.append(line)
             # TODO: this is also a hack that depends on the things below being true
             if len(body) < 4:

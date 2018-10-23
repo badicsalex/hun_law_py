@@ -1,11 +1,10 @@
-from . import pdf
-from . import magyar_kozlony
 from . import extractors_for_class
+
 
 def do_extraction(to_be_processed_objects):
     """Processes all objects, and returns the end result processed objects."""
     global extractors_for_class
-    queue = list(to_be_processed_objects) # simple copy, or listify if not list
+    queue = list(to_be_processed_objects)  # simple copy, or listify if not list
     result = []
     while queue:
         data = queue.pop()

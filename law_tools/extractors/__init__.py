@@ -2,6 +2,7 @@ from collections import namedtuple
 
 extractors_for_class = {}
 
+
 def Extractor(extractable_class):
     """Decorator that registers an extractor function.
 

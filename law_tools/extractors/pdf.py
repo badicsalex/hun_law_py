@@ -6,9 +6,10 @@ from pdfminer.pdfdevice import PDFTextDevice
 from pdfminer.utils import isnumber
 from pdfminer.pdffont import PDFUnicodeNotDefined
 
+from law_tools.utils import IndentedLine, EMPTY_LINE
+
 from . import Extractor
 from .file import BinaryFile
-from law_tools.utils  import IndentedLine, EMPTY_LINE
 
 TextBox = namedtuple('TextBox', ['x', 'y', 'content'])
 PageOfTextBoxes = namedtuple('PageOfTextBoxes', ['textboxes'])
@@ -19,6 +20,7 @@ class PDFMinerAdapter(PDFTextDevice):
     def __init__(self, rsrcmgr):
         super().__init__(rsrcmgr)
         self.pages = []
+        self.current_page = None
 
     def begin_page(self, page, ctm):
         self.current_page = PageOfTextBoxes([])
@@ -86,6 +88,7 @@ def FileToTextboxPdfExtractor(f):
 PageOfLines = namedtuple('PageOfLines', ['lines'])
 PdfOfLines = namedtuple('PdfOfLines', ['pages'])
 
+
 @Extractor(PdfOfTextBoxes)
 def PdfLineifier(potb):
     result = PdfOfLines([])
@@ -120,11 +123,11 @@ def PdfLineifier(potb):
             indent = min(textboxes_in_line)
             # TODO: this is a quick hack for one of the character coding fcukups.
             # Maybe I should have done the other chars too, but only this caused problems.
-            content = content.replace("Õ", "Ő") # Note the ~ on top of the first ő
-            content = content.replace("õ", "ő") # note the ~ on top of the first ő
-            content = content.replace("Û", "Ű") # Note the ^ on top of the first ő
-            content = content.replace("û", "ű") # note the ^ on top of the first ő
-            
+            content = content.replace("Õ", "Ő")  # Note the ~ on top of the first ő
+            content = content.replace("õ", "ő")  # note the ~ on top of the first ő
+            content = content.replace("Û", "Ű")  # Note the ^ on top of the first ő
+            content = content.replace("û", "ű")  # note the ^ on top of the first ő
+
             processed_page.lines.append(IndentedLine(content, indent))
 
         result.pages.append(processed_page)

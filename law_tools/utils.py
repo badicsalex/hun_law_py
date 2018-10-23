@@ -1,8 +1,9 @@
-from collections import  namedtuple
+from collections import namedtuple
 from string import ascii_uppercase
 
 IndentedLine = namedtuple('IndentedLine', ['content', 'indent'])
 EMPTY_LINE = IndentedLine('', 0)
+
 
 def split_list(haystack, needle):
     # Thanks, stackoverflow
@@ -16,8 +17,10 @@ def split_list(haystack, needle):
     if result != []:
         yield result
 
+
 TEXT_TO_INT_HUN_DICT_ORDINAL = None
 INT_TO_TEXT_HUN_DICT_ORDINAL = None
+
 
 def init_text_to_int_dict():
     # "Good enough for the demo, 1o1"
@@ -75,13 +78,15 @@ def init_text_to_int_dict():
         TEXT_TO_INT_HUN_DICT_ORDINAL[text] = value
         INT_TO_TEXT_HUN_DICT_ORDINAL[value] = text
 
+
 def text_to_int_hun(s):
     global TEXT_TO_INT_HUN_DICT_ORDINAL
     if TEXT_TO_INT_HUN_DICT_ORDINAL is None:
         init_text_to_int_dict()
-    if si.lower() not in TEXT_TO_INT_HUN_DICT_ORDINAL:
+    if s.lower() not in TEXT_TO_INT_HUN_DICT_ORDINAL:
         raise ValueError("{} is not a number in written form".format(s))
     return TEXT_TO_INT_HUN_DICT_ORDINAL[s.lower()]
+
 
 def int_to_text_hun(i):
     global INT_TO_TEXT_HUN_DICT_ORDINAL
@@ -90,6 +95,7 @@ def int_to_text_hun(i):
     if i not in INT_TO_TEXT_HUN_DICT_ORDINAL:
         raise ValueError("{} is out of range for conversion into text form".format(i))
     return INT_TO_TEXT_HUN_DICT_ORDINAL[i]
+
 
 def int_to_text_roman(i):
     # TODO: assert for i is int, and is not tooo big.
@@ -100,15 +106,18 @@ def int_to_text_roman(i):
         ("I", 1)
     )
     result = ''
-    while i>0:
+    while i > 0:
         for text, val in numerals:
-            if val<=i:
+            if val <= i:
                 i = i - val
                 result = result + text
                 break
     return result
 
+
 HUNGARIAN_UPPERCASE_CHARS = set(ascii_uppercase + 'ÉÁŐÚŰÖÜÓÍ')
+
+
 def is_uppercase_hun(s):
     for c in s:
         if c not in HUNGARIAN_UPPERCASE_CHARS:

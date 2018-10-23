@@ -1,8 +1,8 @@
-from collections import namedtuple
+from law_tools.hun_law.structure import Act
 
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
-from law_tools.hun_law.structure import Act
+
 
 @Extractor(MagyarKozlonyLawRawText)
 def MagyarKozlonyLawClassifier(raw):
