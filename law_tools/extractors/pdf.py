@@ -108,8 +108,8 @@ def PdfLineifier(potb):
 
         prev_y = 0
         for y in sorted(textboxes_as_dicts, reverse=True):
-            # TODO: do't hardcode the 20, but use actual textbox dimensions
-            if prev_y != 0 and (prev_y - y) > 20:
+            # TODO: do't hardcode the 18, but use actual textbox dimensions
+            if prev_y != 0 and (prev_y - y) > 18:
                 processed_page.lines.append(EMPTY_LINE)
             prev_y = y
 
