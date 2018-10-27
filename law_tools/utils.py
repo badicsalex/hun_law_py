@@ -1,3 +1,4 @@
+import textwrap
 from collections import namedtuple
 from string import ascii_uppercase
 
@@ -123,3 +124,9 @@ def is_uppercase_hun(s):
         if c not in HUNGARIAN_UPPERCASE_CHARS:
             return False
     return True
+
+
+def indented_line_wrapped_print(s, indent_string="", width=120):
+    for l in textwrap.wrap(s, width-len(indent_string)):
+        print(indent_string + l)
+        indent_string = " "*len(indent_string)

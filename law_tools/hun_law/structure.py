@@ -1,7 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 
-from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun
+from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun, indented_line_wrapped_print
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -75,9 +75,10 @@ class StructuralElement(ABC):
         pass
 
     def print_to_console(self):
-        print(self.__class__.__name__, self.number)
+        name = "{} {}".format(self.__class__.__name__, self.number)
+        indented_line_wrapped_print(name)
         if self.title:
-            print(self.title)
+            indented_line_wrapped_print(self.title)
 
 
 class Book (StructuralElement):
@@ -195,42 +196,198 @@ class Subtitle(StructuralElement):
 STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
 
 
-class Paragraph:
-    def __init__(self, text, paragraph_number):
-        self.number = paragraph_number
-        if paragraph_number == 0:
-            # Came from an article with a single paragraph. No header.
-            self.parse_body(text)
-        else:
-            self.parse_header_and_body(text)
+class SubArticleElementNotFoundError(Exception):
+    pass
 
-    @classmethod
-    def is_header(cls, line, paragraph_number):
-        # TODO : check indentation. (after indentation of first line in
-        # Article.__init__ is fixed
-        prefix = "({}) ".format(paragraph_number)
-        return line.content.startswith(prefix)
 
-    def parse_header_and_body(self, text):
-        prefix = "({}) ".format(self.number)
+class SubArticleElement(ABC):
+    PARENT_MUST_HAVE_INTRO = False
+    PARENT_MUST_HAVE_MULTIPLE_OF_THIS = False
+    PARENT_CAN_HAVE_WRAPUP = False
+
+    def __init__(self, text, number):
+        self.number = number
+        self.text = None
+        self.intro = None
+        self.points = None
+        self.wrap_up = None
+
+        prefix = self.header_prefix(number)
         if not text[0].content.startswith(prefix):
-            raise ValueError("Invalid Paragraph header ('{}' does not start with '{}'".format(text[0].content, prefix))
+            raise ValueError("Invalid {} header ('{}' does not start with '{}'".format(self.__class__.__name, text[0].content, prefix))
+
         truncated_first_line = text[0].content[len(prefix):]
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
         indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
-        self.parse_body([indented_first_line] + text[1:])
+        text = [indented_first_line] + text[1:]
+        if not self.try_parse_subpoints(text):
+            self.text = " ".join([l.content for l in text])
 
-    def parse_body(self, text):
-        self.body = text
+    @classmethod
+    @abstractmethod
+    def header_prefix(cls, number):
+        pass
+
+    @abstractmethod
+    def try_parse_subpoints(self, text):
+        pass
+
+    @classmethod
+    def is_header(cls, line, number):
+        prefix = cls.header_prefix(number)
+        return line.content.startswith(prefix)
+
+    @classmethod
+    def extract_multiple_from_text(cls, text):
+        elements = []
+        intro = None
+        wrap_up = None
+        current_element_number = 0
+        current_lines = []
+        for line in text:
+            if cls.is_header(line, current_element_number + 1):
+                if current_element_number == 0:
+                    if current_lines:
+                        intro = " ".join([l.content for l in current_lines])
+                else:
+                    element = cls(current_lines, current_element_number)
+                    elements.append(element)
+                current_element_number = current_element_number + 1
+                current_lines = []
+            current_lines.append(line)
+
+        if current_element_number < 2 and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
+            raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
+
+        if intro is None and cls.PARENT_MUST_HAVE_INTRO:
+            raise SubArticleElementNotFoundError("No intro found in text.")
+
+        if cls.PARENT_CAN_HAVE_WRAPUP:
+            # TODO: This is a stupid heuristic: we hope line-broken points are indented, while
+            # the wrapup will be at the same level as the headers.
+            header_indent = current_lines[0].indent
+            if len(current_lines) > 1 and current_lines[-1].indent == header_indent:
+                wrap_up = current_lines.pop().content
+                while len(current_lines) > 1 and current_lines[-1].indent == header_indent:
+                    wrap_up = current_lines.pop().content + " " + wrap_up
+
+        element = cls(current_lines, current_element_number)
+        elements.append(element)
+        return intro, elements, wrap_up
 
     def print_to_console(self, indent):
         if self.number:
-            indent = indent + "{:<5}".format("({})".format(self.number))
+            indent = indent + "{:<5}".format(self.header_prefix(self.number))
         else:
             indent = indent + " " * 5
-        for l in self.body:
-            print(indent + l.content)
-            indent = " " * len(indent)
+        if self.text:
+            indented_line_wrapped_print(self.text, indent)
+        else:
+            if self.intro:
+                indented_line_wrapped_print(self.intro, indent)
+                indent = " " * len(indent)
+            for p in self.points:
+                p.print_to_console(indent)
+                indent = " " * len(indent)
+            if self.wrap_up:
+                indented_line_wrapped_print(self.wrap_up, indent)
+                indent = " " * len(indent)
+
+
+class AlphabeticSubpoint(SubArticleElement):
+    PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
+    PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
+    PARENT_CAN_HAVE_WRAPUP = True
+
+    PREFIX = ''
+
+    @classmethod
+    def header_prefix(cls, number):
+        letter = chr(ord('a') + number - 1)
+        return "{}{}) ".format(cls.PREFIX, letter)
+
+    def try_parse_subpoints(self, text):
+        # Subpoints may not have sub-subpoints: 48. § (6)
+        return False
+
+
+class NumberedPoint(SubArticleElement):
+    PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
+    PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
+    # No PARENT_CAN_HAVE_WRAPUP, because it looks like numbered lists are usuaally
+    # not well-indented, i.e.:
+    # 1. Element: blalbalba, lalblblablabl, lbalb
+    # blballabalvblbla, lbblaa.
+    # 2. Element: saddsadasdsadsa, adsdsadas
+    # adsasddas.
+
+    @classmethod
+    def header_prefix(cls, number):
+        return "{}. ".format(number)
+
+    def try_parse_subpoints(self, text):
+        # Numbered points may only have alphabetic subpoints.
+        try:
+            self.intro, self.points, self.wrap_up = AlphabeticSubpoint.extract_multiple_from_text(text)
+            return True
+        except SubArticleElementNotFoundError:
+            pass
+
+        return False
+
+
+class AlphabeticPoint(SubArticleElement):
+    PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
+    PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
+    PARENT_CAN_HAVE_WRAPUP = True
+
+    @classmethod
+    def header_prefix(cls, number):
+        letter = chr(ord('a') + number - 1)
+        return "{}) ".format(letter)
+
+    def try_parse_subpoints(self, text):
+        # Soo, this is a great example of functional-oop hybrid things, which i
+        # both pretty compact, elegant, and disgusting at the same time.
+        # Thank 48. § (3) for this.
+        my_letter = self.header_prefix(self.number)[0]
+
+        class PrefixedAlphabeticSubpoint(AlphabeticSubpoint):
+            PREFIX = my_letter
+
+        # Numbered points may only have alphabetic subpoints.
+        try:
+            self.intro, self.points, self.wrap_up = PrefixedAlphabeticSubpoint.extract_multiple_from_text(text)
+            return True
+        except SubArticleElementNotFoundError:
+            pass
+
+        return False
+
+
+class Paragraph(SubArticleElement):
+    @classmethod
+    def header_prefix(cls, number):
+        if number == 0:
+            # Happens in special cases when no header was found, e.g.
+            # Came from an article with a single paragraph.
+            return ''
+        return "({}) ".format(number)
+
+    def try_parse_subpoints(self, text):
+        try:
+            self.intro, self.points, self.wrap_up = NumberedPoint.extract_multiple_from_text(text)
+            return True
+        except SubArticleElementNotFoundError:
+            pass
+
+        try:
+            self.intro, self.points, self.wrap_up = AlphabeticPoint.extract_multiple_from_text(text)
+            return True
+        except SubArticleElementNotFoundError:
+            pass
+
+        return False
 
 
 class Article:
@@ -269,28 +426,17 @@ class Article:
             self.title = text[0].content[1:-1]
             # TODO: Optimize this, if needed
             text = text[1:]
-        if not Paragraph.is_header(text[0], 1):
-            # The whole article is a single paragraph
-            paragraph = Paragraph(text, 0)
-            self.paragraphs.append(paragraph)
-        else:
-            current_paragraph_number = 1
-            current_lines = [text[0]]
-            for line in text[1:]:
-                if Paragraph.is_header(line, current_paragraph_number + 1):
-                    paragraph = Paragraph(current_lines, current_paragraph_number)
-                    self.paragraphs.append(paragraph)
-                    current_paragraph_number = current_paragraph_number + 1
-                    current_lines = []
-                current_lines.append(line)
-            paragraph = Paragraph(current_lines, current_paragraph_number)
-            self.paragraphs.append(paragraph)
 
+        intro, self.paragraphs, wrap_up = Paragraph.extract_multiple_from_text(text)
+        if intro is not None:
+            raise ValueError("Junk detected in Article before first Paragraph")
+        if wrap_up is not None:
+            raise ValueError("Junk detected in Article after last Paragraph")
 
     def print_to_console(self):
-        indent = "   {:<10}".format(self.identifier + ". §")
+        indent = "{:<10}".format(self.identifier + ". §")
         if self.title:
-            print("{}     [{}]".format(indent, self.title))
+            indented_line_wrapped_print("     [{}]".format(self.title), indent)
             indent = " " * len(indent)
 
         for l in self.paragraphs:
@@ -319,6 +465,9 @@ class Act:
 
     def parse_text_block(self, lines):
         lines, elements_to_append = self.parse_structural_elements(lines)
+        # EMPTY_LINEs are only needed for detecting structural elements.
+        # From this point, they only mess up parsing, so let's get rid of them
+        lines = [l for l in lines if l != EMPTY_LINE]
         if self.preamble is None:
             self.preamble = " ".join([l.content for l in lines])
         else:
@@ -353,7 +502,7 @@ class Act:
         return None
 
     def print_to_console(self):
-        print(self.preamble)
+        indented_line_wrapped_print(self.preamble)
         print()
         for a in self.elements:
             a.print_to_console()
