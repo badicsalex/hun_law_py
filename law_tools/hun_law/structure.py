@@ -459,11 +459,15 @@ class Act:
 
     def parse_text(self, text):
         current_lines = []
-        previous_article = None
+        article_header_indent = None
         for line in text:
             if Article.is_header(line):
-                self.parse_text_block(current_lines)
-                current_lines = []
+                # TODO: Let's hope article numbers are always left-justified
+                if article_header_indent is None:
+                    article_header_indent = line.indent
+                if abs(line.indent-article_header_indent) < 1:
+                    self.parse_text_block(current_lines)
+                    current_lines = []
             current_lines.append(line)
         self.parse_text_block(current_lines)
 
