@@ -195,21 +195,62 @@ class Subtitle(StructuralElement):
 STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
 
 
+class Paragraph:
+    def __init__(self, text, paragraph_number):
+        self.number = paragraph_number
+        if paragraph_number == 0:
+            # Came from an article with a single paragraph. No header.
+            self.parse_body(text)
+        else:
+            self.parse_header_and_body(text)
+
+    @classmethod
+    def is_header(cls, line, paragraph_number):
+        # TODO : check indentation. (after indentation of first line in
+        # Article.__init__ is fixed
+        prefix = "({}) ".format(paragraph_number)
+        return line.content.startswith(prefix)
+
+    def parse_header_and_body(self, text):
+        prefix = "({}) ".format(self.number)
+        if not text[0].content.startswith(prefix):
+            raise ValueError("Invalid Paragraph header ('{}' does not start with '{}'".format(text[0].content, prefix))
+        truncated_first_line = text[0].content[len(prefix):]
+        # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
+        indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
+        self.parse_body([indented_first_line] + text[1:])
+
+    def parse_body(self, text):
+        self.body = text
+
+    def print_to_console(self, indent):
+        if self.number:
+            indent = indent + "{:<5}".format("({})".format(self.number))
+        else:
+            indent = indent + " " * 5
+        for l in self.body:
+            print(indent + l.content)
+            indent = " " * len(indent)
+
+
 class Article:
     HEADER_RE = re.compile("^([0-9]+:)?([0-9]+). ?§ *(.*)$")
 
     def __init__(self, text):
         # text parameter includes the line with the '§'
         header_matches = self.HEADER_RE.match(text[0].content)
-        truncated_first_line = header_matches.group(3)
         if header_matches.group(1):
             # group(1) already has the ":"
             self.identifier = header_matches.group(1) + header_matches.group(2)
         else:
             self.identifier = header_matches.group(2)
+        self.title = ""
+        self.paragraphs = []
+
+        truncated_first_line = header_matches.group(3)
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
         indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
-        self.body = [indented_first_line] + text[1:]
+        self.parse_body([indented_first_line] + text[1:])
 
     @classmethod
     def is_header(cls, line):
@@ -217,11 +258,44 @@ class Article:
         # TODO: check indentation
         return cls.HEADER_RE.match(line.content)
 
+    def parse_body(self, text):
+        if text[0].content[0] == '[':
+            # Nonstandard. However, it is a de facto thing to give titles to Articles
+            # In some Acts. Format is something like
+            # 3:116. §  [A társaság képviselete. Cégjegyzés]
+            # Let's hope for no multiline titles for now
+            if text[0].content[-1] != ']':
+                raise ValueError("Multiline article titles not supported")
+            self.title = text[0].content[1:-1]
+            # TODO: Optimize this, if needed
+            text = text[1:]
+        if not Paragraph.is_header(text[0], 1):
+            # The whole article is a single paragraph
+            paragraph = Paragraph(text, 0)
+            self.paragraphs.append(paragraph)
+        else:
+            current_paragraph_number = 1
+            current_lines = [text[0]]
+            for line in text[1:]:
+                if Paragraph.is_header(line, current_paragraph_number + 1):
+                    paragraph = Paragraph(current_lines, current_paragraph_number)
+                    self.paragraphs.append(paragraph)
+                    current_paragraph_number = current_paragraph_number + 1
+                    current_lines = []
+                current_lines.append(line)
+            paragraph = Paragraph(current_lines, current_paragraph_number)
+            self.paragraphs.append(paragraph)
+
+
     def print_to_console(self):
         indent = "   {:<10}".format(self.identifier + ". §")
-        for l in self.body:
-            print(indent + l.content)
-            indent = "             "
+        if self.title:
+            print("{}     [{}]".format(indent, self.title))
+            indent = " " * len(indent)
+
+        for l in self.paragraphs:
+            l.print_to_console(indent)
+            indent = " " * len(indent)
 
 
 class Act:
