@@ -244,8 +244,9 @@ class SubArticleElement(ABC):
         wrap_up = None
         current_element_number = 0
         current_lines = []
+        quote_level = 0
         for line in text:
-            if cls.is_header(line, current_element_number + 1):
+            if quote_level == 0 and cls.is_header(line, current_element_number + 1):
                 if current_element_number == 0:
                     if current_lines:
                         intro = " ".join([l.content for l in current_lines])
@@ -254,8 +255,11 @@ class SubArticleElement(ABC):
                     elements.append(element)
                 current_element_number = current_element_number + 1
                 current_lines = []
+            quote_level = quote_level + line.content.count("„") - line.content.count("”")
             current_lines.append(line)
 
+        if quote_level != 0:
+            raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
         if current_element_number < 2 and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
             raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
 
