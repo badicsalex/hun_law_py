@@ -18,6 +18,7 @@
 import re
 from abc import ABC, abstractmethod
 
+from . import amendment
 from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun, indented_line_wrapped_print
 
 # Main act on which all the code was based:
@@ -222,16 +223,16 @@ class SubArticleElement(ABC):
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = False
     PARENT_CAN_HAVE_WRAPUP = False
 
-    def __init__(self, text, number):
-        self.number = number
+    def __init__(self, text, identifier):
+        self.identifier = identifier
         self.text = None
         self.intro = None
-        self.points = None
+        self.children = None
         self.wrap_up = None
 
-        prefix = self.header_prefix(number)
+        prefix = self.header_prefix(identifier)
         if not text[0].content.startswith(prefix):
-            raise ValueError("Invalid {} header ('{}' does not start with '{}'".format(self.__class__.__name, text[0].content, prefix))
+            raise ValueError("Invalid {} header ('{}' does not start with '{}'".format(self.__class__.__name__, text[0].content, prefix))
 
         truncated_first_line = text[0].content[len(prefix):]
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
@@ -242,7 +243,17 @@ class SubArticleElement(ABC):
 
     @classmethod
     @abstractmethod
-    def header_prefix(cls, number):
+    def header_prefix(cls, identifier):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def first_identifier(cls):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def next_identifier(cls, identifier):
         pass
 
     @abstractmethod
@@ -250,8 +261,8 @@ class SubArticleElement(ABC):
         pass
 
     @classmethod
-    def is_header(cls, line, number):
-        prefix = cls.header_prefix(number)
+    def is_header(cls, line, identifier):
+        prefix = cls.header_prefix(identifier)
         return line.content.startswith(prefix)
 
     @classmethod
@@ -259,25 +270,31 @@ class SubArticleElement(ABC):
         elements = []
         intro = None
         wrap_up = None
-        current_element_number = 0
+        current_element_identifier = None
+        next_element_identifier = cls.first_identifier()
         current_lines = []
         quote_level = 0
         for line in text:
-            if quote_level == 0 and cls.is_header(line, current_element_number + 1):
-                if current_element_number == 0:
+            if quote_level == 0 and cls.is_header(line, next_element_identifier):
+                if current_element_identifier is None:
                     if current_lines:
                         intro = " ".join([l.content for l in current_lines])
                 else:
-                    element = cls(current_lines, current_element_number)
+                    element = cls(current_lines, current_element_identifier)
                     elements.append(element)
-                current_element_number = current_element_number + 1
+
+                current_element_identifier = next_element_identifier
+                next_element_identifier = cls.next_identifier(next_element_identifier)
                 current_lines = []
             quote_level = quote_level + line.content.count("„") - line.content.count("”")
             current_lines.append(line)
 
         if quote_level != 0:
             raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
-        if current_element_number < 2 and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
+
+        # There is one element in current_lines, and if no other elements have been found,
+        # there is a total of one. That's not valid for a list of points or subpoints
+        if len(elements) == 0 and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
             raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
 
         if intro is None and cls.PARENT_MUST_HAVE_INTRO:
@@ -292,13 +309,13 @@ class SubArticleElement(ABC):
                 while len(current_lines) > 1 and current_lines[-1].indent == header_indent:
                     wrap_up = current_lines.pop().content + " " + wrap_up
 
-        element = cls(current_lines, current_element_number)
+        element = cls(current_lines, current_element_identifier)
         elements.append(element)
         return intro, elements, wrap_up
 
     def print_to_console(self, indent):
-        if self.number:
-            indent = indent + "{:<5}".format(self.header_prefix(self.number))
+        if self.identifier:
+            indent = indent + "{:<5}".format(self.header_prefix(self.identifier))
         else:
             indent = indent + " " * 5
         if self.text:
@@ -307,7 +324,7 @@ class SubArticleElement(ABC):
             if self.intro:
                 indented_line_wrapped_print(self.intro, indent)
                 indent = " " * len(indent)
-            for p in self.points:
+            for p in self.children:
                 p.print_to_console(indent)
                 indent = " " * len(indent)
             if self.wrap_up:
@@ -323,16 +340,33 @@ class AlphabeticSubpoint(SubArticleElement):
     PREFIX = ''
 
     @classmethod
-    def header_prefix(cls, number):
-        letter = chr(ord('a') + number - 1)
-        return "{}{}) ".format(cls.PREFIX, letter)
+    def first_identifier(cls):
+        return cls.PREFIX + 'a'
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        if cls.PREFIX:
+            if cls.PREFIX != identifier[0]:
+                raise ValueError("Invalid identifier for prefixed subpoint")
+            return cls.PREFIX + chr(ord(identifier[1]) + 1)
+        else:
+            return chr(ord(identifier) + 1)
+
+    @classmethod
+    def header_prefix(cls, identifier):
+        return "{}) ".format(identifier)
+
+    @classmethod
+    def is_header(cls, line, identifier):
+        prefix = cls.header_prefix(identifier)
+        return line.content.startswith(prefix)
 
     def try_parse_subpoints(self, text):
         # Subpoints may not have sub-subpoints: 48. § (6)
         return False
 
 
-class NumberedPoint(SubArticleElement):
+class NumericPoint(SubArticleElement):
     PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
     # No PARENT_CAN_HAVE_WRAPUP, because it looks like numbered lists are usuaally
@@ -343,13 +377,21 @@ class NumberedPoint(SubArticleElement):
     # adsasddas.
 
     @classmethod
-    def header_prefix(cls, number):
-        return "{}. ".format(number)
+    def first_identifier(cls):
+        return '1'
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        return str(int(identifier) + 1)
+
+    @classmethod
+    def header_prefix(cls, identifier):
+        return "{}. ".format(identifier)
 
     def try_parse_subpoints(self, text):
         # Numbered points may only have alphabetic subpoints.
         try:
-            self.intro, self.points, self.wrap_up = AlphabeticSubpoint.extract_multiple_from_text(text)
+            self.intro, self.children, self.wrap_up = AlphabeticSubpoint.extract_multiple_from_text(text)
             return True
         except SubArticleElementNotFoundError:
             pass
@@ -363,22 +405,29 @@ class AlphabeticPoint(SubArticleElement):
     PARENT_CAN_HAVE_WRAPUP = True
 
     @classmethod
-    def header_prefix(cls, number):
-        letter = chr(ord('a') + number - 1)
-        return "{}) ".format(letter)
+    def first_identifier(cls):
+        return 'a'
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        return chr(ord(identifier) + 1)
+
+    @classmethod
+    def header_prefix(cls, identifier):
+        return "{}) ".format(identifier)
 
     def try_parse_subpoints(self, text):
         # Soo, this is a great example of functional-oop hybrid things, which i
         # both pretty compact, elegant, and disgusting at the same time.
         # Thank 48. § (3) for this.
-        my_letter = self.header_prefix(self.number)[0]
+        my_letter = self.identifier
 
         class PrefixedAlphabeticSubpoint(AlphabeticSubpoint):
             PREFIX = my_letter
 
         # Numbered points may only have alphabetic subpoints.
         try:
-            self.intro, self.points, self.wrap_up = PrefixedAlphabeticSubpoint.extract_multiple_from_text(text)
+            self.intro, self.children, self.wrap_up = PrefixedAlphabeticSubpoint.extract_multiple_from_text(text)
             return True
         except SubArticleElementNotFoundError:
             pass
@@ -388,22 +437,40 @@ class AlphabeticPoint(SubArticleElement):
 
 class Paragraph(SubArticleElement):
     @classmethod
-    def header_prefix(cls, number):
-        if number == 0:
+    def first_identifier(cls):
+        return '1'
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        return str(int(identifier) + 1)
+
+    @classmethod
+    def header_prefix(cls, identifier):
+        if identifier is None:
             # Happens in special cases when no header was found, e.g.
             # Came from an article with a single paragraph.
             return ''
-        return "({}) ".format(number)
+        return "({}) ".format(identifier)
 
     def try_parse_subpoints(self, text):
+        # We look for amendments in paragraphs only, because of "115. § (2)",
+        # "Articles and below may only be amended in Paragraphs", and because
+        # we always parse Articles into a single Paragraph, even without a
+        # paragraph header.
         try:
-            self.intro, self.points, self.wrap_up = NumberedPoint.extract_multiple_from_text(text)
+            self.children = [amendment.StructuredAmendment(text)]
+            return True
+        except amendment.NotAmendmentError as e:
+            pass
+
+        try:
+            self.intro, self.children, self.wrap_up = NumericPoint.extract_multiple_from_text(text)
             return True
         except SubArticleElementNotFoundError:
             pass
 
         try:
-            self.intro, self.points, self.wrap_up = AlphabeticPoint.extract_multiple_from_text(text)
+            self.intro, self.children, self.wrap_up = AlphabeticPoint.extract_multiple_from_text(text)
             return True
         except SubArticleElementNotFoundError:
             pass
@@ -412,9 +479,9 @@ class Paragraph(SubArticleElement):
 
 
 class Article:
-    HEADER_RE = re.compile("^([0-9]+:)?([0-9]+). ?§ *(.*)$")
+    HEADER_RE = re.compile("^([0-9]+:)?([0-9]+)\\. ?§ *(.*)$")
 
-    def __init__(self, text):
+    def __init__(self, text, extenally_determined_identifier=None):
         # text parameter includes the line with the '§'
         header_matches = self.HEADER_RE.match(text[0].content)
         if header_matches.group(1):
@@ -422,6 +489,13 @@ class Article:
             self.identifier = header_matches.group(1) + header_matches.group(2)
         else:
             self.identifier = header_matches.group(2)
+
+        if extenally_determined_identifier and extenally_determined_identifier != self.identifier:
+            raise ValueError(
+                "Parsed identifier != got identifier: '{}'!='{}'"
+                .format(identifier, self.extenally_determined_identifier)
+            )
+
         self.title = ""
         self.paragraphs = []
 
@@ -454,8 +528,8 @@ class Article:
         if wrap_up is not None:
             raise ValueError("Junk detected in Article after last Paragraph")
 
-    def print_to_console(self):
-        indent = "{:<10}".format(self.identifier + ". §")
+    def print_to_console(self, indent=''):
+        indent = indent + "{:<10}".format(self.identifier + ". §")
         if self.title:
             indented_line_wrapped_print("     [{}]".format(self.title), indent)
             indent = " " * len(indent)
@@ -492,6 +566,8 @@ class Act:
         lines, elements_to_append = self.parse_structural_elements(lines)
         # EMPTY_LINEs are only needed for detecting structural elements.
         # From this point, they only mess up parsing, so let's get rid of them
+        # TODO: Large Structured Amendments that replace whole Parts could need
+        # empty lines again, so be careful.
         lines = [l for l in lines if l != EMPTY_LINE]
         if self.preamble is None:
             self.preamble = " ".join([l.content for l in lines])
