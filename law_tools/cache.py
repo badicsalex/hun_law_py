@@ -15,6 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
 
-class PDFFileDescriptor:
-    def __init__(self, filename):
-        self.fp = open(filename, 'rb')
+import os
+
+cache_dir_path = None
+
+
+class CacheObject:
+    def __init__(self, name):
+        if cache_dir_path is None:
+            raise RuntimeError("Cache not initialized yet")
+        self.filename = os.path.join(cache_dir_path, name)
+
+    def exists(self):
+        return os.path.exists(self.filename)
+
+    def write_bytes(self, data):
+        os.makedirs(os.path.dirname(self.filename), exist_ok=True)
+        with open(self.filename, 'wb') as f:
+            f.write(data)
+
+    def get_filename(self):
+        return self.filename
+
+
+def init_cache(cache_dir):
+    global cache_dir_path
+    cache_dir_path = cache_dir
+    os.makedirs(cache_dir, exist_ok=True)

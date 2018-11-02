@@ -17,12 +17,14 @@
 # along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+import os
+
 from law_tools.extractors import Extractor
-from law_tools.extractors.file import BinaryFile
+from law_tools.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from law_tools.extractors.all import do_extraction
 from law_tools.extractors.hungarian_law import MagyarKozlonyLawRawText
 from law_tools.hun_law.structure import Act
-
+from law_tools.cache import init_cache
 #@Extractor(MagyarKozlonyLawRawText)
 def RawLawPrinter(e):
     print("==== RAW TEXT FOR {} - {} =====\n".format(e.identifier, e.subject))
@@ -42,7 +44,9 @@ def ActPrinter(e):
     return
     yield
 
-extracted = do_extraction([BinaryFile(sys.argv[1])])
+init_cache(os.path.join(os.path.dirname(__file__), 'cache'))
+
+extracted = do_extraction([KozlonyToDownload(sys.argv[1], sys.argv[2])])
 
 for e in extracted:
     print("Final extracted object: {}\n".format(type(e)))

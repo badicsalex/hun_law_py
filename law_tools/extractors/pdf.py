@@ -26,7 +26,7 @@ from pdfminer.pdffont import PDFUnicodeNotDefined
 from law_tools.utils import IndentedLine, EMPTY_LINE
 
 from . import Extractor
-from .file import BinaryFile
+from .file import PDFFileDescriptor
 
 TextBox = namedtuple('TextBox', ['x', 'y', 'content'])
 PageOfTextBoxes = namedtuple('PageOfTextBoxes', ['textboxes'])
@@ -92,7 +92,7 @@ class PDFMinerAdapter(PDFTextDevice):
     # TODO: parse lines, so that footers can be detected more easily
 
 
-@Extractor(BinaryFile)
+@Extractor(PDFFileDescriptor)
 def FileToTextboxPdfExtractor(f):
     rsrcmgr = PDFResourceManager()
     device = PDFMinerAdapter(rsrcmgr)
