@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
 
+
 class PDFFileDescriptor:
-    def __init__(self, filename):
+    def __init__(self, filename, cache_id=None):
         self.fp = open(filename, 'rb')
+        self.cache_id = cache_id

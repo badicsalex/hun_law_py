@@ -37,10 +37,11 @@ class KozlonyToDownload:
 
 @Extractor(KozlonyToDownload)
 def MagyarKozlonyHeaderExtractor(descriptor):
-    cache_object = CacheObject("MK/{}/{}.pdf".format(descriptor.year, descriptor.issue))
+    cache_id = "MK/{}/{}.pdf".format(descriptor.year, descriptor.issue)
+    cache_object = CacheObject(cache_id)
     if not cache_object.exists():
         url_to_download = descriptor.get_url()
         print("Downloading {}".format(url_to_download), file=sys.stderr)
         downloaded_data = request.urlopen(url_to_download).read()
         cache_object.write_bytes(downloaded_data)
-    yield PDFFileDescriptor(cache_object.get_filename())
+    yield PDFFileDescriptor(cache_object.get_filename(), cache_id)

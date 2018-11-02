@@ -24,6 +24,7 @@ from pdfminer.utils import isnumber
 from pdfminer.pdffont import PDFUnicodeNotDefined
 
 from law_tools.utils import IndentedLine, EMPTY_LINE
+from law_tools.cache import CacheObject
 
 from . import Extractor
 from .file import PDFFileDescriptor
@@ -50,7 +51,6 @@ class PDFMinerAdapter(PDFTextDevice):
         self.current_page.textboxes.append(TextBox(x, y, s))
 
     def render_string(self, textstate, seq):
-        net_scaling = textstate.fontsize * textstate.scaling * 0.0001
         # Sometimes the space char is used instead of "repositionings", with a little hack
         # where space is actually very short, or even of negative length
         space_is_not_used_for_space = textstate.wordspace < -1
@@ -59,7 +59,6 @@ class PDFMinerAdapter(PDFTextDevice):
         for s in seq:
             if isnumber(s):
                 # horizontal repositioning
-                reposition_diff = s * net_scaling
                 if s < -100:  # TODO: make this constant dymanic
                     # This is two cases as one right now:
                     # 1) Tabulating and things like table of contents. We flatten it to space for now, for
@@ -92,25 +91,53 @@ class PDFMinerAdapter(PDFTextDevice):
     # TODO: parse lines, so that footers can be detected more easily
 
 
-@Extractor(PDFFileDescriptor)
-def FileToTextboxPdfExtractor(f):
+class PageOfLines:
+    def __init__(self):
+        self.lines = []
+
+    def add_line(self, line):
+        self.lines.append(line)
+
+
+class PdfOfLines:
+    def __init__(self):
+        self.pages = []
+
+    def add_page(self, page):
+        self.pages.append(page)
+
+    def save_to_cache(self, cache_object):
+        data_to_save = []
+        for page in self.pages:
+            page_to_save = []
+            for line in page.lines:
+                page_to_save.append({'content': line.content, 'indent': line.indent})
+            data_to_save.append(page_to_save)
+        cache_object.write_json(data_to_save)
+
+    def load_from_cache(self, cache_object):
+        data_to_load = cache_object.read_json()
+        self.pages = []
+        for page_to_load in data_to_load:
+            page = PageOfLines()
+            for line in page_to_load:
+                page.add_line(IndentedLine(line['content'], line['indent']))
+            self.add_page(page)
+
+
+def extract_textboxes(f):
     rsrcmgr = PDFResourceManager()
     device = PDFMinerAdapter(rsrcmgr)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     for page in PDFPage.get_pages(f.fp):
         interpreter.process_page(page)
-    yield PdfOfTextBoxes(device.pages)
+    return PdfOfTextBoxes(device.pages)
 
 
-PageOfLines = namedtuple('PageOfLines', ['lines'])
-PdfOfLines = namedtuple('PdfOfLines', ['pages'])
-
-
-@Extractor(PdfOfTextBoxes)
-def PdfLineifier(potb):
-    result = PdfOfLines([])
+def extract_lines(potb):
+    result = PdfOfLines()
     for page in potb.pages:
-        processed_page = PageOfLines([])
+        processed_page = PageOfLines()
         textboxes_as_dicts = {}
         for tb in page.textboxes:
             if tb.y not in textboxes_as_dicts:
@@ -127,7 +154,7 @@ def PdfLineifier(potb):
         for y in sorted(textboxes_as_dicts, reverse=True):
             # TODO: do't hardcode the 18, but use actual textbox dimensions
             if prev_y != 0 and (prev_y - y) > 18:
-                processed_page.lines.append(EMPTY_LINE)
+                processed_page.add_line(EMPTY_LINE)
             prev_y = y
 
             textboxes_in_line = textboxes_as_dicts[y]
@@ -145,7 +172,21 @@ def PdfLineifier(potb):
             content = content.replace("Û", "Ű")  # Note the ^ on top of the first ő
             content = content.replace("û", "ű")  # note the ^ on top of the first ő
 
-            processed_page.lines.append(IndentedLine(content, indent))
+            processed_page.add_line(IndentedLine(content, indent))
 
-        result.pages.append(processed_page)
-    yield result
+        result.add_page(processed_page)
+    return result
+
+
+@Extractor(PDFFileDescriptor)
+def CachedPdfParser(f):
+    cache_object = CacheObject(f.cache_id + ".parsed")
+    if cache_object.exists():
+        result = PdfOfLines()
+        result.load_from_cache(cache_object)
+        yield result
+    else:
+        textboxes = extract_textboxes(f)
+        result = extract_lines(textboxes)
+        result.save_to_cache(cache_object)
+        yield result

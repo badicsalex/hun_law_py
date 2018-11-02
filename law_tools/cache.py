@@ -16,6 +16,7 @@
 # along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import json
 
 cache_dir_path = None
 
@@ -33,6 +34,16 @@ class CacheObject:
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
         with open(self.filename, 'wb') as f:
             f.write(data)
+
+    def read_json(self):
+        with open(self.filename, 'r') as f:
+            return json.load(f)
+
+    def write_json(self, data):
+        with open(self.filename, 'w') as f:
+            # TODO: Indenting for debuggging purposes, this will not
+            # create minimal files. This means something like 15% bigger.
+            json.dump(data, f, indent=2, sort_keys=True)
 
     def get_filename(self):
         return self.filename
