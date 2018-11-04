@@ -286,7 +286,7 @@ class SubArticleElement(ABC):
                 current_element_identifier = next_element_identifier
                 next_element_identifier = cls.next_identifier(next_element_identifier)
                 current_lines = []
-            quote_level = quote_level + line.content.count("„") - line.content.count("”")
+            quote_level = quote_level + line.content.count("„") + line.content.count("“") - line.content.count("”")
             current_lines.append(line)
 
         if quote_level != 0:
