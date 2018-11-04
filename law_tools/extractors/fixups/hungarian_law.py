@@ -96,4 +96,15 @@ add_fixup("2016. évi CLXXIX. törvény", replace_line_content(
     "tizenöt nappal követő időpontra hívják össze."
 ))
 
+# The "Felhatalmazás" line is not actually part of the amendment, it's just context.
+# TODO: I don't know what to actually do about this. Maybe do automatically parse these junk things?
+# Only if this needs to be fixed more than once. It may even cause  problems anyway, who knows.
+add_fixup("2015. évi CIV. törvény", replace_line_content(
+    "„Felhatalmazás",
+    "Felhatalmazás"
+))
+add_fixup("2015. évi CIV. törvény", replace_line_content(
+    "28. § Felhatalmazást kap a Kormány, hogy e törvény alapján",
+    "„28. § Felhatalmazást kap a Kormány, hogy e törvény alapján"
+))
 
