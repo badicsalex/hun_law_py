@@ -116,6 +116,7 @@ MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', '
 def MagyarKozlonyLawExtractor(laws_section):
     States = enum.Enum("States",
         [
+            "WAITING_FOR_HEADER_NEWLINE",
             "WAITING_FOR_HEADER",
             "HEADER",
             "BODY_BEFORE_ASTERISK_FOOTER",
@@ -129,10 +130,17 @@ def MagyarKozlonyLawExtractor(laws_section):
     subject = ''
     body = []
 
-    state = States.WAITING_FOR_HEADER
+    state = States.WAITING_FOR_HEADER_NEWLINE
     for line in laws_section.lines:
+        if state == States.WAITING_FOR_HEADER_NEWLINE:
+            if line != EMPTY_LINE:
+                continue
+            state = States.WAITING_FOR_HEADER
+            continue
+
         if state == States.WAITING_FOR_HEADER:
             if not header_starting_re.match(line.content):
+                state = States.WAITING_FOR_HEADER_NEWLINE
                 continue
             identifier = line.content
             state = States.HEADER
