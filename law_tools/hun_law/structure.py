@@ -73,6 +73,19 @@ from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_te
 # For this reason, (and because they are so useless) we only handle structure levels,
 # as mere 'titles', and don't use them in the code as actual structural things.
 
+class StructureParsingError(ValueError):
+    def __init__(self, message, element = None):
+        if element is not None:
+            super().__init__(
+                "Error parsing {} {}: '{}'".format(
+                    element.__class__.__name__,
+                    element.identifier,
+                    message
+                )
+            )
+        else:
+            super().__init__(message)
+
 
 class StructuralElement(ABC):
     def __init__(self, sibling_before=None, lines=None):
@@ -218,6 +231,10 @@ class SubArticleElementNotFoundError(Exception):
     pass
 
 
+class SubArticleParsingError(StructureParsingError):
+    pass
+
+
 class SubArticleElement(ABC):
     PARENT_MUST_HAVE_INTRO = False
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = False
@@ -232,14 +249,17 @@ class SubArticleElement(ABC):
 
         prefix = self.header_prefix(identifier)
         if not text[0].content.startswith(prefix):
-            raise ValueError("Invalid {} header ('{}' does not start with '{}'".format(self.__class__.__name__, text[0].content, prefix))
+            raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(text[0].content, prefix), self)
 
         truncated_first_line = text[0].content[len(prefix):]
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
         indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
         text = [indented_first_line] + text[1:]
-        if not self.try_parse_subpoints(text):
-            self.text = " ".join([l.content for l in text])
+        try:
+            if not self.try_parse_subpoints(text):
+                self.text = " ".join([l.content for l in text])
+        except Exception as e:
+            raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), self) from e
 
     @classmethod
     @abstractmethod
@@ -479,6 +499,10 @@ class Paragraph(SubArticleElement):
         return False
 
 
+class ArticleParsingError(StructureParsingError):
+    pass
+
+
 class Article:
     HEADER_RE = re.compile("^([0-9]+:)?([0-9]+(/[A-Z])?)\\. ?§ *(.*)$")
 
@@ -492,9 +516,9 @@ class Article:
             self.identifier = header_matches.group(2)
 
         if extenally_determined_identifier and extenally_determined_identifier != self.identifier:
-            raise ValueError(
-                "Parsed identifier != got identifier: '{}'!='{}'"
-                .format(identifier, self.extenally_determined_identifier)
+            raise ArticleParsingError(
+                "Externally determined identifier wrong: '{}'".format(self.extenally_determined_identifier),
+                self
             )
 
         self.title = ""
@@ -503,7 +527,10 @@ class Article:
         truncated_first_line = header_matches.group(4)
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
         indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
-        self.parse_body([indented_first_line] + text[1:])
+        try:
+            self.parse_body([indented_first_line] + text[1:])
+        except Exception as e:
+            raise ArticleParsingError(str(e), self) from e
 
     @classmethod
     def is_header(cls, line):
@@ -540,6 +567,10 @@ class Article:
             indent = " " * len(indent)
 
 
+class ActParsingError(StructureParsingError):
+    pass
+
+
 class Act:
     def __init__(self, identifier, subject, text):
         self.identifier = identifier
@@ -547,7 +578,10 @@ class Act:
         self.preamble = None
         self.elements = []
         self.last_structural_element_per_class = {}
-        self.parse_text(text)
+        try:
+            self.parse_text(text)
+        except Exception as e:
+            raise ActParsingError("Error during parsing body: {}".format(e), self) from e
 
     def parse_text(self, text):
         current_lines = []
