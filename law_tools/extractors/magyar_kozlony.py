@@ -115,7 +115,7 @@ def MagyarKozlonyLawExtractor(laws_section):
         ]
     )
     header_starting_re = re.compile('^[12][09][0-9][0-9]. évi [IVXLC]+. törvény')
-    footer_re = re.compile('köztársasági elnök az Országgyűlés elnöke')
+    footer_re = re.compile('köztársasági elnök az Országgyűlés (al)?elnöke')
 
     identifier = ''
     subject = ''
