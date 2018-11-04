@@ -33,6 +33,12 @@ add_fixup("2013. évi CCLII. törvény", replace_line_content(
     ",,(3) A nyilvántartó bíróság jogszabályban meghatározott szervezetnek juttatja a vagyont, ha az alapító okirat, vagy",
     "„(3) A nyilvántartó bíróság jogszabályban meghatározott szervezetnek juttatja a vagyont, ha az alapító okirat, vagy"
 ))
+# Invalid Rigid reference
+add_fixup("2013. évi CCLII. törvény", replace_line_content(
+    "(4) A 6:198. § (3) bekezdése a következő szöveggel lép hatályba:",
+    "(4) A Ptk. 6:198. § (3) bekezdése a következő szöveggel lép hatályba:"
+))
+
 
 # The "Felhatalmazás" line is not actually part of the amendment, it's just context.
 # TODO: I don't know what to actually do about this. Maybe do automatically parse these junk things?
