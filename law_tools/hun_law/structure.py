@@ -550,11 +550,16 @@ class Article:
             # TODO: Optimize this, if needed
             text = text[1:]
 
-        intro, self.paragraphs, wrap_up = Paragraph.extract_multiple_from_text(text)
-        if intro is not None:
-            raise ValueError("Junk detected in Article before first Paragraph")
-        if wrap_up is not None:
-            raise ValueError("Junk detected in Article after last Paragraph")
+        if not Paragraph.is_header(text[0], Paragraph.first_identifier()):
+            self.paragraphs= [Paragraph(text, None)]
+        else:
+            intro, self.paragraphs, wrap_up = Paragraph.extract_multiple_from_text(text)
+            if intro is not None:
+                # Should LITERALLY never happen
+                raise ValueError("Junk detected in Article before first Paragraph")
+            if wrap_up is not None:
+                raise ValueError("Junk detected in Article after last Paragraph")
+
 
     def print_to_console(self, indent=''):
         indent = indent + "{:<10}".format(self.identifier + ". §")
