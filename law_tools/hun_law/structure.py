@@ -442,6 +442,7 @@ class Paragraph(SubArticleElement):
 
     @classmethod
     def next_identifier(cls, identifier):
+        # TODO: Handle amended (number/character) type identifiers
         return str(int(identifier) + 1)
 
     @classmethod
@@ -479,7 +480,7 @@ class Paragraph(SubArticleElement):
 
 
 class Article:
-    HEADER_RE = re.compile("^([0-9]+:)?([0-9]+)\\. ?§ *(.*)$")
+    HEADER_RE = re.compile("^([0-9]+:)?([0-9]+(/[A-Z])?)\\. ?§ *(.*)$")
 
     def __init__(self, text, extenally_determined_identifier=None):
         # text parameter includes the line with the '§'
@@ -499,7 +500,7 @@ class Article:
         self.title = ""
         self.paragraphs = []
 
-        truncated_first_line = header_matches.group(3)
+        truncated_first_line = header_matches.group(4)
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
         indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
         self.parse_body([indented_first_line] + text[1:])
