@@ -19,9 +19,11 @@ from law_tools.hun_law.structure import Act
 
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
+from .fixups.hungarian_law import do_all_fixups
 
 
 @Extractor(MagyarKozlonyLawRawText)
-def MagyarKozlonyLawClassifier(raw):
+def MagyarKozlonyLawFixupper(raw):
     # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
-    yield Act(raw.identifier, raw.subject, raw.body)
+    fixupped_body = do_all_fixups(raw.identifier, raw.body)
+    yield Act(raw.identifier, raw.subject, fixupped_body)
