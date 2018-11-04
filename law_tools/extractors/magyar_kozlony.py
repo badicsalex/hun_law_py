@@ -60,13 +60,19 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
     yield KozlonyPagesWithHeaderAndFooter(result_pages)
 
 
-MagyarKozlonyToC = namedtuple('MagyarKozlonyToC', ['lines'])
 MagyarKozlonyLawsSection = namedtuple('MagyarKozlonyLawsSection', ['lines'])
 
 SECTION_TYPES = {
-    'Tartalomjegyzék': MagyarKozlonyToC,
+    'Tartalomjegyzék': None,
     'II. Törvények': MagyarKozlonyLawsSection,
-    # TODO: tons of stuff, like 'III. Kormányrendeletek', 'V. A Kormány tagjainak rendeletei'
+    'III. Kormányrendeletek': None,
+    'IV. A Magyar Nemzeti Bank elnökének rendeletei,': None,  # TODO: This could be formatted in otehr ways
+    'V. A Kormány tagjainak rendeletei': None,
+    'VI.Az Alkotmánybíróság határozatai, teljes ülési': None,  #TODO: This is most probably word-wrapped in oither ways
+    'VII. A Kúria határozatai': None,
+    # TODO: VIII.
+    'IX. Határozatok Tára': None,
+    # TODO: X?
 }
 
 
@@ -87,7 +93,8 @@ def MagyarKozlonySectionExtractor(kozlony):
                 content_of_current_section.extend(page.lines[1:])
                 break
             if current_section_type is not None:
-                yield SECTION_TYPES[current_section_type](content_of_current_section)
+                if SECTION_TYPES[current_section_type] is not None:
+                    yield SECTION_TYPES[current_section_type](content_of_current_section)
             current_section_type = section_type
             content_of_current_section = page.lines[1:]
             break
@@ -98,7 +105,8 @@ def MagyarKozlonySectionExtractor(kozlony):
         # This is where we do away with the "Page" abstraction, and further processing
         # can only use EMPTY_LINE to have some separation info.
         content_of_current_section.append(EMPTY_LINE)
-    yield SECTION_TYPES[current_section_type](content_of_current_section)
+    if SECTION_TYPES[current_section_type]  is not None:
+        yield SECTION_TYPES[current_section_type](content_of_current_section)
 
 
 MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', 'subject', 'body'])
