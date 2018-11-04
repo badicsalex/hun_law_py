@@ -544,11 +544,14 @@ class Article:
             # In some Acts. Format is something like
             # 3:116. §  [A társaság képviselete. Cégjegyzés]
             # Let's hope for no multiline titles for now
-            if text[0].content[-1] != ']':
+            if text[0].content[-1] == ']':
+                self.title = text[0].content[1:-1]
+                text = text[1:]
+            elif text[1].content[-1] == ']':
+                self.title = text[0].content[1:] + " " + text[1].content[:-1]
+                text = text[2:]
+            else:
                 raise ValueError("Multiline article titles not supported")
-            self.title = text[0].content[1:-1]
-            # TODO: Optimize this, if needed
-            text = text[1:]
 
         if not Paragraph.is_header(text[0], Paragraph.first_identifier()):
             self.paragraphs= [Paragraph(text, None)]
