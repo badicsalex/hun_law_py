@@ -19,7 +19,8 @@ from law_tools.hun_law.structure import Act
 
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
-from .fixups.hungarian_law import do_all_fixups
+from .fixups.common import do_all_fixups
+from .fixups import hungarian_law
 
 
 @Extractor(MagyarKozlonyLawRawText)
