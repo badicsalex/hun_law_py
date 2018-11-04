@@ -31,6 +31,11 @@ class NotAmendmentError(Exception):
 class StructuredAmendment:
     INSTEAD_OF_HEURISTIC_RE = re.compile('^Az? ([A-ZÉÁŐÚÖÜÓÍ][a-zéáőúöüóí]+\\.)(.+)$')
 
+    POSTFIXES = (
+        "helyébe a következő rendelkezés lép:",
+        "helyébe a következő rendelkezések lépnek:",
+        "a következő szöveggel lép hatályba:",
+    )
     def __init__(self, text):
         self.reference_string = None
         self.act_reference = None
@@ -45,9 +50,13 @@ class StructuredAmendment:
     def parse_text(self, text):
         text = deque(text)  # We are going to pop the front a lot
         self.reference_string = text.popleft().content
+        self.postfix = None
         while True:
             # Endswith instead of "in", because there is a guaranteed newline after the ':'
-            if self.reference_string.endswith("helyébe a következő rendelkezés lép:") or self.reference_string.endswith("helyébe a következő rendelkezések lépnek:"):
+            for postfix in self.POSTFIXES:
+                if self.reference_string.endswith(postfix):
+                    self.postfix = postfix
+            if self.postfix is not None:
                 break
             if not text:
                 raise NotAmendmentError('Amendment postfix not found')
@@ -114,7 +123,12 @@ class StructuredAmendment:
         except reference.NotAReferenceError as e:
             raise NotAmendmentError("Structure reference could not be parsed") from e
 
-        if rest_of_string.index(' ') != rest_of_string.index(' helyébe a következő'):
+        # Cut down any possible suffixes from the reference
+        # If no suffix was added to the Reference, rest_of_string
+        # will begin with a space character.
+        rest_of_string = rest_of_string[rest_of_string.index(' ')+1:]
+
+        if rest_of_string != self.postfix:
             raise NotAmendmentError("Junk between structure reference and postfix: '{}'".format(rest_of_string))
 
     def create_children(self, block_quote_text, child_class, identifier):
