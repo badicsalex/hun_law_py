@@ -150,8 +150,8 @@ def extract_lines(potb):
             threshold_to_space = None
             for x in sorted(textboxes_as_dicts[y]):
                 box = textboxes_as_dicts[y][x]
-                if threshold_to_space is not None and x > threshold_to_space:
-                    if content_as_array[-1] != ' ':
+                if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
+                    if content_as_array and content_as_array[-1] != ' ':
                         content_as_array.append(' ')
                 content_as_array.append(box.content)
                 threshold_to_space = x + box.width + box.width_of_space * 0.5
