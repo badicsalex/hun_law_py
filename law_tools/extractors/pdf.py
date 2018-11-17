@@ -23,13 +23,13 @@ from pdfminer.pdfdevice import PDFTextDevice
 from pdfminer.utils import isnumber
 from pdfminer.pdffont import PDFUnicodeNotDefined
 
-from law_tools.utils import IndentedLine, EMPTY_LINE
+from law_tools.utils import IndentedLine, EMPTY_LINE, chr_latin2
 from law_tools.cache import CacheObject
 
 from . import Extractor
 from .file import PDFFileDescriptor
 
-TextBox = namedtuple('TextBox', ['x', 'y', 'content'])
+TextBox = namedtuple('TextBox', ['x', 'y', 'width', 'width_of_space', 'content'])
 PageOfTextBoxes = namedtuple('PageOfTextBoxes', ['textboxes'])
 PdfOfTextBoxes = namedtuple('PdfOfTextBoxes', ['pages'])
 
@@ -50,45 +50,35 @@ class PDFMinerAdapter(PDFTextDevice):
     def add_textbox(self, x, y, s):
         self.current_page.textboxes.append(TextBox(x, y, s))
 
-    def render_string(self, textstate, seq):
-        # Sometimes the space char is used instead of "repositionings", with a little hack
-        # where space is actually very short, or even of negative length
-        space_is_not_used_for_space = textstate.wordspace < -1
+    def render_char(self, matrix, font, fontsize, scaling, rise, cid, *args):
+        try:
+            text = font.to_unichr(cid)
+            # Keep in mind that 'text' can be multiple characters, like 'ffi'
+            # This is the same reason the TextBox type name was kept, and it's not "CharBox"
+        except PDFUnicodeNotDefined:
+            # ... and the above is why this is absolutely correct for now.
+            # TODO: it's not really correct.
+            text = '[X]'
 
-        actual_chars = []
-        for s in seq:
-            if isnumber(s):
-                # horizontal repositioning
-                if s < -100:  # TODO: make this constant dymanic
-                    # This is two cases as one right now:
-                    # 1) Tabulating and things like table of contents. We flatten it to space for now, for
-                    #    easier downstream processing. This may change if messy things (like characters not
-                    #    present in the document left to right, etc.
-                    # 2) Justified text sometimes use these "reposition"s instead of space characters,
-                    #    if the width of the space is different for each word
-                    # A more correct solution would be to handle these as different textboxes
-                    actual_chars.append(' ')
-                else:
-                    # But sometimes it just signifies special "kern pairs", i.e. some characters need
-                    # to be rendered with different char spacing than the rest to look pretty. E.g. AV
-                    # We don't do anything in this case
-                    pass
-            else:
-                # We have an actual string, yay
-                for c in s:
-                    if c == 32 and space_is_not_used_for_space:
-                        continue
-                    try:
-                        uni_c = textstate.font.to_unichr(c)
-                    except PDFUnicodeNotDefined:
-                        # Some chars are simply not mapped in pdfminer, like little centered dot and whatnot >_>
-                        # They are not in important places anyway, so whatever
-                        # TODO: fix these characters either here, on in pdfminer itself
-                        uni_c = '[X]'
-                    actual_chars.append(uni_c)
+        if cid < 256 and chr_latin2(cid) != text and chr_latin2(cid).upper() == text.upper():
+            # TODO: horrible workaround for a horrible bug in 2013 era InDesign, where
+            # in some cases, the casing is wrong for several characters in the
+            # ToUnicode map. Usually in allcaps fonts.
+            # I'm pretty sure this does not work for accented characters
+            text = chr_latin2(cid)
 
-        self.add_textbox(textstate.matrix[4], textstate.matrix[5], ''.join(actual_chars))
-    # TODO: parse lines, so that footers can be detected more easily
+        textwidth = font.char_width(cid) * fontsize * scaling
+        if not text.isspace():
+            unscaled_width_of_space = font.char_width(32)
+            if unscaled_width_of_space == 1.0 or unscaled_width_of_space == 0.0:
+                # Workaround for missing default width of space
+                # e.g. the font does not define the space character
+                unscaled_width_of_space = 0.25
+            width_of_space = unscaled_width_of_space * fontsize * scaling
+            self.current_page.textboxes.append(TextBox(matrix[4], matrix[5], textwidth * matrix[0], width_of_space * matrix[0], text))
+        return textwidth
+
+    # TODO: parse graphical lines, so that footers can be detected more easily
 
 
 class PageOfLines:
@@ -141,14 +131,13 @@ def extract_lines(potb):
         textboxes_as_dicts = {}
         for tb in page.textboxes:
             if tb.y not in textboxes_as_dicts:
+                # TODO: quantize y if needed. We are only lucky that
+                # lines don't have an epsilon amount of y space between words
+                # And that sub and superscripts are not used
                 textboxes_as_dicts[tb.y] = {}
-            if tb.x not in textboxes_as_dicts[tb.y]:
-                textboxes_as_dicts[tb.y][tb.x] = tb.content
-            else:
-                # Workaround for weirdness where two textboxes are printed on the same coordinate
-                # They are probably some kind of left-and right justification
-                # TODO: handle correctly
-                textboxes_as_dicts[tb.y][tb.x + 0.0001] = tb.content
+            if tb.x in textboxes_as_dicts[tb.y]:
+                raise ValueError("Multiple textboxes on the exact same coordinates")
+            textboxes_as_dicts[tb.y][tb.x] = tb
 
         prev_y = 0
         for y in sorted(textboxes_as_dicts, reverse=True):
@@ -157,21 +146,27 @@ def extract_lines(potb):
                 processed_page.add_line(EMPTY_LINE)
             prev_y = y
 
-            textboxes_in_line = textboxes_as_dicts[y]
-            content = ' '.join([textboxes_in_line[x] for x in sorted(textboxes_in_line)])
-            # The following line does:
-            # - Repalce any string of whitespaces  to a single space
-            # - strip the string
-            # Thanks, stackoverflow.
-            content = ' '.join(content.split())
-            indent = min(textboxes_in_line)
+            content_as_array = []
+            threshold_to_space = None
+            for x in sorted(textboxes_as_dicts[y]):
+                box = textboxes_as_dicts[y][x]
+                if threshold_to_space is not None and x > threshold_to_space:
+                    if content_as_array[-1] != ' ':
+                        content_as_array.append(' ')
+                content_as_array.append(box.content)
+                threshold_to_space = x + box.width + box.width_of_space * 0.5
+                current_right_side = x + box.width
+
+            content = ''.join(content_as_array)
+            indent = min(textboxes_as_dicts[y])
             # TODO: this is a quick hack for one of the character coding fcukups.
-            # Maybe I should have done the other chars too, but only this caused problems.
+            # Basically all encodings should be Latin-2, but if that's not in the
+            # PDF, de default encoding is Latin-1, with the weird squiggly accents
+            # Maybe I should have done the other chars too, but only these caused problems.
             content = content.replace("Õ", "Ő")  # Note the ~ on top of the first ő
             content = content.replace("õ", "ő")  # note the ~ on top of the first ő
-            content = content.replace("Û", "Ű")  # Note the ^ on top of the first ő
-            content = content.replace("û", "ű")  # note the ^ on top of the first ő
-
+            content = content.replace("Û", "Ű")  # Note the ^ on top of the first ű
+            content = content.replace("û", "ű")  # note the ^ on top of the first ű
             processed_page.add_line(IndentedLine(content, indent))
 
         result.add_page(processed_page)

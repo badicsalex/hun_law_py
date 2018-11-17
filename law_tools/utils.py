@@ -147,3 +147,8 @@ def indented_line_wrapped_print(s, indent_string="", width=120):
     for l in textwrap.wrap(s, width-len(indent_string)):
         print(indent_string + l)
         indent_string = " "*len(indent_string)
+
+def chr_latin2(num):
+    if num>255 or num<0:
+        raise ValueError("Code point {} not present in latin-2".format(num))
+    return bytes([num]).decode('latin2')
