@@ -19,7 +19,7 @@
 # The whole module is a bunch of fixups to existing Acts, that aren't
 # well-formed enough to be parsed by the parser out-of-the-box
 
-from .common import add_fixup, replace_line_content, add_empty_line_after
+from .common import add_fixup, replace_line_content, add_empty_line_after, ptke_article_header_fixer
 
 # Title IV not found otherwise
 add_fixup("2013. évi V. törvény", add_empty_line_after("A SZERZŐDÉS ÁLTALÁNOS SZABÁLYAI"))
@@ -39,6 +39,9 @@ add_fixup("2013. évi CCLII. törvény", replace_line_content(
     "(4) A Ptk. 6:198. § (3) bekezdése a következő szöveggel lép hatályba:"
 ))
 
+# Article titles starting before the article sign.
+# See ptke_article_header_fixer source for details
+add_fixup("2013. évi CLXXVII. törvény", ptke_article_header_fixer)
 
 # The "Felhatalmazás" line is not actually part of the amendment, it's just context.
 # TODO: I don't know what to actually do about this. Maybe do automatically parse these junk things?

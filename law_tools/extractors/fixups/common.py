@@ -18,6 +18,7 @@
 
 # The whole module is a bunch of fixups to existing Acts, that aren't
 # well-formed enough to be parsed by the parser out-of-the-box
+import re
 
 from law_tools.utils import IndentedLine, EMPTY_LINE
 all_fixups = {}
@@ -76,3 +77,43 @@ def replace_line_content(needle, replacement):
             raise ValueError("Text '{}' found too many times in body: {}".format(needle, needle_count))
         return result
     return line_content_replacer
+
+
+def ptke_article_header_fixer(body):
+# BEFORE:
+#            (A Ptk. 2:18. §-ához)
+#    2. §    A Ptk. hatálybalépésekor a tize
+#            helyezett kiskorú jognyilatkoza
+#
+# AFTER:
+#    2. §    [A Ptk. 2:18. §-ához]
+#            A Ptk. hatálybalépésekor a tize
+#            helyezett kiskorú jognyilatkoza
+
+    title_re = re.compile('^[\\[(](.*)[)\\]]$')
+    article_re = re.compile('^([0-9]+\\. § )(.*)$')
+    there_was_a_match = False
+
+    result = []
+    prev_line = None
+    for line in body:
+        if prev_line is None:
+            prev_line = line
+            continue
+
+        title_match = title_re.match(prev_line.content)
+        article_match = article_re.match(line.content)
+        if title_match and article_match:
+            fixed_title = IndentedLine("{}[{}]".format(article_match.group(1), title_match.group(1)), line.indent)
+            # TODO: The indentation here is wrong for Paragraphs.
+            fixed_body = IndentedLine(article_match.group(2), prev_line.indent)
+            result.append(fixed_title)
+            result.append(fixed_body)
+            prev_line = None
+            continue
+
+        result.append(prev_line)
+        prev_line = line
+
+    result.append(prev_line)
+    return result
