@@ -1,22 +1,22 @@
 # Copyright 2018 Alex Badics <admin@stickman.hu>
 #
-# This file is part of Law-tools.
+# This file is part of Hun-Law.
 #
-# Law-tools is free software: you can redistribute it and/or modify
+# Hun-Law is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Law-tools is distributed in the hope that it will be useful,
+# Hun-Law is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
+# along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 
-from law_tools.utils import indented_line_wrapped_print
+from hun_law.utils import indented_line_wrapped_print
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről

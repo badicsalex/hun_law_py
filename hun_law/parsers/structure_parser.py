@@ -1,29 +1,30 @@
 # Copyright 2018 Alex Badics <admin@stickman.hu>
 #
-# This file is part of Law-tools.
+# This file is part of Hun-Law.
 #
-# Law-tools is free software: you can redistribute it and/or modify
+# Hun-Law is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Law-tools is distributed in the hope that it will be useful,
+# Hun-Law is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
+# along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
 from abc import ABC, abstractmethod
 
-from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun
-from . import amendment_parser
-from .structure import \
+from hun_law.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun
+from hun_law.structure import \
     Act, Article, \
     Subtitle, Chapter, Title, Part, Book,\
     Paragraph, AlphabeticSubpoint, NumericPoint, AlphabeticPoint
+
+from . import amendment_parser
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről

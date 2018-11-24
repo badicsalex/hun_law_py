@@ -1,4 +1,4 @@
-# law-tools
+# Hun-Law
 
 A small project for parsing Hungarian Law. It does the following thigs:
 

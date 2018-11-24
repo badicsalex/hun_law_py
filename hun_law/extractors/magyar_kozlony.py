@@ -1,28 +1,31 @@
 # Copyright 2018 Alex Badics <admin@stickman.hu>
 #
-# This file is part of Law-tools.
+# This file is part of Hun-Law.
 #
-# Law-tools is free software: you can redistribute it and/or modify
+# Hun-Law is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Law-tools is distributed in the hope that it will be useful,
+# Hun-Law is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
+# along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
 import re
 from collections import namedtuple
 
-from law_tools.utils import EMPTY_LINE
-
+from hun_law.utils import EMPTY_LINE
+from hun_law.parsers.structure_parser import ActParser
+from hun_law.fixups.common import do_all_fixups
+from hun_law.fixups import text_fixups
 from . import Extractor
 from .pdf import PdfOfLines
+
 
 
 def is_magyar_kozlony(pdf_file):
@@ -190,3 +193,10 @@ def MagyarKozlonyLawExtractor(laws_section):
 
         raise ValueError("What state is this.")
     # TODO: assert for correct state
+
+
+@Extractor(MagyarKozlonyLawRawText)
+def MagyarKozlonyLawFixupper(raw):
+    # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
+    fixupped_body = do_all_fixups(raw.identifier, raw.body)
+    yield ActParser.parse(raw.identifier, raw.subject, fixupped_body)
