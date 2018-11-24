@@ -17,8 +17,10 @@
 import re
 from collections import deque
 
-from . import structure_parser, reference_parser
-from law_tools.utils import IndentedLine, indented_line_wrapped_print
+from law_tools.utils import IndentedLine
+from . import structure_parser
+from .structure import StructuredAmendment
+from .reference_parser import RigidReference, NotAReferenceError, StructureReference
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -28,7 +30,7 @@ class NotAmendmentError(Exception):
     pass
 
 
-class StructuredAmendment:
+class StructuredAmendmentParser:
     INSTEAD_OF_HEURISTIC_RE = re.compile('^Az? ([A-ZÉÁŐÚÖÜÓÍ][a-zéáőúöüóí]+\\.)(.+)$')
 
     POSTFIXES = (
@@ -36,91 +38,106 @@ class StructuredAmendment:
         "helyébe a következő rendelkezések lépnek:",
         "a következő szöveggel lép hatályba:",
     )
-    def __init__(self, text):
-        self.reference_string = None
-        self.act_reference = None
-        self.from_now_on = None
-        self.structure_reference = None
-        self.context_intro = None
-        self.children = None
-        self.context_wrap_up = None
-        self.parse_text(text)
-
     # 106. §, 107. §
-    def parse_text(self, text):
+
+    @classmethod
+    def parse(cls, text):
+        act_reference = None
+        from_now_on = None
+        structure_reference = None
+        context_intro = None
+        context_wrap_up = None
+        postfix = None
         text = deque(text)  # We are going to pop the front a lot
-        self.reference_string = text.popleft().content
-        self.postfix = None
+        reference_string = text.popleft().content
         while True:
             # Endswith instead of "in", because there is a guaranteed newline after the ':'
-            for postfix in self.POSTFIXES:
-                if self.reference_string.endswith(postfix):
-                    self.postfix = postfix
-            if self.postfix is not None:
+            for possible_postfix in cls.POSTFIXES:
+                if reference_string.endswith(possible_postfix):
+                    postfix = possible_postfix
+            if postfix is not None:
                 break
             if not text:
                 raise NotAmendmentError('Amendment postfix not found')
-            self.reference_string = self.reference_string + " " + text.popleft().content
+            reference_string = reference_string + " " + text.popleft().content
 
-        self.parse_refs()
+        act_reference, from_now_on, structure_reference = cls.parse_refs(reference_string, postfix)
 
         # To avoid verbosity
-        reftype = self.structure_reference.referenced_structure
-        reftypes = reference_parser.StructureReference.RefType
+        reftype = structure_reference.referenced_structure
+        reftypes = StructureReference.RefType
 
         if reftype in (reftypes.NUMERIC_POINT, reftypes.ALPHABETIC_POINT, reftypes.SUBPOINT):
-            self.parse_intro_wrap_up(text)
+            context_intro, context_wrap_up = cls.parse_intro_wrap_up(text)
 
         if reftype == reftypes.ARTICLE:
-            self.create_children(text, structure_parser.Article, self.structure_reference.article)
+            children = cls.create_children(text, structure_parser.ArticleParser, structure_reference.article)
         elif reftype == reftypes.PARAGRAPH:
-            self.create_children(text, structure_parser.Paragraph, self.structure_reference.paragraph)
+            children = cls.create_children(text, structure_parser.ParagraphParser, structure_reference.paragraph)
         elif reftype == reftypes.NUMERIC_POINT:
-            self.create_children(text, structure_parser.NumericPoint, self.structure_reference.point)
+            children = cls.create_children(text, structure_parser.NumericPointParser, structure_reference.point)
         elif reftype == reftypes.ALPHABETIC_POINT:
-            self.create_children(text, structure_parser.AlphabeticPoint, self.structure_reference.point)
+            children = cls.create_children(text, structure_parser.AlphabeticPointParser, structure_reference.point)
         elif reftype == reftypes.SUBPOINT:
-            self.create_children(text, structure_parser.AlphabeticSubpoint, self.structure_reference.subpoint)
+            children = cls.create_children(text, structure_parser.AlphabeticSubpointParser, structure_reference.subpoint)
         else:
             raise NotAmendmentError("Reftype {} not supported for amendments".format(reftype))
 
-    def parse_intro_wrap_up(self, text):
+        return StructuredAmendment(
+            reference_string,
+            act_reference,
+            from_now_on,
+            structure_reference,
+            context_intro,
+            context_wrap_up,
+            children
+        )
+
+    @classmethod
+    def parse_intro_wrap_up(cls, text):
+        context_intro = None
+        context_wrap_up = None
         while text and text[0].content[0] != "„":
             intro_line = text.popleft()
-            if self.context_intro is not None:
-                self.context_intro = self.context_intro + " " + intro_line.content
+            if context_intro is not None:
+                context_intro = context_intro + " " + intro_line.content
             else:
-                self.context_intro = intro_line.content
+                context_intro = intro_line.content
 
         while text and text[-1].content[-1] != "”":
             wrap_up_line = text.pop()
-            if self.context_wrap_up is not None:
-                self.context_wrap_up = wrap_up_line.content + " " + self.context_wrap_up
+            if context_wrap_up is not None:
+                context_wrap_up = wrap_up_line.content + " " + context_wrap_up
             else:
-                self.context_wrap_up = wrap_up_line.content
+                context_wrap_up = wrap_up_line.content
 
         if not text:
-            raise NotAmendmentError("Block quote not found after cutting intro/wrap_up ('{}' / '{}')".format(self.context_intro, self.context_wrap_up))
+            raise NotAmendmentError("Block quote not found after cutting intro/wrap_up ('{}' / '{}')".format(context_intro, context_wrap_up))
+        return context_intro, context_wrap_up
 
-    def parse_refs(self):
+    @classmethod
+    def parse_refs(cls, reference_string, postfix):
         # This would be cleaner, if we would have access to the "instead of" mechanic of
         # references of previous paragraphs, but due to the recursive nature of
         # structure parsing, this is not really possible, so we use a heuristic here
         # and maybe fix up the reference later.
-        matches = self.INSTEAD_OF_HEURISTIC_RE.match(self.reference_string)
+        act_reference = None
+        from_now_on = None
+        structure_reference = None
+        matches = cls.INSTEAD_OF_HEURISTIC_RE.match(reference_string)
         if matches:
-            self.act_reference = matches.group(1)
+            act_reference = matches.group(1)
             structure_reference_string = matches.group(2)
         else:
             try:
-                self.act_reference, self.from_now_on, structure_reference_string = reference_parser.RigidReference.extract_from_string(self.reference_string)
-            except reference_parser.NotAReferenceError as e:
+                act_reference, from_now_on, structure_reference_string = RigidReference.extract_from_string(reference_string)
+            except NotAReferenceError as e:
                 raise NotAmendmentError("Rigid reference could not be parsed") from e
 
         structure_reference_string = structure_reference_string.strip()
         try:
-            self.structure_reference, rest_of_string = reference_parser.StructureReference.extract_from_string(structure_reference_string)
-        except reference_parser.NotAReferenceError as e:
+            structure_reference, rest_of_string = StructureReference.extract_from_string(structure_reference_string)
+        except NotAReferenceError as e:
             raise NotAmendmentError("Structure reference could not be parsed") from e
 
         # Cut down any possible suffixes from the reference
@@ -128,10 +145,12 @@ class StructuredAmendment:
         # will begin with a space character.
         rest_of_string = rest_of_string[rest_of_string.index(' ')+1:]
 
-        if rest_of_string != self.postfix:
+        if rest_of_string != postfix:
             raise NotAmendmentError("Junk between structure reference and postfix: '{}'".format(rest_of_string))
+        return act_reference, from_now_on, structure_reference
 
-    def create_children(self, block_quote_text, child_class, identifier):
+    @classmethod
+    def create_children(cls, block_quote_text, child_parser, identifier):
         if block_quote_text[0].content[0] != "„" or block_quote_text[-1].content[-1] != '”':
             raise NotAmendmentError("Block quote not found")
 
@@ -147,12 +166,4 @@ class StructuredAmendment:
             first_indented = IndentedLine(first_line.content[1:-1], first_line.indent)
             text = [first_indented]
 
-        self.children = [child_class(text, identifier)]
-
-    def print_to_console(self, indent):
-        indented_line_wrapped_print(self.reference_string, indent)
-        indent = " " * len(indent)
-        indented_line_wrapped_print("„", indent)
-        for p in self.children:
-            p.print_to_console(indent + " "*5)
-        indented_line_wrapped_print("”", indent)
+        return [child_parser.parse(text, identifier)]

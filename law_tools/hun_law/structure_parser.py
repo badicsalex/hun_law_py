@@ -18,27 +18,15 @@
 import re
 from abc import ABC, abstractmethod
 
+from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun
 from . import amendment_parser
-from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun, indented_line_wrapped_print
+from .structure import \
+    Act, Article, \
+    Subtitle, Chapter, Title, Part, Book,\
+    Paragraph, AlphabeticSubpoint, NumericPoint, AlphabeticPoint
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
-
-# Structuring levels (36. § (2)), and their Akoma Ntoso counterpart (at least IMO):
-# a) az alpont,                         | subpoint
-# b) a pont,                            | point
-# c) a bekezdés,                        | paragraph
-# d) a szakasz, [a.ka. paragrafus]      | article *
-# e) az alcím,                          | subtitle
-# f) a fejezet,                         | chapter
-# g) a rész és                          | part
-# h) a könyv.                           | book
-#
-# Additional levels for non-conformant laws, such as 2013. V (PTK):
-#    cím                                | title
-#
-# * even though we call this level "sections" in hungarian (was "paragrafus")
-# similar levels are called "section" in UK and US, but "Article" in EU Acts.
 
 # Numbering is non-intuitive:
 # Book 1
@@ -73,13 +61,14 @@ from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_te
 # For this reason, (and because they are so useless) we only handle structure levels,
 # as mere 'titles', and don't use them in the code as actual structural things.
 
+
 class StructureParsingError(ValueError):
-    def __init__(self, message, element = None):
-        if element is not None:
+    def __init__(self, message, parser_class=None, identifier=None):
+        if parser_class is not None:
             super().__init__(
-                "Error parsing {} {}: '{}'".format(
-                    element.__class__.__name__,
-                    element.identifier,
+                "Error in {} {}: '{}'".format(
+                    parser_class.__name__,
+                    identifier,
                     message
                 )
             )
@@ -87,7 +76,9 @@ class StructureParsingError(ValueError):
             super().__init__(message)
 
 
-class StructuralElement(ABC):
+class StructuralElementParser(ABC):
+    PARSED_TYPE = None
+
     def __init__(self, sibling_before=None, lines=None):
         # TODO: Assert first line is correct with is_line_...
         if sibling_before is None:
@@ -105,18 +96,17 @@ class StructuralElement(ABC):
     def is_line_header_of_next(self, line):
         pass
 
-    def print_to_console(self):
-        name = "{} {}".format(self.__class__.__name__, self.number)
-        indented_line_wrapped_print(name)
-        if self.title:
-            indented_line_wrapped_print(self.title)
+    def get_parsed_element(self):
+        return self.PARSED_TYPE(self.number, self.title)
 
 
-class Book (StructuralElement):
+class BookParser(StructuralElementParser):
     # 38. §, Könyv
     # Guaranteed to be uppercase
     # Example:
     # NYOLCADIK KÖNYV
+    PARSED_TYPE = Book
+
     def __init__(self, sibling_before=None, lines=None):
         super().__init__(sibling_before, lines)
         self.header_of_next = int_to_text_hun(self.number + 1).upper() + ' KÖNYV'
@@ -129,12 +119,13 @@ class Book (StructuralElement):
         return line.content == self.header_of_next
 
 
-class Part (StructuralElement):
+class PartParser(StructuralElementParser):
     # 39. § Rész
     # Guaranteed to be uppercase
     # Example:
     # MÁSODIK RÉSZ
     # KÜLÖNÖS RÉSZ
+    PARSED_TYPE = Part
 
     # 39. § (5)
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ', None)
@@ -158,11 +149,13 @@ class Part (StructuralElement):
         return line.content == self.header_of_next
 
 
-class Title (StructuralElement):
+class TitleParser(StructuralElementParser):
     # "CÍM"
     # Nonconformant structural type, present only in PTK
     # Example:
     # XXI. CÍM
+    PARSED_TYPE = Title
+
     def __init__(self, sibling_before=None, lines=None):
         super().__init__(sibling_before, lines)
         self.header_of_next = int_to_text_roman(self.number + 1) + '. CÍM'
@@ -175,12 +168,14 @@ class Title (StructuralElement):
         return line.content == self.header_of_next
 
 
-class Chapter(StructuralElement):
+class ChapterParser(StructuralElementParser):
     # 40. §,  fejezet
     # Example:
     # II. FEJEZET
     # IV. Fejezet
     # XXIII. fejezet  <=  not conformant, but present in e.g. PTK
+    PARSED_TYPE = Chapter
+
     def __init__(self, sibling_before=None, lines=None):
         super().__init__(sibling_before, lines)
         self.header_of_next = int_to_text_roman(self.number + 1) + '. FEJEZET'
@@ -193,11 +188,12 @@ class Chapter(StructuralElement):
         return line.content.upper() == self.header_of_next
 
 
-class Subtitle(StructuralElement):
+class SubtitleParser(StructuralElementParser):
     # 41. §, Alcím
     # Guaranteed to be uppercase
     # Example:
     # 17. Az alcím
+    PARSED_TYPE = Subtitle
 
     def __init__(self, sibling_before=None, lines=None):
         super().__init__(sibling_before, lines)
@@ -224,10 +220,14 @@ class Subtitle(StructuralElement):
         return self.is_line_correct(self.prefix_of_next, line)
 
 
-STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
+STRUCTURE_ELEMENT_PARSERS = (SubtitleParser, ChapterParser, TitleParser, PartParser, BookParser)
 
 
 class SubArticleElementNotFoundError(Exception):
+    pass
+
+
+class NoSubpointsError(Exception):
     pass
 
 
@@ -235,36 +235,35 @@ class SubArticleParsingError(StructureParsingError):
     pass
 
 
-class SubArticleElement(ABC):
+class SubArticleElementParser(ABC):
+    PARSED_TYPE = None
+
     PARENT_MUST_HAVE_INTRO = False
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = False
     PARENT_CAN_HAVE_WRAPUP = False
 
-    def __init__(self, text, identifier):
-        self.identifier = identifier
-        self.text = None
-        self.intro = None
-        self.children = None
-        self.wrap_up = None
-
-        prefix = self.header_prefix(identifier)
-        if not text[0].content.startswith(prefix):
-            raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(text[0].content, prefix), self)
-
-        truncated_first_line = text[0].content[len(prefix):]
-        # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
-        indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
-        text = [indented_first_line] + text[1:]
-        try:
-            if not self.try_parse_subpoints(text):
-                self.text = " ".join([l.content for l in text])
-        except Exception as e:
-            raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), self) from e
-
     @classmethod
-    @abstractmethod
-    def header_prefix(cls, identifier):
-        pass
+    def parse(cls, lines, identifier):
+        text = None
+        intro = None
+        children = None
+        wrap_up = None
+
+        prefix = cls.PARSED_TYPE.header_prefix(identifier)
+        if not lines[0].content.startswith(prefix):
+            raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(lines[0].content, prefix), cls)
+
+        truncated_first_line = lines[0].content[len(prefix):]
+        # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
+        indented_first_line = IndentedLine(truncated_first_line, lines[0].indent)
+        lines = [indented_first_line] + lines[1:]
+        try:
+            intro, children, wrap_up = cls.try_parse_subpoints(lines, identifier)
+        except NoSubpointsError:
+            text = " ".join([l.content for l in lines])
+        except Exception as e:
+            raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), cls) from e
+        return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
 
     @classmethod
     @abstractmethod
@@ -276,17 +275,18 @@ class SubArticleElement(ABC):
     def next_identifier(cls, identifier):
         pass
 
+    @classmethod
     @abstractmethod
-    def try_parse_subpoints(self, text):
+    def try_parse_subpoints(cls, lines, parent_identifier):
         pass
 
     @classmethod
     def is_header(cls, line, identifier):
-        prefix = cls.header_prefix(identifier)
+        prefix = cls.PARSED_TYPE.header_prefix(identifier)
         return line.content.startswith(prefix)
 
     @classmethod
-    def extract_multiple_from_text(cls, text):
+    def extract_multiple_from_text(cls, lines):
         elements = []
         intro = None
         wrap_up = None
@@ -294,13 +294,13 @@ class SubArticleElement(ABC):
         next_element_identifier = cls.first_identifier()
         current_lines = []
         quote_level = 0
-        for line in text:
+        for line in lines:
             if quote_level == 0 and cls.is_header(line, next_element_identifier):
                 if current_element_identifier is None:
                     if current_lines:
                         intro = " ".join([l.content for l in current_lines])
                 else:
-                    element = cls(current_lines, current_element_identifier)
+                    element = cls.parse(current_lines, current_element_identifier)
                     elements.append(element)
 
                 current_element_identifier = next_element_identifier
@@ -314,7 +314,7 @@ class SubArticleElement(ABC):
 
         # There is one element in current_lines, and if no other elements have been found,
         # there is a total of one. That's not valid for a list of points or subpoints
-        if len(elements) == 0 and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
+        if not elements and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
             raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
 
         if intro is None and cls.PARENT_MUST_HAVE_INTRO:
@@ -329,30 +329,14 @@ class SubArticleElement(ABC):
                 while len(current_lines) > 1 and current_lines[-1].indent == header_indent:
                     wrap_up = current_lines.pop().content + " " + wrap_up
 
-        element = cls(current_lines, current_element_identifier)
+        element = cls.parse(current_lines, current_element_identifier)
         elements.append(element)
         return intro, elements, wrap_up
 
-    def print_to_console(self, indent):
-        if self.identifier:
-            indent = indent + "{:<5}".format(self.header_prefix(self.identifier))
-        else:
-            indent = indent + " " * 5
-        if self.text:
-            indented_line_wrapped_print(self.text, indent)
-        else:
-            if self.intro:
-                indented_line_wrapped_print(self.intro, indent)
-                indent = " " * len(indent)
-            for p in self.children:
-                p.print_to_console(indent)
-                indent = " " * len(indent)
-            if self.wrap_up:
-                indented_line_wrapped_print(self.wrap_up, indent)
-                indent = " " * len(indent)
 
+class AlphabeticSubpointParser(SubArticleElementParser):
+    PARSED_TYPE = AlphabeticSubpoint
 
-class AlphabeticSubpoint(SubArticleElement):
     PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
     PARENT_CAN_HAVE_WRAPUP = True
@@ -369,24 +353,22 @@ class AlphabeticSubpoint(SubArticleElement):
             if cls.PREFIX != identifier[0]:
                 raise ValueError("Invalid identifier for prefixed subpoint")
             return cls.PREFIX + chr(ord(identifier[1]) + 1)
-        else:
-            return chr(ord(identifier) + 1)
-
-    @classmethod
-    def header_prefix(cls, identifier):
-        return "{}) ".format(identifier)
+        return chr(ord(identifier) + 1)
 
     @classmethod
     def is_header(cls, line, identifier):
-        prefix = cls.header_prefix(identifier)
+        prefix = cls.PARSED_TYPE.header_prefix(identifier)
         return line.content.startswith(prefix)
 
-    def try_parse_subpoints(self, text):
+    @classmethod
+    def try_parse_subpoints(cls, lines, parent_identifier):
         # Subpoints may not have sub-subpoints: 48. § (6)
-        return False
+        raise NoSubpointsError()
 
 
-class NumericPoint(SubArticleElement):
+class NumericPointParser(SubArticleElementParser):
+    PARSED_TYPE = NumericPoint
+
     PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
     # No PARENT_CAN_HAVE_WRAPUP, because it looks like numbered lists are usuaally
@@ -405,21 +387,19 @@ class NumericPoint(SubArticleElement):
         return str(int(identifier) + 1)
 
     @classmethod
-    def header_prefix(cls, identifier):
-        return "{}. ".format(identifier)
-
-    def try_parse_subpoints(self, text):
+    def try_parse_subpoints(cls, lines, parent_identifier):
         # Numbered points may only have alphabetic subpoints.
         try:
-            self.intro, self.children, self.wrap_up = AlphabeticSubpoint.extract_multiple_from_text(text)
-            return True
+            return AlphabeticSubpointParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
             pass
 
-        return False
+        raise NoSubpointsError()
 
 
-class AlphabeticPoint(SubArticleElement):
+class AlphabeticPointParser(SubArticleElementParser):
+    PARSED_TYPE = AlphabeticPoint
+
     PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
     PARENT_CAN_HAVE_WRAPUP = True
@@ -433,29 +413,25 @@ class AlphabeticPoint(SubArticleElement):
         return chr(ord(identifier) + 1)
 
     @classmethod
-    def header_prefix(cls, identifier):
-        return "{}) ".format(identifier)
-
-    def try_parse_subpoints(self, text):
+    def try_parse_subpoints(cls, lines, parent_identifier):
         # Soo, this is a great example of functional-oop hybrid things, which i
         # both pretty compact, elegant, and disgusting at the same time.
         # Thank 48. § (3) for this.
-        my_letter = self.identifier
-
-        class PrefixedAlphabeticSubpoint(AlphabeticSubpoint):
-            PREFIX = my_letter
+        class PrefixedAlphabeticSubpointParser(AlphabeticSubpointParser):
+            PREFIX = parent_identifier
 
         # Numbered points may only have alphabetic subpoints.
         try:
-            self.intro, self.children, self.wrap_up = PrefixedAlphabeticSubpoint.extract_multiple_from_text(text)
-            return True
+            return PrefixedAlphabeticSubpointParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
             pass
 
-        return False
+        raise NoSubpointsError()
 
 
-class Paragraph(SubArticleElement):
+class ParagraphParser(SubArticleElementParser):
+    PARSED_TYPE = Paragraph
+
     @classmethod
     def first_identifier(cls):
         return '1'
@@ -466,71 +442,59 @@ class Paragraph(SubArticleElement):
         return str(int(identifier) + 1)
 
     @classmethod
-    def header_prefix(cls, identifier):
-        if identifier is None:
-            # Happens in special cases when no header was found, e.g.
-            # Came from an article with a single paragraph.
-            return ''
-        return "({}) ".format(identifier)
-
-    def try_parse_subpoints(self, text):
+    def try_parse_subpoints(cls, lines, parent_identifier):
         # We look for amendments in paragraphs only, because of "115. § (2)",
         # "Articles and below may only be amended in Paragraphs", and because
         # we always parse Articles into a single Paragraph, even without a
         # paragraph header.
         try:
-            self.children = [amendment_parser.StructuredAmendment(text)]
-            return True
-        except amendment_parser.NotAmendmentError as e:
+            return None, [amendment_parser.StructuredAmendmentParser.parse(lines)], None
+        except amendment_parser.NotAmendmentError:
             pass
 
         try:
-            self.intro, self.children, self.wrap_up = NumericPoint.extract_multiple_from_text(text)
-            return True
+            return NumericPointParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
             pass
 
         try:
-            self.intro, self.children, self.wrap_up = AlphabeticPoint.extract_multiple_from_text(text)
-            return True
+            return AlphabeticPointParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
             pass
 
-        return False
+        raise NoSubpointsError()
 
 
 class ArticleParsingError(StructureParsingError):
     pass
 
 
-class Article:
+class ArticleParser:
     HEADER_RE = re.compile("^([0-9]+:)?([0-9]+(/[A-Z])?)\\. ?§ *(.*)$")
 
-    def __init__(self, text, extenally_determined_identifier=None):
-        # text parameter includes the line with the '§'
-        header_matches = self.HEADER_RE.match(text[0].content)
+    @classmethod
+    def parse(cls, lines, extenally_determined_identifier=None):
+        # lines parameter includes the line with the '§'
+        header_matches = cls.HEADER_RE.match(lines[0].content)
         if header_matches.group(1):
             # group(1) already has the ":"
-            self.identifier = header_matches.group(1) + header_matches.group(2)
+            identifier = header_matches.group(1) + header_matches.group(2)
         else:
-            self.identifier = header_matches.group(2)
+            identifier = header_matches.group(2)
 
-        if extenally_determined_identifier and extenally_determined_identifier != self.identifier:
+        if extenally_determined_identifier and extenally_determined_identifier != identifier:
             raise ArticleParsingError(
-                "Externally determined identifier wrong: '{}'".format(self.extenally_determined_identifier),
-                self
+                "Externally determined identifier wrong: '{}'".format(extenally_determined_identifier),
+                cls
             )
-
-        self.title = ""
-        self.paragraphs = []
 
         truncated_first_line = header_matches.group(4)
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
-        indented_first_line = IndentedLine(truncated_first_line, text[0].indent)
+        indented_first_line = IndentedLine(truncated_first_line, lines[0].indent)
         try:
-            self.parse_body([indented_first_line] + text[1:])
+            return cls.parse_body(identifier, [indented_first_line] + lines[1:])
         except Exception as e:
-            raise ArticleParsingError(str(e), self) from e
+            raise ArticleParsingError(str(e), cls, identifier) from e
 
     @classmethod
     def is_header(cls, line):
@@ -538,116 +502,110 @@ class Article:
         # TODO: check indentation
         return cls.HEADER_RE.match(line.content)
 
-    def parse_body(self, text):
-        if text[0].content[0] == '[':
+    @classmethod
+    def parse_body(cls, identifier, lines):
+        title = ""
+        paragraphs = []
+
+        if lines[0].content[0] == '[':
             # Nonstandard. However, it is a de facto thing to give titles to Articles
             # In some Acts. Format is something like
             # 3:116. §  [A társaság képviselete. Cégjegyzés]
             # Let's hope for no multiline titles for now
-            if text[0].content[-1] == ']':
-                self.title = text[0].content[1:-1]
-                text = text[1:]
-            elif text[1].content[-1] == ']':
-                self.title = text[0].content[1:] + " " + text[1].content[:-1]
-                text = text[2:]
+            if lines[0].content[-1] == ']':
+                title = lines[0].content[1:-1]
+                lines = lines[1:]
+            elif lines[1].content[-1] == ']':
+                title = lines[0].content[1:] + " " + lines[1].content[:-1]
+                lines = lines[2:]
             else:
                 raise ValueError("Multiline article titles not supported")
 
-        if not Paragraph.is_header(text[0], Paragraph.first_identifier()):
-            self.paragraphs= [Paragraph(text, None)]
+        if not ParagraphParser.is_header(lines[0], ParagraphParser.first_identifier()):
+            paragraphs = [ParagraphParser.parse(lines, None)]
         else:
-            intro, self.paragraphs, wrap_up = Paragraph.extract_multiple_from_text(text)
+            intro, paragraphs, wrap_up = ParagraphParser.extract_multiple_from_text(lines)
             if intro is not None:
                 # Should LITERALLY never happen
                 raise ValueError("Junk detected in Article before first Paragraph")
             if wrap_up is not None:
                 raise ValueError("Junk detected in Article after last Paragraph")
-
-
-    def print_to_console(self, indent=''):
-        indent = indent + "{:<10}".format(self.identifier + ". §")
-        if self.title:
-            indented_line_wrapped_print("     [{}]".format(self.title), indent)
-            indent = " " * len(indent)
-
-        for l in self.paragraphs:
-            l.print_to_console(indent)
-            indent = " " * len(indent)
+        return Article(identifier, title, paragraphs)
 
 
 class ActParsingError(StructureParsingError):
     pass
 
 
-class Act:
-    def __init__(self, identifier, subject, text):
-        self.identifier = identifier
-        self.subject = subject
-        self.preamble = None
-        self.elements = []
-        self.last_structural_element_per_class = {}
+class ActParser:
+    @classmethod
+    def parse(cls, identifier, subject, lines):
         try:
-            self.parse_text(text)
+            return cls.parse_text(identifier, subject, lines)
         except Exception as e:
-            raise ActParsingError("Error during parsing body: {}".format(e), self) from e
+            raise ActParsingError("Error during parsing body: {}".format(e), cls, identifier) from e
 
-    def parse_text(self, text):
+    @classmethod
+    def parse_text(cls, identifier, subject, lines):
         current_lines = []
         article_header_indent = None
-        for line in text:
-            if Article.is_header(line):
+        preamble = None
+        elements = []
+        last_structural_element_parser = {}
+        for line in lines:
+            if ArticleParser.is_header(line):
                 # TODO: Let's hope article numbers are always left-justified
                 if article_header_indent is None:
                     article_header_indent = line.indent
                 if abs(line.indent-article_header_indent) < 1:
-                    self.parse_text_block(current_lines)
+                    preamble, new_elements = cls.parse_text_block(current_lines, preamble, last_structural_element_parser)
+                    elements.extend(new_elements)
                     current_lines = []
             current_lines.append(line)
-        self.parse_text_block(current_lines)
+        preamble, new_elements = cls.parse_text_block(current_lines, preamble, last_structural_element_parser)
+        elements.extend(new_elements)
 
-    def parse_text_block(self, lines):
-        lines, elements_to_append = self.parse_structural_elements(lines)
+        return Act(identifier, subject, preamble, elements)
+
+    @classmethod
+    def parse_text_block(cls, lines, preamble, last_structural_element_parser):
+        lines, elements_to_append = cls.parse_structural_elements(lines, last_structural_element_parser)
         # EMPTY_LINEs are only needed for detecting structural elements.
         # From this point, they only mess up parsing, so let's get rid of them
         # TODO: Large Structured Amendments that replace whole Parts could need
         # empty lines again, so be careful.
         lines = [l for l in lines if l != EMPTY_LINE]
-        if self.preamble is None:
-            self.preamble = " ".join([l.content for l in lines])
+        if preamble is None:
+            preamble = " ".join([l.content for l in lines])
         else:
-            self.elements.append(Article(lines))
-        self.elements.extend(elements_to_append)
+            elements_to_append.insert(0, ArticleParser.parse(lines))
+        return preamble, elements_to_append
 
-    def parse_structural_elements(self, lines):
+    @classmethod
+    def parse_structural_elements(cls, lines, last_structural_element_parser):
         result = []
         while lines[-1] == EMPTY_LINE:
             lines.pop()
             if EMPTY_LINE not in lines:
                 break
             possible_title_index = len(lines) - lines[::-1].index(EMPTY_LINE)
-            element = self.parse_single_structural_element(lines[possible_title_index:])
-            if not element:
+            element_parser = cls.parse_single_structural_element(lines[possible_title_index:], last_structural_element_parser)
+            if not element_parser:
                 break
-            result.insert(0, element)
-            self.last_structural_element_per_class[element.__class__] = element
+            result.insert(0, element_parser.get_parsed_element())
+            last_structural_element_parser[element_parser.__class__] = element_parser
             lines = lines[:possible_title_index]
         return lines, result
 
-    def parse_single_structural_element(self, lines):
-        for se_type in STRUCTURE_ELEMENT_TYPES:
+    @classmethod
+    def parse_single_structural_element(cls, lines, last_structural_element_parser):
+        for se_type in STRUCTURE_ELEMENT_PARSERS:
             # TODO: we do not impose ANY rules about restarting numbering here
             # this is by design for now, as many laws are pretty much malformed.
             if se_type.is_line_header_of_first(lines[0]):
                 return se_type(None, lines)
-            if se_type in self.last_structural_element_per_class:
-                last_se = self.last_structural_element_per_class[se_type]
+            if se_type in last_structural_element_parser:
+                last_se = last_structural_element_parser[se_type]
                 if last_se.is_line_header_of_next(lines[0]):
                     return se_type(last_se, lines)
         return None
-
-    def print_to_console(self):
-        indented_line_wrapped_print(self.preamble)
-        print()
-        for a in self.elements:
-            a.print_to_console()
-            print()

@@ -45,7 +45,6 @@ class RigidReference:
             raise NotAReferenceError("Unparseable string '{}'.".format(reference_string))
         act_title, _, act_id, rest_of_string = matches.groups()
         # TODO: check -ról -ről in title, if groups(2) == "szolo"
-        reference = RigidReference(act_id, act_title)
 
         from_now_on_matches = cls.FROM_NOW_ON_RE.match(rest_of_string)
         if from_now_on_matches:

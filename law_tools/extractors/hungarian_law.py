@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
 
-from law_tools.hun_law.structure_parser import Act
+from law_tools.hun_law.structure_parser import ActParser
 
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
@@ -27,4 +27,4 @@ from .fixups import hungarian_law
 def MagyarKozlonyLawFixupper(raw):
     # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
     fixupped_body = do_all_fixups(raw.identifier, raw.body)
-    yield Act(raw.identifier, raw.subject, fixupped_body)
+    yield ActParser.parse(raw.identifier, raw.subject, fixupped_body)
