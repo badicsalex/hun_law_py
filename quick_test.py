@@ -23,7 +23,7 @@ from law_tools.extractors import Extractor
 from law_tools.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from law_tools.extractors.all import do_extraction
 from law_tools.extractors.hungarian_law import MagyarKozlonyLawRawText
-from law_tools.hun_law.structure import Act
+from law_tools.hun_law.structure_parser import Act
 from law_tools.cache import init_cache
 #@Extractor(MagyarKozlonyLawRawText)
 def RawLawPrinter(e):

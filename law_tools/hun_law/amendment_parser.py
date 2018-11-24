@@ -17,7 +17,7 @@
 import re
 from collections import deque
 
-from . import structure, reference
+from . import structure_parser, reference_parser
 from law_tools.utils import IndentedLine, indented_line_wrapped_print
 
 # Main act on which all the code was based:
@@ -66,21 +66,21 @@ class StructuredAmendment:
 
         # To avoid verbosity
         reftype = self.structure_reference.referenced_structure
-        reftypes = reference.StructureReference.RefType
+        reftypes = reference_parser.StructureReference.RefType
 
         if reftype in (reftypes.NUMERIC_POINT, reftypes.ALPHABETIC_POINT, reftypes.SUBPOINT):
             self.parse_intro_wrap_up(text)
 
         if reftype == reftypes.ARTICLE:
-            self.create_children(text, structure.Article, self.structure_reference.article)
+            self.create_children(text, structure_parser.Article, self.structure_reference.article)
         elif reftype == reftypes.PARAGRAPH:
-            self.create_children(text, structure.Paragraph, self.structure_reference.paragraph)
+            self.create_children(text, structure_parser.Paragraph, self.structure_reference.paragraph)
         elif reftype == reftypes.NUMERIC_POINT:
-            self.create_children(text, structure.NumericPoint, self.structure_reference.point)
+            self.create_children(text, structure_parser.NumericPoint, self.structure_reference.point)
         elif reftype == reftypes.ALPHABETIC_POINT:
-            self.create_children(text, structure.AlphabeticPoint, self.structure_reference.point)
+            self.create_children(text, structure_parser.AlphabeticPoint, self.structure_reference.point)
         elif reftype == reftypes.SUBPOINT:
-            self.create_children(text, structure.AlphabeticSubpoint, self.structure_reference.subpoint)
+            self.create_children(text, structure_parser.AlphabeticSubpoint, self.structure_reference.subpoint)
         else:
             raise NotAmendmentError("Reftype {} not supported for amendments".format(reftype))
 
@@ -113,14 +113,14 @@ class StructuredAmendment:
             structure_reference_string = matches.group(2)
         else:
             try:
-                self.act_reference, self.from_now_on, structure_reference_string = reference.RigidReference.extract_from_string(self.reference_string)
-            except reference.NotAReferenceError as e:
+                self.act_reference, self.from_now_on, structure_reference_string = reference_parser.RigidReference.extract_from_string(self.reference_string)
+            except reference_parser.NotAReferenceError as e:
                 raise NotAmendmentError("Rigid reference could not be parsed") from e
 
         structure_reference_string = structure_reference_string.strip()
         try:
-            self.structure_reference, rest_of_string = reference.StructureReference.extract_from_string(structure_reference_string)
-        except reference.NotAReferenceError as e:
+            self.structure_reference, rest_of_string = reference_parser.StructureReference.extract_from_string(structure_reference_string)
+        except reference_parser.NotAReferenceError as e:
             raise NotAmendmentError("Structure reference could not be parsed") from e
 
         # Cut down any possible suffixes from the reference

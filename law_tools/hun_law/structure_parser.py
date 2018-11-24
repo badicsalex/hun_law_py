@@ -18,7 +18,7 @@
 import re
 from abc import ABC, abstractmethod
 
-from . import amendment
+from . import amendment_parser
 from law_tools.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun, indented_line_wrapped_print
 
 # Main act on which all the code was based:
@@ -479,9 +479,9 @@ class Paragraph(SubArticleElement):
         # we always parse Articles into a single Paragraph, even without a
         # paragraph header.
         try:
-            self.children = [amendment.StructuredAmendment(text)]
+            self.children = [amendment_parser.StructuredAmendment(text)]
             return True
-        except amendment.NotAmendmentError as e:
+        except amendment_parser.NotAmendmentError as e:
             pass
 
         try:

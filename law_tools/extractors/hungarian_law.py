@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Law-tools.  If not, see <https://www.gnu.org/licenses/>.
 
-from law_tools.hun_law.structure import Act
+from law_tools.hun_law.structure_parser import Act
 
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
