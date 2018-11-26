@@ -52,7 +52,7 @@ def init_text_to_int_dict():
         10: 'tizedik',
         20: 'huszadik',
         30: 'harmincadik',
-        40: 'negzvenedik',
+        40: 'negyvenedik',
         50: 'ötvenedik',
         60: 'hatvanadik',
         70: 'hetvenedik',
