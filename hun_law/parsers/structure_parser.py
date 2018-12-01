@@ -250,7 +250,7 @@ class SubArticleElementParser(ABC):
 
         prefix = cls.PARSED_TYPE.header_prefix(identifier)
         if not lines[0].content.startswith(prefix):
-            raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(lines[0].content, prefix), cls)
+            raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(lines[0].content, prefix), cls.PARSED_TYPE)
 
         truncated_first_line = lines[0].content[len(prefix):]
         # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
@@ -261,7 +261,7 @@ class SubArticleElementParser(ABC):
         except NoSubpointsError:
             text = " ".join([l.content for l in lines])
         except Exception as e:
-            raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), cls) from e
+            raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), cls.PARSED_TYPE) from e
         return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
 
     @classmethod
@@ -475,7 +475,7 @@ class ArticleParser:
         if extenally_determined_identifier and extenally_determined_identifier != identifier:
             raise ArticleParsingError(
                 "Externally determined identifier wrong: '{}'".format(extenally_determined_identifier),
-                cls
+                Article
             )
 
         truncated_first_line = header_matches.group(4)
@@ -484,7 +484,7 @@ class ArticleParser:
         try:
             return cls.parse_body(identifier, [indented_first_line] + lines[1:])
         except Exception as e:
-            raise ArticleParsingError(str(e), cls, identifier) from e
+            raise ArticleParsingError(str(e), Article, identifier) from e
 
     @classmethod
     def is_header(cls, line):
@@ -533,7 +533,7 @@ class ActParser:
         try:
             return cls.parse_text(identifier, subject, lines)
         except Exception as e:
-            raise ActParsingError("Error during parsing body: {}".format(e), cls, identifier) from e
+            raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
 
     @classmethod
     def parse_text(cls, identifier, subject, lines):
