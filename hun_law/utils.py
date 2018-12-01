@@ -148,7 +148,22 @@ def indented_line_wrapped_print(s, indent_string="", width=120):
         print(indent_string + l)
         indent_string = " "*len(indent_string)
 
+
 def chr_latin2(num):
-    if num>255 or num<0:
+    if num > 255 or num < 0:
         raise ValueError("Code point {} not present in latin-2".format(num))
     return bytes([num]).decode('latin2')
+
+
+def quote_level_diff(s):
+    return s.count("„") + s.count("“") - s.count("”")
+
+
+def iterate_with_quote_level(lines):
+    quote_level = 0
+    for line in lines:
+        yield quote_level, line
+        quote_level = quote_level + quote_level_diff(line.content)
+
+    if quote_level != 0:
+        raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))

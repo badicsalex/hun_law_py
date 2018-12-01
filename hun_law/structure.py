@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 
-from hun_law.utils import indented_line_wrapped_print
+from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -221,6 +221,20 @@ class Paragraph(SubArticleElement):
             # Came from an article with a single paragraph.
             return ''
         return "({}) ".format(identifier)
+
+
+class QuotedBlock:
+    def __init__(self, lines):
+        self.__lines = tuple(lines)
+
+    def print_to_console(self, indent=''):
+        print(indent + '„')
+        indent = " " * len(indent)
+        base_indent_of_quote = min(l.indent for l in self.__lines if l != EMPTY_LINE)
+        for l in self.__lines:
+            indent_of_quote = ' ' * int((l.indent - base_indent_of_quote)*0.2)
+            print(indent + ' ' * 5 + indent_of_quote + l.content)
+        print(indent + '”')
 
 
 class Article:

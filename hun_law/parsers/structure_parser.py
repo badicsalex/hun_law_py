@@ -17,10 +17,13 @@
 
 import re
 from abc import ABC, abstractmethod
+from enum import Enum
 
-from hun_law.utils import IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, is_uppercase_hun
+from hun_law.utils import \
+    IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, \
+    is_uppercase_hun, iterate_with_quote_level, quote_level_diff
 from hun_law.structure import \
-    Act, Article, \
+    Act, Article, QuotedBlock, \
     Subtitle, Chapter, Title, Part, Book,\
     Paragraph, AlphabeticSubpoint, NumericPoint, AlphabeticPoint
 
@@ -259,7 +262,7 @@ class SubArticleElementParser(ABC):
         try:
             intro, children, wrap_up = cls.try_parse_subpoints(lines, identifier)
         except NoSubpointsError:
-            text = " ".join([l.content for l in lines])
+            text = " ".join([l.content for l in lines if l != EMPTY_LINE])
         except Exception as e:
             raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), cls.PARSED_TYPE) from e
         return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
@@ -292,8 +295,7 @@ class SubArticleElementParser(ABC):
         current_element_identifier = None
         next_element_identifier = cls.first_identifier()
         current_lines = []
-        quote_level = 0
-        for line in lines:
+        for quote_level, line in iterate_with_quote_level(lines):
             if quote_level == 0 and cls.is_header(line, next_element_identifier):
                 if current_element_identifier is None:
                     if current_lines:
@@ -305,11 +307,7 @@ class SubArticleElementParser(ABC):
                 current_element_identifier = next_element_identifier
                 next_element_identifier = cls.next_identifier(next_element_identifier)
                 current_lines = []
-            quote_level = quote_level + line.content.count("„") + line.content.count("“") - line.content.count("”")
             current_lines.append(line)
-
-        if quote_level != 0:
-            raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
 
         # There is one element in current_lines, and if no other elements have been found,
         # there is a total of one. That's not valid for a list of points or subpoints
@@ -442,6 +440,20 @@ class ParagraphParser(SubArticleElementParser):
 
     @classmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
+        # We look for block quotes in paragraphs only, because both amendments
+        # and international agreements only appear in Paragraph and Article
+        # level, and we always parse Articles into a single Paragraph.
+        try:
+            return QuotedBlockParser.try_parse(lines)
+        except SubArticleElementNotFoundError:
+            pass
+
+        # EMPTY_LINEs are only needed for detecting structural elements.
+        # From this point, they only mess up parsing, so let's get rid of them
+        # TODO: Large Structured Amendments that replace whole Parts could need
+        # empty lines again, so be careful.
+        lines = [l for l in lines if l != EMPTY_LINE]
+
         try:
             return NumericPointParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
@@ -453,6 +465,58 @@ class ParagraphParser(SubArticleElementParser):
             pass
 
         raise NoSubpointsError()
+
+
+class QuotedBlockParser:
+    ParseStates = Enum('ParseStates', ('START', 'INTRO', 'QUOTED_BLOCK', 'WRAP_UP'))
+
+    @classmethod
+    def try_parse(cls, lines):
+        state = cls.ParseStates.START
+        for quote_level, line in iterate_with_quote_level(lines):
+            # No if "EMPTY_LINE:continue" here, because QUOTED_BLOCK
+            # state needs them to operate correctly.
+            if state == cls.ParseStates.START:
+                if line != EMPTY_LINE:
+                    intro = line.content
+                    state = cls.ParseStates.INTRO
+
+            elif state == cls.ParseStates.INTRO:
+                if line != EMPTY_LINE:
+                    if line.content[0] == "„" and quote_level == 0:
+                        if line.content[-1] == "”":
+                            quoted_lines = [IndentedLine(line.content[1:-1], line.indent)]
+                            wrap_up = None
+                            state = cls.ParseStates.WRAP_UP
+                        else:
+                            quoted_lines = [IndentedLine(line.content[1:], line.indent)]
+                            state = cls.ParseStates.QUOTED_BLOCK
+                    else:
+                        intro = intro + " " + line.content
+
+            elif state == cls.ParseStates.QUOTED_BLOCK:
+                if line != EMPTY_LINE and line.content[-1] == "”" and quote_level == 1:
+                    quoted_lines.append(IndentedLine(line.content[:-1], line.indent))
+                    wrap_up = None
+                    state = cls.ParseStates.WRAP_UP
+                # Note that this else also applies to EMPTY_LINEs
+                else:
+                    quoted_lines.append(line)
+
+            elif state == cls.ParseStates.WRAP_UP:
+                if line != EMPTY_LINE:
+                    if wrap_up is None:
+                        wrap_up = line.content
+                    else:
+                        wrap_up = wrap_up + ' ' + line.content
+
+            else:
+                raise RuntimeError('Unknown state')
+
+        if state != cls.ParseStates.WRAP_UP:
+            raise SubArticleElementNotFoundError()
+
+        return intro, [QuotedBlock(quoted_lines)], wrap_up
 
 
 class ArticleParsingError(StructureParsingError):
@@ -542,8 +606,8 @@ class ActParser:
         preamble = None
         elements = []
         last_structural_element_parser = {}
-        for line in lines:
-            if ArticleParser.is_header(line):
+        for quote_level, line in iterate_with_quote_level(lines):
+            if quote_level == 0 and ArticleParser.is_header(line):
                 # TODO: Let's hope article numbers are always left-justified
                 if article_header_indent is None:
                     article_header_indent = line.indent
@@ -560,11 +624,6 @@ class ActParser:
     @classmethod
     def parse_text_block(cls, lines, preamble, last_structural_element_parser):
         lines, elements_to_append = cls.parse_structural_elements(lines, last_structural_element_parser)
-        # EMPTY_LINEs are only needed for detecting structural elements.
-        # From this point, they only mess up parsing, so let's get rid of them
-        # TODO: Large Structured Amendments that replace whole Parts could need
-        # empty lines again, so be careful.
-        lines = [l for l in lines if l != EMPTY_LINE]
         if preamble is None:
             preamble = " ".join([l.content for l in lines])
         else:
@@ -579,6 +638,15 @@ class ActParser:
             if EMPTY_LINE not in lines:
                 break
             possible_title_index = len(lines) - lines[::-1].index(EMPTY_LINE)
+            possible_text = " ".join([l.content for l in lines[possible_title_index:]])
+            if quote_level_diff(possible_text):
+                # There is some unclosed quoting, most probably we would parse into
+                # a quoted text. Don't to anything.
+                # E.g.
+                # ...
+                # 5. Some title in aquoted text
+                # 6. Some other thing"
+                break
             element_parser = cls.parse_single_structural_element(lines[possible_title_index:], last_structural_element_parser)
             if not element_parser:
                 break
