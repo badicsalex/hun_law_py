@@ -24,8 +24,6 @@ from hun_law.structure import \
     Subtitle, Chapter, Title, Part, Book,\
     Paragraph, AlphabeticSubpoint, NumericPoint, AlphabeticPoint
 
-from . import amendment_parser
-
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
 
@@ -444,15 +442,6 @@ class ParagraphParser(SubArticleElementParser):
 
     @classmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
-        # We look for amendments in paragraphs only, because of "115. § (2)",
-        # "Articles and below may only be amended in Paragraphs", and because
-        # we always parse Articles into a single Paragraph, even without a
-        # paragraph header.
-        try:
-            return None, [amendment_parser.StructuredAmendmentParser.parse(lines)], None
-        except amendment_parser.NotAmendmentError:
-            pass
-
         try:
             return NumericPointParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:

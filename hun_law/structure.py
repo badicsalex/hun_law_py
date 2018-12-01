@@ -223,35 +223,6 @@ class Paragraph(SubArticleElement):
         return "({}) ".format(identifier)
 
 
-class StructuredAmendment:
-    def __init__(self, reference_string, act_reference, from_now_on, structure_reference, context_intro, context_wrap_up, children):
-        # TODO: make sure parameters are correct type (str or None)
-        # TODO: make sure either text or intro+children+wrap_up are present
-        self.__reference_string = reference_string
-        self.__act_reference = act_reference
-        self.__from_now_on = from_now_on
-        self.__structure_reference = structure_reference
-        self.__context_intro = context_intro
-        self.__context_wrap_up = context_wrap_up
-        self.__children = tuple(children)
-
-    @property
-    def reference_string(self):
-        return self.__reference_string
-
-    @property
-    def children(self):
-        return self.__children
-
-    def print_to_console(self, indent):
-        indented_line_wrapped_print(self.reference_string, indent)
-        indent = " " * len(indent)
-        indented_line_wrapped_print("„", indent)
-        for p in self.children:
-            p.print_to_console(indent + " "*5)
-        indented_line_wrapped_print("”", indent)
-
-
 class Article:
     def __init__(self, identifier, title, children):
         self.__identifier = str(identifier)
