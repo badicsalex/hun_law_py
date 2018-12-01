@@ -19,24 +19,14 @@
 import sys
 import os
 
-from hun_law.extractors import Extractor
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction
-from hun_law.extractors import magyar_kozlony
-from hun_law.structure import Act
+from hun_law.output.console import print_to_console
 from hun_law.cache import init_cache
-
-@Extractor(Act)
-def ActPrinter(e):
-    print("==== Structured text of {} - {} =====\n".format(e.identifier, e.subject))
-    e.print_to_console()
-    # Empty generator hack
-    return
-    yield
 
 init_cache(os.path.join(os.path.dirname(__file__), 'cache'))
 
 extracted = do_extraction([KozlonyToDownload(sys.argv[1], sys.argv[2])])
 
 for e in extracted:
-    print("Final extracted object: {}\n".format(type(e)))
+    print_to_console(e)

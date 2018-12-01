@@ -17,6 +17,7 @@
 
 from . import extractors_for_class
 
+from . import file, kozlonyok_hu_downloader, magyar_kozlony, pdf
 
 def do_extraction(to_be_processed_objects):
     """Processes all objects, and returns the end result processed objects."""

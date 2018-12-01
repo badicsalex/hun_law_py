@@ -16,8 +16,6 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 
-from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
-
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
 
@@ -85,12 +83,6 @@ class StructuralElement:
     @property
     def title(self):
         return self.__title
-
-    def print_to_console(self):
-        name = "{} {}".format(self.__class__.__name__, self.identifier)
-        indented_line_wrapped_print(name)
-        if self.title:
-            indented_line_wrapped_print(self.title)
 
 
 class Book(StructuralElement):
@@ -175,25 +167,6 @@ class SubArticleElement(ABC):
     def header_prefix(cls, identifier):
         return "{}. ".format(identifier)
 
-    # TODO: identifier intro, wrapup, children
-    def print_to_console(self, indent):
-        if self.identifier:
-            indent = indent + "{:<5}".format(self.header_prefix(self.identifier))
-        else:
-            indent = indent + " " * 5
-        if self.text:
-            indented_line_wrapped_print(self.text, indent)
-        else:
-            if self.intro:
-                indented_line_wrapped_print(self.intro, indent)
-                indent = " " * len(indent)
-            for p in self.children:
-                p.print_to_console(indent)
-                indent = " " * len(indent)
-            if self.wrap_up:
-                indented_line_wrapped_print(self.wrap_up, indent)
-                indent = " " * len(indent)
-
 
 class AlphabeticSubpoint(SubArticleElement):
     @classmethod
@@ -227,14 +200,9 @@ class QuotedBlock:
     def __init__(self, lines):
         self.__lines = tuple(lines)
 
-    def print_to_console(self, indent=''):
-        print(indent + '„')
-        indent = " " * len(indent)
-        base_indent_of_quote = min(l.indent for l in self.__lines if l != EMPTY_LINE)
-        for l in self.__lines:
-            indent_of_quote = ' ' * int((l.indent - base_indent_of_quote)*0.2)
-            print(indent + ' ' * 5 + indent_of_quote + l.content)
-        print(indent + '”')
+    @property
+    def lines(self):
+        return self.__lines
 
 
 class Article:
@@ -257,16 +225,6 @@ class Article:
     @property
     def children(self):
         return self.__children
-
-    def print_to_console(self, indent=''):
-        indent = indent + "{:<10}".format(self.identifier + ". §")
-        if self.title:
-            indented_line_wrapped_print("     [{}]".format(self.title), indent)
-            indent = " " * len(indent)
-
-        for l in self.children:
-            l.print_to_console(indent)
-            indent = " " * len(indent)
 
 
 class Act:
@@ -291,10 +249,3 @@ class Act:
     @property
     def children(self):
         return self.__children
-
-    def print_to_console(self):
-        indented_line_wrapped_print(self.preamble)
-        print()
-        for a in self.children:
-            a.print_to_console()
-            print()
