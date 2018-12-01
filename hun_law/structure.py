@@ -16,6 +16,8 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 
+from hun_law.utils import int_to_text_hun, int_to_text_roman
+
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
 
@@ -71,7 +73,7 @@ from abc import ABC, abstractmethod
 # All classes are immutable by design
 
 
-class StructuralElement:
+class StructuralElement(ABC):
     def __init__(self, identifier, title):
         self.__identifier = identifier
         self.__title = str(title)
@@ -79,6 +81,11 @@ class StructuralElement:
     @property
     def identifier(self):
         return self.__identifier
+
+    @property
+    @abstractmethod
+    def formatted_identifier(self):
+        pass
 
     @property
     def title(self):
@@ -89,7 +96,9 @@ class Book(StructuralElement):
     # 38. §, Könyv
     # Example:
     # NYOLCADIK KÖNYV
-    pass
+    @property
+    def formatted_identifier(self):
+        return "{} KÖNYV".format(int_to_text_hun(self.identifier).upper())
 
 
 class Part(StructuralElement):
@@ -101,13 +110,21 @@ class Part(StructuralElement):
     # 39. § (5)
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ', None)
 
+    @property
+    def formatted_identifier(self):
+        # TODO: special parts
+        return "{} RÉSZ".format(int_to_text_hun(self.identifier).upper())
+
 
 class Title(StructuralElement):
     # "CÍM"
     # Nonconformant structural type, present only in PTK
     # Example:
     # XXI. CÍM
-    pass
+    @property
+    def formatted_identifier(self):
+        # TODO: special parts
+        return "{}. CÍM".format(int_to_text_roman(self.identifier).upper())
 
 
 class Chapter(StructuralElement):
@@ -116,7 +133,10 @@ class Chapter(StructuralElement):
     # II. FEJEZET
     # IV. Fejezet
     # XXIII. fejezet  <=  not conformant, but present in e.g. PTK
-    pass
+    @property
+    def formatted_identifier(self):
+        # TODO: special parts
+        return "{}. FEJEZET".format(int_to_text_roman(self.identifier).upper())
 
 
 class Subtitle(StructuralElement):
@@ -124,7 +144,10 @@ class Subtitle(StructuralElement):
     # Guaranteed to be uppercase
     # Example:
     # 17. Az alcím
-    pass
+    @property
+    def formatted_identifier(self):
+        # TODO: special parts
+        return "{}.".format(self.identifier)
 
 
 STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)

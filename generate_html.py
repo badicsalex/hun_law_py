@@ -32,5 +32,6 @@ extracted = do_extraction([KozlonyToDownload(sys.argv[1], sys.argv[2])])
 for e in extracted:
     if not isinstance(e, Act):
         continue
+    print("Generating {}.html".format(e.identifier))
     with open(os.path.join('html', e.identifier + '.html'), 'w') as f:
         generate_html_document_for_act(e, f)

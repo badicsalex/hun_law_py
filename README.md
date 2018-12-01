@@ -6,6 +6,7 @@ A small project for parsing Hungarian Law. It does the following thigs:
   than other pdf2txt implementations.
 * Parse "Magyar Közlöny" PDFs into individual Acts
 * Separate Acts into structural elements (Articles, subpoints, etc.)
+* Generate simple TXT and HTML version of the parsed documents
 
 Things planned:
 
