@@ -1,2 +1,6 @@
 pep8
+autopep8
+pylint
+
 pdfminer.six
+chardet
