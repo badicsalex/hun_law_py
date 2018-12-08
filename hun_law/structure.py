@@ -75,7 +75,7 @@ from hun_law.utils import int_to_text_hun, int_to_text_roman
 
 class StructuralElement(ABC):
     def __init__(self, identifier, title):
-        self.__identifier = identifier
+        self.__identifier = str(identifier)
         self.__title = str(title)
 
     @property
@@ -153,17 +153,49 @@ class Subtitle(StructuralElement):
 STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
 
 
+class QuotedBlock:
+    def __init__(self, lines):
+        self.__lines = tuple(lines)
+
+    @property
+    def lines(self):
+        return self.__lines
+
+    @property
+    def identifier(self):
+        return None
+
+
 class SubArticleElement(ABC):
+    ALLOWED_CHILDREN_TYPE = ()
+
     def __init__(self, identifier, text, intro, children, wrap_up):
-        # TODO: make sure parameters are correct type (str or None)
-        # TODO: make sure either text or intro+children+wrap_up are present
-        self.__identifier = identifier
-        self.__text = text
-        self.__intro = intro
-        self.__children = None
-        if children is not None:
+        self.__identifier = str(identifier) if identifier is not None else None
+        if text is not None:
+            if intro is not None or wrap_up is not None or children is not None:
+                raise ValueError("SAE can contain either text or intro/wrap-up/children")
+            self.__children = None
+            self.__children_type = None
+            self.__text = str(text)
+            self.__intro = None
+            self.__wrap_up = None
+        else:
+            if text is not None:
+                raise ValueError("SAE can contain either text or intro/wrap-up/children")
+            self.__text = None
+            self.__intro = str(intro) if intro is not None else None
+            self.__wrap_up = str(wrap_up) if wrap_up is not None else None
             self.__children = tuple(children)
-        self.__wrap_up = wrap_up
+            self.__children_type = type(children[0])
+            if self.__children_type not in self.ALLOWED_CHILDREN_TYPE:
+                raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.__children_type))
+            for c in children:
+                if type(c) != self.__children_type:
+                    raise TypeError(
+                        "All children  has to be of the  same type ({} is not {})"
+                        .format(type(c), self.__children_type)
+                    )
+            self.__children_map = {c.identifier: c for c in children}
 
     @property
     def identifier(self):
@@ -180,6 +212,15 @@ class SubArticleElement(ABC):
     @property
     def children(self):
         return self.__children
+
+    def child(self, child_id):
+        if self.__children is None:
+            raise KeyError("There are no children of this element")
+        return self.__children_map[str(child_id)]
+
+    @property
+    def children_type(self):
+        return self.__children_type
 
     @property
     def wrap_up(self):
@@ -198,18 +239,30 @@ class AlphabeticSubpoint(SubArticleElement):
 
 
 class NumericPoint(SubArticleElement):
+    ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
+
     @classmethod
     def header_prefix(cls, identifier):
         return "{}. ".format(identifier)
 
+    def subpoint(self, sp_id):
+        return self.child(sp_id)
+
 
 class AlphabeticPoint(SubArticleElement):
+    ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
+
     @classmethod
     def header_prefix(cls, identifier):
         return "{}) ".format(identifier)
 
+    def subpoint(self, sp_id):
+        return self.child(sp_id)
+
 
 class Paragraph(SubArticleElement):
+    ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock)
+
     @classmethod
     def header_prefix(cls, identifier):
         if identifier is None:
@@ -218,24 +271,26 @@ class Paragraph(SubArticleElement):
             return ''
         return "({}) ".format(identifier)
 
-
-class QuotedBlock:
-    def __init__(self, lines):
-        self.__lines = tuple(lines)
-
-    @property
-    def lines(self):
-        return self.__lines
+    def point(self, point_id):
+        if self.children_type not in (AlphabeticPoint, NumericPoint):
+            raise KeyError("There are no points in this paragraph")
+        return self.child(point_id)
 
 
 class Article:
     def __init__(self, identifier, title, children):
         self.__identifier = str(identifier)
-        if title is None:
-            self.__title = None
-        else:
-            self.__title = str(title)
+        self.__title = str(title) if title is not None else None
+        for c in children:
+            if not isinstance(c, Paragraph):
+                # Always wrap everything in Pragraphs, pls.
+                raise ValueError("Articles have to have Paragraphs as children")
+            if c.identifier is None:
+                if len(children) != 1:
+                    raise ValueError("Unnamed paragraphs cannot have siblings.")
+
         self.__children = tuple(children)
+        self.__paragraph_map = {p.identifier: p for p in children}
 
     @property
     def identifier(self):
@@ -249,6 +304,17 @@ class Article:
     def children(self):
         return self.__children
 
+    @property
+    def paragraphs(self):
+        # Children are always paragraphs (see constructor)
+        return self.children
+
+    def paragraph(self, paragraph_id=None):
+        if paragraph_id is not None:
+            return self.__paragraph_map[str(paragraph_id)]
+        else:
+            return self.__paragraph_map[None]
+
 
 class Act:
     def __init__(self, identifier, subject, preamble, children):
@@ -256,6 +322,8 @@ class Act:
         self.__subject = str(subject)
         self.__preamble = str(preamble)
         self.__children = tuple(children)
+        self.__articles = tuple(c for c in children if isinstance(c, Article))
+        self.__articles_map = {c.identifier: c for c in self.__articles}
 
     @property
     def identifier(self):
@@ -272,3 +340,10 @@ class Act:
     @property
     def children(self):
         return self.__children
+
+    @property
+    def articles(self):
+        return self.__articles
+
+    def article(self, article_id):
+        return self.__articles_map[str(article_id)]
