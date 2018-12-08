@@ -23,7 +23,7 @@ import pytest
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction
 from hun_law.cache import init_cache
-from hun_law.structure import Act, Article, Book, Title, Chapter, Subtitle, QuotedBlock
+from hun_law.structure import Act, Article, Book, Part, Title, Chapter, Subtitle, QuotedBlock
 
 
 def parse_single_kozlony(year, issue):
@@ -58,6 +58,10 @@ def test_end_to_end_2013_31():
     target_titles = [t for t in ptk.children if isinstance(t, Title) and int(t.identifier) == 36]
     assert len(target_titles) == 1, "There is exactly one title with number XXVI (in book 6)"
     assert target_titles[0].title.upper() == "A KÖTELEZETTSÉGVÁLLALÁS KÖZÉRDEKŰ CÉLRA"
+
+    target_parts = [p for p in ptk.children if isinstance(p, Part) and int(p.identifier) == 2]
+    assert len(target_parts) == 7, "There are exactly 7 \"Part 2\"s in the Act (almost one for each Book)"
+    assert target_parts[4].title.upper() == "A SZERZŐDÉS ÁLTALÁNOS SZABÁLYAI"
 
     target_chapters = [c for c in ptk.children if isinstance(c, Chapter) and int(c.identifier) == 74]
     assert len(target_chapters) == 1, "There is exactly one chapter with number LXXIV (in book 6)"
@@ -95,3 +99,51 @@ def test_end_to_end_2013_185():
 
     assert acts["2013. évi CLXXIX. törvény"].article(1).paragraph(29).intro == "Hatályát veszti az Flt.", \
         "Relatively large number of paragraphs are correctly parsed"
+
+
+def test_end_to_end_2013_222():
+    # This Issue contains an Act that has a ton of amendments related to the 2013 Ptk.
+    # As such, it is hard to parse correctly, and it has some juicy corner cases
+    acts = [a for a in parse_single_kozlony(2013, 222) if isinstance(a, Act)]
+    assert len(acts) == 1, "Issue 2013/222 of Magyar Kozlony contains a single Act"
+    act = acts[0]
+
+    assert act.identifier == "2013. évi CCLII. törvény"
+    assert act.subject == "egyes törvényeknek az új Polgári Törvénykönyv hatálybalépésével összefüggő módosításáról"
+
+
+    assert act.article(181).paragraph(2).intro == "A Szövtv. 20−24. §-a helyébe a következő rendelkezések lépnek:"
+    assert act.article(181).paragraph(2).children_type == QuotedBlock
+    assert len(act.article(181).paragraph(2).children) == 1
+
+    # This is a fixupped Paragraph the original text has wrong quote marks to begin the amendment text.
+    assert act.article(185).paragraph(4).intro == "A Ptk. 3:85. § (1) bekezdése a következő szöveggel lép hatályba:"
+    assert act.article(185).paragraph(4).children_type == QuotedBlock
+    assert len(act.article(185).paragraph(4).children) == 1
+
+    assert act.article(188).paragraph(3).intro == "A Ptk. 6:155. §-a a következő szöveggel lép hatályba:"
+
+    # This is a fixupped Paragraph the original text does not have "Ptk." in it.
+    assert act.article(188).paragraph(4).intro == "A Ptk. 6:198. § (3) bekezdése a következő szöveggel lép hatályba:"
+
+    # This article is literally the best target practice Paragraph for the Reference parser.
+    assert act.article(191).paragraph(4).text == "A 35. § (2) bekezdése, a 100. § (4), (5), valamint (7) bekezdése 2014. május 1-jén lép hatályba."
+
+    assert act.article(192).paragraph().intro == "E törvény"
+    assert act.article(192).paragraph().point('n').text == "129. § (1)–(8) bekezdése és (14) bekezdése az Alaptörvény 29. cikk (7) bekezdése"
+    assert act.article(192).paragraph().wrap_up == "alapján sarkalatosnak minősül."
+
+
+def test_end_to_end_2016_210():
+    acts = {a.identifier: a for a in parse_single_kozlony(2016, 210) if isinstance(a, Act)}
+    assert len(acts) == 11, "Issue 2016/210 of Magyar Kozlony contains 11 separate Acts"
+
+    acts["2016. évi CLXXXIV. törvény"].article(54).paragraph().intro == \
+        "A Hjt. 215. § (1) bekezdés a) és b) pontja helyébe a következő rendelkezések lépnek: " \
+        "(Megszűnik az önkéntes tartalékos szolgálati viszony akkor is, ha)"
+    assert acts["2016. évi CLXXXIV. törvény"].article(54).paragraph().children_type == QuotedBlock
+    assert len(acts["2016. évi CLXXXIV. törvény"].article(54).paragraph().children) == 1
+
+    acts["2016. évi CLXXXIV. törvény"].article(46).paragraph().intro == "A Hjt. 85. alcíme helyébe a következő alcím lép:"
+    assert acts["2016. évi CLXXXIV. törvény"].article(46).paragraph().children_type == QuotedBlock
+    assert len(acts["2016. évi CLXXXIV. törvény"].article(46).paragraph().children) == 1
