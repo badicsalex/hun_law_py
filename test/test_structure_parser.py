@@ -31,6 +31,23 @@ def parse_single_kozlony(year, issue):
     extracted = do_extraction([KozlonyToDownload(year, issue)])
     return extracted
 
+def test_end_to_end_2010_181():
+    # The  first MK to use "The new format" is 2009/117.
+    # But subtitles don't have numbers consistently, until the
+    # 2010 CXXX Act about legislation.
+
+    # Of course this whole project is way easier because of that Act
+    # anyway, because it requires all in-force laws to be non-contradictory
+    # To eachother.
+
+    # The test is mainly a format-compatibility check.
+    acts = {a.identifier: a for a in parse_single_kozlony(2010, 181) if isinstance(a, Act)}
+    assert len(acts) == 6, "Issue 2010/181 of Magyar Kozlony contains 6 separate Acts"
+
+    # !!!!
+    acts["2010. évi CXXX. törvény"].article(25).paragraph(1).text == \
+        "A Magyar Köztársaság hivatalos lapja a Magyar Közlöny. A Magyar Közlönyt a kormányzati portálon történő" \
+        "elektronikus dokumentumként való közzététellel kell kiadni, melynek szövegét hitelesnek kell tekinteni."
 
 def test_end_to_end_2013_31():
     # The 2013 Ptk is a great way to test high level structure
