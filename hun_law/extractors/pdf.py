@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+import unicodedata
+
 from collections import namedtuple
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
@@ -146,7 +148,10 @@ def extract_lines(potb):
                 # And that sub and superscripts are not used
                 textboxes_as_dicts[tb.y] = {}
             if tb.x in textboxes_as_dicts[tb.y]:
-                raise ValueError("Multiple textboxes on the exact same coordinates")
+                # Workaround for some malformed texts, such as the 2018 L. Act about the budget
+                # "Co" means "Unicode private use", which we can safely ignore.
+                if unicodedata.category(tb.content) != 'Co':
+                    raise ValueError("Multiple textboxes on the exact same coordinates")
             textboxes_as_dicts[tb.y][tb.x] = tb
 
         prev_y = 0
