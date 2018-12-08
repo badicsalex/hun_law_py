@@ -19,8 +19,102 @@ import textwrap
 from collections import namedtuple
 from string import ascii_uppercase
 
-IndentedLine = namedtuple('IndentedLine', ['content', 'indent'])
-EMPTY_LINE = IndentedLine('', 0)
+
+class IndentedLine:
+    # Lots of un-pythonic trickery going on here, I know.
+    # But this is the only way  to make this class immutable and safe, e.g. allowing
+    # for '== EMPTY_LINE' without jumping through operator overriding hoops.
+    # I don't care about the 'consenting adults' programmer model.
+    __EMPTY_INSTANCE = None
+    __private_constructor_key = object()
+    Part = namedtuple('Part', ['x', 'content'])
+
+    def __init__(self, key):
+        if key != self.__private_constructor_key:
+            # Not indented, lol
+            raise ValueError("IndentedLine is not intended to be constructed")
+        self.__content = ''
+        self.__indent = 0
+        self.__parts = ()
+
+    @property
+    def content(self):
+        return self.__content
+
+    @property
+    def indent(self):
+        return self.__indent
+
+    @classmethod
+    def get_empty_instance(cls):
+        if cls.__EMPTY_INSTANCE is None:
+            cls.__EMPTY_INSTANCE = cls(cls.__private_constructor_key)
+        return cls.__EMPTY_INSTANCE
+
+    @classmethod
+    def from_parts(cls, parts):
+        parts = tuple(parts)
+        if not parts:
+            return cls.get_empty_instance()
+        # Watch pyhton's OOP model get destroyed with this one simple trick
+        self = cls(cls.__private_constructor_key)
+        self.__parts = parts
+        self.__indent = parts[0].x
+        self.__content = ''.join(t.content for t in parts)
+        return self
+
+    def to_serializable_form(self):
+        # Do not depend on this being "parts" pls.
+        return tuple((p.x, p.content) for p in self.__parts)
+
+    @classmethod
+    def from_serializable_form(cls, serializable_form):
+        return cls.from_parts(cls.Part(s[0], s[1]) for s in serializable_form)
+
+    def slice(self, start, end=None):
+        if start < 0:
+            start = len(self.content) + start
+        if end is None:
+            end = len(self.content)
+        if end < 0:
+            end = len(self.content) + end
+
+        if start == 0 and end == len(self.content):
+            return self
+
+        if end <= start:
+            return self.get_empty_instance()
+
+        skipped_len = 0
+        skipped_parts_index = 0
+        while skipped_len < start and skipped_parts_index < len(self.__parts):
+            skipped_len += len(self.__parts[skipped_parts_index].content)
+            skipped_parts_index += 1
+        if skipped_parts_index >= len(self.__parts):
+            return self.get_empty_instance()
+        if skipped_len != start:
+            raise ValueError("Couldn't slice precisely at requested index (multi-char part in the way)")
+
+        included_parts_index = skipped_parts_index
+        included_len = 0
+        while included_len < end-start and included_parts_index < len(self.__parts):
+            included_len += len(self.__parts[included_parts_index].content)
+            included_parts_index += 1
+
+        if included_len != end-start:
+            raise ValueError("Couldn't slice precisely at requested index (multi-char part in the way)")
+
+        return self.from_parts(self.__parts[skipped_parts_index:included_parts_index])
+
+    @classmethod
+    def from_multiple(cls, *others):
+        parts = []
+        for o in others:
+            parts.extend(o.__parts)
+        return cls.from_parts(parts)
+
+
+EMPTY_LINE = IndentedLine.get_empty_instance()
 
 
 def split_list(haystack, needle):

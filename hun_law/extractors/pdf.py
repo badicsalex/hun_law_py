@@ -67,6 +67,16 @@ class PDFMinerAdapter(PDFTextDevice):
             # I'm pretty sure this does not work for accented characters
             text = chr_latin2(cid)
 
+        # TODO: this is a quick hack for one of the character coding fcukups.
+        # Basically all encodings should be Latin-2, but if that's not in the
+        # PDF, de default encoding is Latin-1, with the weird squiggly accents
+        # Maybe I should have done the other chars too, but only these caused problems.
+        # This is also done with "replace()" because "text" might be multiple characters.
+        text = text.replace("Õ", "Ő")  # Note the ~ on top of the first ő
+        text = text.replace("õ", "ő")  # note the ~ on top of the first ő
+        text = text.replace("Û", "Ű")  # Note the ^ on top of the first ű
+        text = text.replace("û", "ű")  # note the ^ on top of the first ű
+
         textwidth = font.char_width(cid) * fontsize * scaling
         if not text.isspace():
             unscaled_width_of_space = font.char_width(32)
@@ -101,7 +111,7 @@ class PdfOfLines:
         for page in self.pages:
             page_to_save = []
             for line in page.lines:
-                page_to_save.append({'content': line.content, 'indent': line.indent})
+                page_to_save.append(line.to_serializable_form())
             data_to_save.append(page_to_save)
         cache_object.write_json(data_to_save)
 
@@ -111,7 +121,7 @@ class PdfOfLines:
         for page_to_load in data_to_load:
             page = PageOfLines()
             for line in page_to_load:
-                page.add_line(IndentedLine(line['content'], line['indent']))
+                page.add_line(IndentedLine.from_serializable_form(line))
             self.add_page(page)
 
 
@@ -146,28 +156,18 @@ def extract_lines(potb):
                 processed_page.add_line(EMPTY_LINE)
             prev_y = y
 
-            content_as_array = []
+            parts = []
             threshold_to_space = None
             for x in sorted(textboxes_as_dicts[y]):
                 box = textboxes_as_dicts[y][x]
                 if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
-                    if content_as_array and content_as_array[-1] != ' ':
-                        content_as_array.append(' ')
-                content_as_array.append(box.content)
+                    if parts and parts[-1].content[-1] != ' ':
+                        parts.append(IndentedLine.Part(threshold_to_space, ' '))
+                parts.append(IndentedLine.Part(box.x, box.content))
                 threshold_to_space = x + box.width + box.width_of_space * 0.5
                 current_right_side = x + box.width
 
-            content = ''.join(content_as_array)
-            indent = min(textboxes_as_dicts[y])
-            # TODO: this is a quick hack for one of the character coding fcukups.
-            # Basically all encodings should be Latin-2, but if that's not in the
-            # PDF, de default encoding is Latin-1, with the weird squiggly accents
-            # Maybe I should have done the other chars too, but only these caused problems.
-            content = content.replace("Õ", "Ő")  # Note the ~ on top of the first ő
-            content = content.replace("õ", "ő")  # note the ~ on top of the first ő
-            content = content.replace("Û", "Ű")  # Note the ^ on top of the first ű
-            content = content.replace("û", "ű")  # note the ^ on top of the first ű
-            processed_page.add_line(IndentedLine(content, indent))
+            processed_page.add_line(IndentedLine.from_parts(parts))
 
         result.add_page(processed_page)
     return result
@@ -175,7 +175,7 @@ def extract_lines(potb):
 
 @Extractor(PDFFileDescriptor)
 def CachedPdfParser(f):
-    cache_object = CacheObject(f.cache_id + ".parsed")
+    cache_object = CacheObject(f.cache_id + ".parsedv2")
     if cache_object.exists():
         result = PdfOfLines()
         result.load_from_cache(cache_object)

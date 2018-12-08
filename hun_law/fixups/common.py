@@ -23,6 +23,7 @@ import re
 from hun_law.utils import IndentedLine, EMPTY_LINE
 all_fixups = {}
 
+
 def add_fixup(law_id, fixup_cb):
     global all_fixups
     if law_id in all_fixups:
@@ -30,13 +31,14 @@ def add_fixup(law_id, fixup_cb):
     else:
         all_fixups[law_id] = [fixup_cb]
 
+
 def do_all_fixups(law_id, body):
     global all_fixups
     if law_id not in all_fixups:
         return body
     for fixup in all_fixups[law_id]:
         try:
-            body  = fixup(body)
+            body = fixup(body)
         except Exception as e:
             raise ValueError(
                 "Fixup {} could not be done for {}: {}".format(fixup.__name__, law_id, e)
@@ -69,7 +71,8 @@ def replace_line_content(needle, replacement):
             if l.content != needle:
                 result.append(l)
             else:
-                result.append(IndentedLine(replacement, l.indent))
+                # TODO: the line  won't be sliceable any more
+                result.append(IndentedLine.from_parts([IndentedLine.Part(l.indent, replacement)]))
                 needle_count = needle_count + 1
         if needle_count == 0:
             raise ValueError("Text '{}' not found in body".format(needle))
@@ -80,15 +83,15 @@ def replace_line_content(needle, replacement):
 
 
 def ptke_article_header_fixer(body):
-# BEFORE:
-#            (A Ptk. 2:18. §-ához)
-#    2. §    A Ptk. hatálybalépésekor a tize
-#            helyezett kiskorú jognyilatkoza
-#
-# AFTER:
-#    2. §    [A Ptk. 2:18. §-ához]
-#            A Ptk. hatálybalépésekor a tize
-#            helyezett kiskorú jognyilatkoza
+    # BEFORE:
+    #            (A Ptk. 2:18. §-ához)
+    #    2. §    A Ptk. hatálybalépésekor a tize
+    #            helyezett kiskorú jognyilatkoza
+    #
+    # AFTER:
+    #    2. §    [A Ptk. 2:18. §-ához]
+    #            A Ptk. hatálybalépésekor a tize
+    #            helyezett kiskorú jognyilatkoza
 
     title_re = re.compile('^[\\[(](.*)[)\\]]$')
     article_re = re.compile('^([0-9]+\\. § )(.*)$')
@@ -104,9 +107,19 @@ def ptke_article_header_fixer(body):
         title_match = title_re.match(prev_line.content)
         article_match = article_re.match(line.content)
         if title_match and article_match:
-            fixed_title = IndentedLine("{}[{}]".format(article_match.group(1), title_match.group(1)), line.indent)
-            # TODO: The indentation here is wrong for Paragraphs.
-            fixed_body = IndentedLine(article_match.group(2), prev_line.indent)
+            article_header = line.slice(article_match.start(1), article_match.end(1))
+            article_rest = line.slice(article_match.end(1))
+            # TODO: Will not be sliceable
+            fixed_title_string = IndentedLine.from_parts(
+                [
+                    IndentedLine.Part(
+                        prev_line.indent, "[{}]".format(title_match.group(1))
+                    )
+                ]
+            )
+
+            fixed_title = IndentedLine.from_multiple(article_header, fixed_title_string)
+            fixed_body = IndentedLine.from_multiple(article_rest)
             result.append(fixed_title)
             result.append(fixed_body)
             prev_line = None

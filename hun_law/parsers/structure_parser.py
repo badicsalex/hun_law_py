@@ -256,8 +256,7 @@ class SubArticleElementParser(ABC):
             raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(lines[0].content, prefix), cls.PARSED_TYPE)
 
         truncated_first_line = lines[0].content[len(prefix):]
-        # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
-        indented_first_line = IndentedLine(truncated_first_line, lines[0].indent)
+        indented_first_line = lines[0].slice(len(prefix))
         lines = [indented_first_line] + lines[1:]
         try:
             intro, children, wrap_up = cls.try_parse_subpoints(lines, identifier)
@@ -485,18 +484,18 @@ class QuotedBlockParser:
                 if line != EMPTY_LINE:
                     if line.content[0] == "„" and quote_level == 0:
                         if line.content[-1] == "”":
-                            quoted_lines = [IndentedLine(line.content[1:-1], line.indent)]
+                            quoted_lines = [line.slice(1, -1)]
                             wrap_up = None
                             state = cls.ParseStates.WRAP_UP
                         else:
-                            quoted_lines = [IndentedLine(line.content[1:], line.indent)]
+                            quoted_lines = [line.slice(1)]
                             state = cls.ParseStates.QUOTED_BLOCK
                     else:
                         intro = intro + " " + line.content
 
             elif state == cls.ParseStates.QUOTED_BLOCK:
                 if line != EMPTY_LINE and line.content[-1] == "”" and quote_level == 1:
-                    quoted_lines.append(IndentedLine(line.content[:-1], line.indent))
+                    quoted_lines.append(line.slice(0, -1))
                     wrap_up = None
                     state = cls.ParseStates.WRAP_UP
                 # Note that this else also applies to EMPTY_LINEs
@@ -542,11 +541,9 @@ class ArticleParser:
                 Article
             )
 
-        truncated_first_line = header_matches.group(4)
-        # TODO XXX: This indentation is certainly wrong and WILL come back to haunt us
-        indented_first_line = IndentedLine(truncated_first_line, lines[0].indent)
+        truncated_first_line = lines[0].slice(header_matches.start(4), header_matches.end(4))
         try:
-            return cls.parse_body(identifier, [indented_first_line] + lines[1:])
+            return cls.parse_body(identifier, [truncated_first_line] + lines[1:])
         except Exception as e:
             raise ArticleParsingError(str(e), Article, identifier) from e
 
