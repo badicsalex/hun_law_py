@@ -81,8 +81,8 @@ def print_article_to_console(element, indent=''):
 
 @console_printer(Act)
 def print_act_to_console(element, indent=''):
-    indented_line_wrapped_print(element.preamble)
     print("==== Structured text of {} - {} =====\n".format(element.identifier, element.subject))
+    indented_line_wrapped_print(element.preamble)
     for c in element.children:
         print_to_console(c, indent)
         indent = " " * len(indent)
