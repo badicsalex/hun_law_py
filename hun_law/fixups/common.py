@@ -64,6 +64,23 @@ def add_empty_line_after(needle):
 
 
 def replace_line_content(needle, replacement):
+    common_prefix_len = 0
+    while (
+        common_prefix_len < len(needle) and
+        common_prefix_len < len(replacement) and
+        needle[common_prefix_len] == replacement[common_prefix_len]
+    ):
+        common_prefix_len += 1
+
+    common_postfix_len = 1
+    while (
+        common_postfix_len <= len(needle) and
+        common_postfix_len <= len(replacement) and
+        needle[-common_postfix_len] == replacement[-common_postfix_len]
+    ):
+        common_postfix_len += 1
+    common_postfix_len = common_postfix_len - 1
+
     def line_content_replacer(body):
         result = []
         needle_count = 0
@@ -71,8 +88,27 @@ def replace_line_content(needle, replacement):
             if l.content != needle:
                 result.append(l)
             else:
-                # TODO: the line  won't be sliceable any more
-                result.append(IndentedLine.from_parts([IndentedLine.Part(l.indent, replacement)]))
+                # TODO: slicability depends on the part replaced.
+                common_prefix = l.slice(0, common_prefix_len)
+                replacement_indent = l.slice(common_prefix_len).indent
+                if common_postfix_len != 0:
+                    common_postfix = l.slice(-common_postfix_len)
+                    replacement_part = IndentedLine.from_parts([
+                        IndentedLine.Part(
+                            replacement_indent,
+                            replacement[common_prefix_len: -common_postfix_len]
+                        )
+                    ])
+                    to_append = IndentedLine.from_multiple(common_prefix, replacement_part, common_postfix)
+                else:
+                    replacement_part = IndentedLine.from_parts([
+                        IndentedLine.Part(
+                            replacement_indent,
+                            replacement[common_prefix_len:]
+                        )
+                    ])
+                    to_append = IndentedLine.from_multiple(common_prefix, replacement_part)
+                result.append(to_append)
                 needle_count = needle_count + 1
         if needle_count == 0:
             raise ValueError("Text '{}' not found in body".format(needle))
