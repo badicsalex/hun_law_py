@@ -294,8 +294,17 @@ class SubArticleElementParser(ABC):
         current_element_identifier = None
         next_element_identifier = cls.first_identifier()
         current_lines = []
+        header_indentation = None
         for quote_level, line in iterate_with_quote_level(lines):
-            if quote_level == 0 and cls.is_header(line, next_element_identifier):
+            if (
+                quote_level == 0 and
+                # The last or is a must, because e.g. Paragraph headers are not right-justified, but left.
+                # i.e.
+                #  (9)
+                # (10)
+                (header_indentation is None or similar_indent(header_indentation, line.indent) or line.indent < header_indentation) and
+                cls.is_header(line, next_element_identifier)
+            ):
                 if current_element_identifier is None:
                     if current_lines:
                         intro = " ".join([l.content for l in current_lines])
@@ -303,6 +312,7 @@ class SubArticleElementParser(ABC):
                     element = cls.parse(current_lines, current_element_identifier)
                     elements.append(element)
 
+                header_indentation = line.indent
                 current_element_identifier = next_element_identifier
                 next_element_identifier = cls.next_identifier(next_element_identifier)
                 current_lines = []
@@ -320,9 +330,9 @@ class SubArticleElementParser(ABC):
             # TODO: This is a stupid heuristic: we hope line-broken points are indented, while
             # the wrapup will be at the same level as the headers.
             header_indent = current_lines[0].indent
-            if len(current_lines) > 1 and current_lines[-1].indent == header_indent:
+            if len(current_lines) > 1 and similar_indent(current_lines[-1].indent, header_indent):
                 wrap_up = current_lines.pop().content
-                while len(current_lines) > 1 and current_lines[-1].indent == header_indent:
+                while len(current_lines) > 1 and similar_indent(current_lines[-1].indent, header_indent):
                     wrap_up = current_lines.pop().content + " " + wrap_up
 
         element = cls.parse(current_lines, current_element_identifier)
@@ -608,7 +618,7 @@ class ActParser:
                 # TODO: Let's hope article numbers are always left-justified
                 if article_header_indent is None:
                     article_header_indent = line.indent
-                if abs(line.indent-article_header_indent) < 1:
+                if similar_indent(line.indent, article_header_indent):
                     preamble, new_elements = cls.parse_text_block(current_lines, preamble, last_structural_element_parser)
                     elements.extend(new_elements)
                     current_lines = []
@@ -664,3 +674,8 @@ class ActParser:
                 if last_se.is_line_header_of_next(lines[0]):
                     return se_type(last_se, lines)
         return None
+
+
+def similar_indent(a, b):
+    # Super scientific
+    return abs(a - b) < 1
