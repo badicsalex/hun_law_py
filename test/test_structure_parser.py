@@ -147,3 +147,36 @@ def test_end_to_end_2016_210():
     acts["2016. évi CLXXXIV. törvény"].article(46).paragraph().intro == "A Hjt. 85. alcíme helyébe a következő alcím lép:"
     assert acts["2016. évi CLXXXIV. törvény"].article(46).paragraph().children_type == QuotedBlock
     assert len(acts["2016. évi CLXXXIV. törvény"].article(46).paragraph().children) == 1
+
+
+def test_end_to_end_2018_123():
+    # This is the most modern Act we want to touch right now.
+    # The purpose of the test is mainly document-format-compatibility
+    acts = {a.identifier: a for a in parse_single_kozlony(2018, 123) if isinstance(a, Act)}
+    assert len(acts) == 6, "Issue 2018/123 of Magyar Kozlony contains 6 separate Acts"
+
+    subtitles_in_2018_L = [s for s in acts["2018. évi L. törvény"].children if isinstance(s, Subtitle)]
+    assert len(subtitles_in_2018_L) == 22
+    assert subtitles_in_2018_L[18].identifier == '19'
+    assert subtitles_in_2018_L[18].title == \
+        'A kis összegű követelés értékhatára, a filmalkotásokhoz kapcsolódó gyártási értékhatár és ' \
+        'a közbeszerzési értékhatárok', \
+        "Multiline subtitles parsed correctly"
+
+    assert acts["2018. évi LII. törvény"].article(5).paragraph(6).intro == "A Tbj. szerint külföldinek minősülő személy által megszerzett"
+    assert acts["2018. évi LII. törvény"].article(5).paragraph(6).point("b").text == "az Szja tv. szerint egyéb jövedelemnek minősülő jövedelmet"
+    assert acts["2018. évi LII. törvény"].article(5).paragraph(6).wrap_up == "nem terheli adófizetési kötelezettség."
+
+    assert acts["2018. évi LII. törvény"].article(34).paragraph().point(11).subpoint("p").text.endswith("járadék folyósításának időtartama;"), \
+        "Multiline points/subpoints do not generate a wrap-up, if the indentation is correct"
+
+    assert acts["2018. évi LIII. törvény"].subject == "a magánélet védelméről"
+    assert acts["2018. évi LIII. törvény"].preamble is not None
+    assert acts["2018. évi LIII. törvény"].preamble.startswith("A magánélet, a családi élet, az otthon")
+    assert acts["2018. évi LIII. törvény"].preamble.endswith("fokozott védelme, a következő törvényt alkotja:")
+
+    assert acts["2018. évi LV. törvény"].article(25).paragraph(5).children_type == QuotedBlock
+    assert acts["2018. évi LV. törvény"].article(25).paragraph(5).wrap_up == "[követik el.]"
+
+    assert acts["2018. évi LIV. törvény"].article(2).paragraph().point(4).text.endswith("felfedett üzleti titokra épül."), \
+        "Multiline numeric points parsed correctly"
