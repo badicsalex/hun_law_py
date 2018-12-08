@@ -1,6 +1,7 @@
-pep8
-autopep8
-pylint
-
+# Runing the extractors
 pdfminer.six
 chardet
+
+# Development
+autopep8
+pylint
