@@ -632,7 +632,7 @@ class ActParser:
     def parse_text_block(cls, lines, preamble, last_structural_element_parser):
         lines, elements_to_append = cls.parse_structural_elements(lines, last_structural_element_parser)
         if preamble is None:
-            preamble = " ".join([l.content for l in lines])
+            preamble = " ".join([l.content for l in lines if l != EMPTY_LINE])
         else:
             elements_to_append.insert(0, ArticleParser.parse(lines))
         return preamble, elements_to_append
