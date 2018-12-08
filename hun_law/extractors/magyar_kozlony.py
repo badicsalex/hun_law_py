@@ -186,7 +186,7 @@ def MagyarKozlonyLawExtractor(laws_section):
                 identifier = ''
                 subject = ''
                 body = []
-                state = States.WAITING_FOR_HEADER
+                state = States.WAITING_FOR_HEADER_NEWLINE
             continue
 
         # TODO: extract Annexes
