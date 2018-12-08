@@ -69,3 +69,20 @@ add_fixup("2016. évi CLXXXIV. törvény", replace_line_content(
     "„a) az önkéntes tartalékos katona hivatásos, szerződéses, honvéd tisztjelölt vagy honvéd altiszt-jelölt szolgálati",
 ))
 
+# Invalid quoting again
+add_fixup("2018. évi LI. törvény", replace_line_content(
+    "Maďarsko a Slovenská republika (ďalej len „zmluvné strany“),",
+    "Maďarsko a Slovenská republika (ďalej len „zmluvné strany”),",
+))
+
+
+add_fixup("2018. évi LI. törvény", replace_line_content(
+    "slovenskej hraničnej čiary – hraničné úseky č. III., IV. a VIII. – 2013“, ktorý ako príloha tejto zmluvy tvorí jej",
+    "slovenskej hraničnej čiary – hraničné úseky č. III., IV. a VIII. – 2013”, ktorý ako príloha tejto zmluvy tvorí jej",
+))
+
+add_fixup("2018. évi LI. törvény", replace_line_content(
+    "MAĎARSKO SLOVENSKÚ REPUBLIKU“",
+    "MAĎARSKO SLOVENSKÚ REPUBLIKU”",
+))
+
