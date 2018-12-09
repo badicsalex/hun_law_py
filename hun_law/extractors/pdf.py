@@ -80,6 +80,16 @@ class PDFMinerAdapter(PDFTextDevice):
         text = text.replace("û", "ű")  # note the ^ on top of the first ű
 
         textwidth = font.char_width(cid) * fontsize * scaling
+
+        # Workaround for some malformed texts, such as the 2018 L. Act about the budget
+        # in it, these weird "private" characters denote | signs, for constructing
+        # tables (poorly). The  main issue is that sometimes they render these characters
+        # exactly where other characters are, and that throws an error in later processing.
+        # We will just throw these away for now, as it's in an appendix
+        # And we do not even parse Appendixes (TODO)
+        if unicodedata.category(text[0]) == 'Co':
+            return textwidth
+
         if not text.isspace():
             unscaled_width_of_space = font.char_width(32)
             if unscaled_width_of_space == 1.0 or unscaled_width_of_space == 0.0:
@@ -148,10 +158,7 @@ def extract_lines(potb):
                 # And that sub and superscripts are not used
                 textboxes_as_dicts[tb.y] = {}
             if tb.x in textboxes_as_dicts[tb.y]:
-                # Workaround for some malformed texts, such as the 2018 L. Act about the budget
-                # "Co" means "Unicode private use", which we can safely ignore.
-                if unicodedata.category(tb.content) != 'Co':
-                    raise ValueError("Multiple textboxes on the exact same coordinates")
+                raise ValueError("Multiple textboxes on the exact same coordinates")
             textboxes_as_dicts[tb.y][tb.x] = tb
 
         prev_y = 0
