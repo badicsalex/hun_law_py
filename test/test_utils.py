@@ -16,8 +16,11 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import pytest
+import gzip
 
 from hun_law.utils import IndentedLine, EMPTY_LINE
+from hun_law.cache import CacheObject, init_cache
+from .data.example_content import compression_test_parts
 
 
 def test_indented_line_construction():
@@ -101,6 +104,29 @@ def test_indented_line_serialization():
 
     unserialized_empty = IndentedLine.from_serializable_form(EMPTY_LINE.to_serializable_form())
     assert unserialized_empty == EMPTY_LINE
+
+
+def test_indented_line_serialization_compactness(tmpdir):
+    line = IndentedLine.from_parts(IndentedLine.Part(x, c) for x, c in compression_test_parts)
+
+    # This is a test for an older scheme, where X coordinates were not stored exactly,
+    # to save on digits in the JSON. It is not really relevant right now, but might
+    # be in the future, so this assert stays here.
+    quantization_error = abs(line.slice(50).indent - compression_test_parts[50][0])
+    assert quantization_error < 0.01, "IndentedLine does not quantize the X coordinate too much"
+
+    init_cache(str(tmpdir))
+    CacheObject("indented_test").write_json(line.to_serializable_form())
+    desired_max_len = 6 * len(compression_test_parts)
+    assert CacheObject("indented_test").size_on_disk() < desired_max_len, \
+        "Serialized IndentedLine is not too bloated. Also Cache is efficient."
+
+    new_line = IndentedLine.from_serializable_form(line.to_serializable_form())
+    assert new_line.content == line.content
+    assert new_line.indent == line.indent
+
+    assert new_line.slice(50).content == line.slice(50).content, "Non-trivial X coordinates survive serialization"
+    assert new_line.slice(50).indent == line.slice(50).indent
 
 
 def test_indented_line_concat():

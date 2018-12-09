@@ -64,12 +64,21 @@ class IndentedLine:
         return self
 
     def to_serializable_form(self):
-        # Do not depend on this being "parts" pls.
-        return tuple((p.x, p.content) for p in self.__parts)
+        prev_x = 0
+        result = []
+        for x, content in self.__parts:
+            result.append((x - prev_x, content))
+            prev_x = x
+        return tuple(result)
 
     @classmethod
     def from_serializable_form(cls, serializable_form):
-        return cls.from_parts(cls.Part(s[0], s[1]) for s in serializable_form)
+        parts = []
+        curr_x = 0
+        for x, content in serializable_form:
+            curr_x += x
+            parts.append(cls.Part(curr_x, content))
+        return cls.from_parts(parts)
 
     def slice(self, start, end=None):
         if start < 0:

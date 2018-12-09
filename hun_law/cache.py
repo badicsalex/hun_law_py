@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+import gzip
 import os
 import json
 
@@ -36,17 +37,20 @@ class CacheObject:
             f.write(data)
 
     def read_json(self):
-        with open(self.filename, 'r') as f:
+        with gzip.open(self.filename, 'rt') as f:
             return json.load(f)
 
     def write_json(self, data):
-        with open(self.filename, 'w') as f:
-            # TODO: Indenting for debuggging purposes, this will not
-            # create minimal files. This means something like 15% bigger.
-            json.dump(data, f, indent=2, sort_keys=True)
+        with gzip.open(self.filename, 'wt') as f:
+            json.dump(data, f, separators=(',', ':'))
 
     def get_filename(self):
         return self.filename
+
+    def size_on_disk(self):
+        if not self.exists():
+            return 0
+        return os.path.getsize(self.filename)
 
 
 def init_cache(cache_dir):

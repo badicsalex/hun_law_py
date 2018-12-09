@@ -187,7 +187,7 @@ def extract_lines(potb):
 
 @Extractor(PDFFileDescriptor)
 def CachedPdfParser(f):
-    cache_object = CacheObject(f.cache_id + ".parsedv2")
+    cache_object = CacheObject(f.cache_id + ".parsed.gz")
     if cache_object.exists():
         result = PdfOfLines()
         result.load_from_cache(cache_object)
