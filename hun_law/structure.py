@@ -98,7 +98,7 @@ class Book(StructuralElement):
     # NYOLCADIK KÖNYV
     @property
     def formatted_identifier(self):
-        return "{} KÖNYV".format(int_to_text_hun(self.identifier).upper())
+        return "{} KÖNYV".format(int_to_text_hun(int(self.identifier)).upper())
 
 
 class Part(StructuralElement):
@@ -113,7 +113,7 @@ class Part(StructuralElement):
     @property
     def formatted_identifier(self):
         # TODO: special parts
-        return "{} RÉSZ".format(int_to_text_hun(self.identifier).upper())
+        return "{} RÉSZ".format(int_to_text_hun(int(self.identifier)).upper())
 
 
 class Title(StructuralElement):
@@ -124,7 +124,7 @@ class Title(StructuralElement):
     @property
     def formatted_identifier(self):
         # TODO: special parts
-        return "{}. CÍM".format(int_to_text_roman(self.identifier).upper())
+        return "{}. CÍM".format(int_to_text_roman(int(self.identifier)).upper())
 
 
 class Chapter(StructuralElement):
@@ -136,7 +136,7 @@ class Chapter(StructuralElement):
     @property
     def formatted_identifier(self):
         # TODO: special parts
-        return "{}. FEJEZET".format(int_to_text_roman(self.identifier).upper())
+        return "{}. FEJEZET".format(int_to_text_roman(int(self.identifier)).upper())
 
 
 class Subtitle(StructuralElement):
