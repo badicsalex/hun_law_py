@@ -139,7 +139,7 @@ td {
 
 def indent_etree_element_in_place(element, level=0):
     indent = "\n" + level * "  "
-    if element:
+    if len(element):
         if not element.text or not element.text.strip():
             element.text = indent + "  "
         if not element.tail or not element.tail.strip():
