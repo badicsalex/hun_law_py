@@ -267,6 +267,8 @@ def iterate_with_quote_level(lines):
     for line in lines:
         yield quote_level, line
         quote_level = quote_level + quote_level_diff(line.content)
+        if quote_level < 0:
+            raise ValueError("Malformed quoting. (Quote_level = {}, line='{}')".format(quote_level, line.content))
 
     if quote_level != 0:
         raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
