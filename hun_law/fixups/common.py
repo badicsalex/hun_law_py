@@ -80,7 +80,7 @@ def delete_line(needle):
     return line_deleter
 
 
-def replace_line_content(needle, replacement):
+def replace_line_content(needle, replacement, *, needle_prev_lines=None):
     common_prefix_len = 0
     while (
         common_prefix_len < len(needle) and
@@ -91,8 +91,8 @@ def replace_line_content(needle, replacement):
 
     common_postfix_len = 1
     while (
-        common_postfix_len <= len(needle) and
-        common_postfix_len <= len(replacement) and
+        common_prefix_len + common_postfix_len <= len(needle) and
+        common_prefix_len + common_postfix_len <= len(replacement) and
         needle[-common_postfix_len] == replacement[-common_postfix_len]
     ):
         common_postfix_len += 1
@@ -102,7 +102,12 @@ def replace_line_content(needle, replacement):
         result = []
         needle_count = 0
         for l in body:
-            if l.content != needle:
+            needle_prev_lines_are_same = (
+                needle_prev_lines is None or
+                len(result) >= len(needle_prev_lines) and
+                all(result[-i].content == needle_prev_lines[-i] for i in range(1, len(needle_prev_lines)+1))
+            )
+            if l.content != needle or not needle_prev_lines_are_same:
                 result.append(l)
             else:
                 # TODO: slicability depends on the part replaced.
@@ -127,6 +132,8 @@ def replace_line_content(needle, replacement):
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part)
                 result.append(to_append)
                 needle_count = needle_count + 1
+            prev_line = l.content
+
         if needle_count == 0:
             raise ValueError("Text '{}' not found in body".format(needle))
         if needle_count != 1:
