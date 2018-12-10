@@ -63,6 +63,23 @@ def add_empty_line_after(needle):
     return empty_line_adder
 
 
+def delete_line(needle):
+    def line_deleter(body):
+        result = []
+        needle_count = 0
+        for l in body:
+            if l.content == needle:
+                needle_count = needle_count + 1
+            else:
+                result.append(l)
+        if needle_count == 0:
+            raise ValueError("Text '{}' not found in body".format(needle))
+        if needle_count != 1:
+            raise ValueError("Text '{}' found too many times in body: {}".format(needle, needle_count))
+        return result
+    return line_deleter
+
+
 def replace_line_content(needle, replacement):
     common_prefix_len = 0
     while (
