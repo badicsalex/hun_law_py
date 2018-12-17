@@ -40,15 +40,30 @@ import hun_law.fixups.replacement_fixups
 
 EDITOR = "vim"
 
+
 def do_file_editing(body):
     with NamedTemporaryFile(mode="w", prefix="hun_law_editor", delete=False) as f:
-        for quote_level, l in iterate_with_quote_level(body, throw_exceptions=False):
+        first_negative = None
+        last_zero = None
+        for line_number, (quote_level, l) in enumerate(iterate_with_quote_level(body, throw_exceptions=False)):
             assert l.content.strip() == l.content, "Line content should be stripped, or else we will do it accidentally"
             indentation = " " * int(l.indent*0.2)
             representation = "{:>4} {} {}\n".format(quote_level, indentation, l.content)
             f.write(representation)
+            if quote_level < 0 and first_negative is None:
+                first_negative = line_number
+            if quote_level == 0:
+                last_zero = line_number
         tempfile_name = f.name
-    subprocess.run([EDITOR, tempfile_name])
+
+    if first_negative is not None:
+        open_at_line = first_negative
+    elif last_zero is not None:
+        open_at_line = last_zero
+    else:
+        open_at_line = 0
+
+    subprocess.run([EDITOR, tempfile_name, "+{}".format(open_at_line + 1)])
     result = []
     with open(tempfile_name, "r") as f:
         for l in f:
@@ -125,5 +140,3 @@ for e in extracted:
     if not isinstance(e, MagyarKozlonyLawRawText):
         continue
     detect_errors_and_try_fix(e)
-
-
