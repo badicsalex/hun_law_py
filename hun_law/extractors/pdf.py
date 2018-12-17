@@ -49,9 +49,6 @@ class PDFMinerAdapter(PDFTextDevice):
     def end_page(self, page):
         pass
 
-    def add_textbox(self, x, y, s):
-        self.current_page.textboxes.append(TextBox(x, y, s))
-
     def render_char(self, matrix, font, fontsize, scaling, rise, cid, *args):
         try:
             text = font.to_unichr(cid)
@@ -96,8 +93,11 @@ class PDFMinerAdapter(PDFTextDevice):
                 # Workaround for missing default width of space
                 # e.g. the font does not define the space character
                 unscaled_width_of_space = 0.25
-            width_of_space = unscaled_width_of_space * fontsize * scaling
-            self.current_page.textboxes.append(TextBox(matrix[4], matrix[5], textwidth * matrix[0], width_of_space * matrix[0], text))
+            x = matrix[4]
+            y = round(matrix[5], 3)
+            textbox_width = textwidth * matrix[0]
+            width_of_space = unscaled_width_of_space * fontsize * scaling * matrix[0]
+            self.current_page.textboxes.append(TextBox(x, y, textbox_width, width_of_space, text))
         return textwidth
 
     # TODO: parse graphical lines, so that footers can be detected more easily
