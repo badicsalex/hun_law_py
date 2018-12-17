@@ -314,6 +314,241 @@ replacement_fixups = {
             "replacement": "„í) dönt a szállítási rendszerüzemeltető és a vertikálisan integrált földgázipari vállalkozás, valamint a 119/A. §"
         }
     ],
+    "2012. évi CCIX. törvény": [
+        {
+            "needle": "(11) Az Ogytv. 29. § (9) bekezdésében a „48. § (3)–(5)” szövegrész helyébe a „48. § (3)–(7)” szöveg lép”",
+            "replacement": "(11) Az Ogytv. 29. § (9) bekezdésében a „48. § (3)–(5)” szövegrész helyébe a „48. § (3)–(7)” szöveg lép"
+        }
+    ],
+    "2012. évi CCVIII. törvény": [
+        {
+            "needle": "szöveg lép.”",
+            "needle_prev_lines": [
+                "CXXVIII. törvény 17/A. § (1) bekezdésében a „18. § (7) bekezdése” szövegrész helyébe a „18. § (6) bekezdés b)–c) pontja”"
+            ],
+            "replacement": "szöveg lép."
+        },
+        {
+            "needle": "szöveg lép.”",
+            "replacement": "szöveg lép."
+        }
+    ],
+    "2012. évi CCX. törvény": [
+        {
+            "needle": ",,(5) A 2. § (2) bekezdése és az 5. § (2) bekezdése szerint megkötött megállapodások, továbbá az 5. § (5) bekezdése",
+            "replacement": "„(5) A 2. § (2) bekezdése és az 5. § (2) bekezdése szerint megkötött megállapodások, továbbá az 5. § (5) bekezdése"
+        }
+    ],
+    "2012. évi CCXII. törvény": [
+        {
+            "needle": "szolgáltatásra jogosult személyt\" szöveg,",
+            "replacement": "szolgáltatásra jogosult személyt” szöveg,"
+        },
+        {
+            "needle": "5/A. § (1) Az 5. § (1) bekezdésben meghatározott szerződéseknek az 5. § (1) bekezdés alapján történő felmondása",
+            "replacement": "„5/A. § (1) Az 5. § (1) bekezdésben meghatározott szerződéseknek az 5. § (1) bekezdés alapján történő felmondása"
+        }
+    ],
+    "2012. évi CIV. törvény": [
+        {
+            "needle": "a) 7. § (4) bekezdésében a „jogszerűségét igazolni” szövegrész helyébe a jogszerűségéről nyilatkozni” szöveg,",
+            "replacement": "a) 7. § (4) bekezdésében a „jogszerűségét igazolni” szövegrész helyébe a „jogszerűségéről nyilatkozni” szöveg,"
+        },
+        {
+            "needle": "d) 27. § (4) bekezdés b) pont bd) alpontjában a „nevét (cégét), lakóhelyét (székhelyét) „ szövegrész helyébe a „nevét,",
+            "replacement": "d) 27. § (4) bekezdés b) pont bd) alpontjában a „nevét (cégét), lakóhelyét (székhelyét) ” szövegrész helyébe a „nevét,"
+        },
+        {
+            "needle": "tartalmazzák megfelelően a 44. §-ban foglalt adatközléshez szükséges adatokat „ szöveg,",
+            "replacement": "tartalmazzák megfelelően a 44. §-ban foglalt adatközléshez szükséges adatokat ” szöveg,"
+        },
+        {
+            "needle": "f) 39. § (1) bekezdésében a „(3) bekezdésének” szövegrész helyébe a „(2) bekezdésének „ szöveg,",
+            "replacement": "f) 39. § (1) bekezdésében a „(3) bekezdésének” szövegrész helyébe a „(2) bekezdésének ” szöveg,"
+        },
+        {
+            "needle": "befolyással” szöveg helyébe a „legalább többségi befolyással „ szöveg,",
+            "replacement": "befolyással” szöveg helyébe a „legalább többségi befolyással ” szöveg,"
+        },
+        {
+            "needle": "c) a Ctv. 53. § (1) bekezdésében a „ha a változás a cég tevékenységi körét érinti, illetve „ szövegrész,",
+            "replacement": "c) a Ctv. 53. § (1) bekezdésében a „ha a változás a cég tevékenységi körét érinti, illetve ” szövegrész,"
+        }
+    ],
+    "2012. évi CLII. törvény": [
+        {
+            "needle": "pénzügyi beszámolót, valamint teljesítményértékelést készít.\"",
+            "replacement": "pénzügyi beszámolót, valamint teljesítményértékelést készít.”"
+        }
+    ],
+    "2012. évi CLIV. törvény": [
+        {
+            "needle": "fenntartói jogok gyakorlására rendeletben kijelölt szervezet” szöveg, az „államháztartási törvényben\" szövegrész",
+            "replacement": "fenntartói jogok gyakorlására rendeletben kijelölt szervezet” szöveg, az „államháztartási törvényben” szövegrész"
+        },
+        {
+            "needle": "c) 40/A. § (1) bekezdésében a „termékenként\" szövegrész helyébe a „készítményenként\" szöveg,",
+            "replacement": "c) 40/A. § (1) bekezdésében a „termékenként\" szövegrész helyébe a „készítményenként” szöveg,"
+        },
+        {
+            "needle": "támogatásból le kell vonni a „36. § (1)–(2) és (4)–(4a), illetve 40/A. § (1) bekezdésében meghatározott fizetési",
+            "replacement": "támogatásból le kell vonni a 36. § (1)–(2) és (4)–(4a), illetve 40/A. § (1) bekezdésében meghatározott fizetési"
+        },
+        {
+            "needle": "c) 40/A. § (1) bekezdésében a „termékenként\" szövegrész helyébe a „készítményenként” szöveg,",
+            "replacement": "c) 40/A. § (1) bekezdésében a „termékenként” szövegrész helyébe a „készítményenként” szöveg,"
+        }
+    ],
+    "2012. évi CLVII. törvény": [
+        {
+            "needle": "a beruházó a feltárási engedély iránti kérelméhez csatolja a szerződést.\" szöveg,",
+            "replacement": "a beruházó a feltárási engedély iránti kérelméhez csatolja a szerződést.” szöveg,"
+        }
+    ],
+    "2012. évi CLXX. törvény": [
+        {
+            "needle": "hatóság megnevezéséről és címéről, valamint a jogorvoslat lehetőségéről vagy annak hiányáról.“",
+            "replacement": "hatóság megnevezéséről és címéről, valamint a jogorvoslat lehetőségéről vagy annak hiányáról.”"
+        }
+    ],
+    "2012. évi CLXXVIII. törvény": [
+        {
+            "needle": ",,c) a 124. § (1) bekezdésének c) pontjában és (4) bekezdésében említett esetekben igazoltan egészben vagy túlnyomó",
+            "replacement": "„c) a 124. § (1) bekezdésének c) pontjában és (4) bekezdésében említett esetekben igazoltan egészben vagy túlnyomó"
+        },
+        {
+            "needle": "a személygépkocsi osztály-jelzése: ”6”. Ha a személygépkocsi osztályjelzése a KöHÉM rendelet 2012. augusztus 15-ét",
+            "replacement": "a személygépkocsi osztály-jelzése: „6”. Ha a személygépkocsi osztályjelzése a KöHÉM rendelet 2012. augusztus 15-ét"
+        },
+        {
+            "needle": "17. tartozás: a magyar állami adó-, illetve vámhatóságnál – engedély nélkül – az előírt vagy a fizetési felszólításban",
+            "replacement": "„17. tartozás: a magyar állami adó-, illetve vámhatóságnál – engedély nélkül – az előírt vagy a fizetési felszólításban"
+        },
+        {
+            "needle": "benyújtásával egyidejűleg nem fizeti meg az eljárási illetéket” szöveg;”",
+            "replacement": "benyújtásával egyidejűleg nem fizeti meg az eljárási illetéket” szöveg;"
+        },
+        {
+            "needle": "eljárás igazgatási szolgáltatási díja esetén az 5 000 forintot.” szöveg;”",
+            "replacement": "eljárás igazgatási szolgáltatási díja esetén az 5 000 forintot.” szöveg;"
+        },
+        {
+            "needle": "15. 43/A. § b) pontjában az „éves szinten összesítve” és az „a tárgyévet követő augusztus 31-éig” szövegrész,”",
+            "replacement": "15. 43/A. § b) pontjában az „éves szinten összesítve” és az „a tárgyévet követő augusztus 31-éig” szövegrész,"
+        },
+        {
+            "needle": "b) 19. § (10) bekezdésében az „akkreditált” szövegrész.”",
+            "replacement": "b) 19. § (10) bekezdésében az „akkreditált” szövegrész."
+        }
+    ],
+    "2012. évi CXC. törvény": [
+        {
+            "needle": "„l) a közszolgáltatást ellátó szakmunkás szakmai továbbképzésére vonatkozó szabályokat.\"",
+            "replacement": "„l) a közszolgáltatást ellátó szakmunkás szakmai továbbképzésére vonatkozó szabályokat.”"
+        }
+    ],
+    "2012. évi CXCI. törvény": [
+        {
+            "needle": "hatályos anyagi jogi rendelkezések alkalmazandók.\"",
+            "replacement": "hatályos anyagi jogi rendelkezések alkalmazandók.”"
+        }
+    ],
+    "2012. évi CXCVI. törvény": [
+        {
+            "needle": "20. 78. § (4) bekezdés d) pontjában a „megfizetésének” szövegrész helyébe a megfizetésének, és” szöveg,",
+            "replacement": "20. 78. § (4) bekezdés d) pontjában a „megfizetésének” szövegrész helyébe a „megfizetésének, és” szöveg,"
+        }
+    ],
+    "2012. évi CXIX. törvény": [
+        {
+            "needle": "a 10 000 forintot;” szövegrész helyébe „a köztartozás összege eléri vagy meghaladja a 10 000 forintot;” szöveg lép.”",
+            "replacement": "a 10 000 forintot;” szövegrész helyébe „a köztartozás összege eléri vagy meghaladja a 10 000 forintot;” szöveg lép."
+        }
+    ],
+    "2012. évi CXVII. törvény": [
+        {
+            "needle": ",,(3) Az, akinek bírói szolgálati jogviszonya a Bjt. 90. § ha) pontja szerinti rá irányadó öregségi nyugdíjkorhatár betöltése",
+            "replacement": "„(3) Az, akinek bírói szolgálati jogviszonya a Bjt. 90. § ha) pontja szerinti rá irányadó öregségi nyugdíjkorhatár betöltése"
+        }
+    ],
+    "2012. évi CXXII. törvény": [
+        {
+            "needle": "(a továbbiakban mint ”Szerződő Felek”, és külön mint „Szerződő Fél”);",
+            "replacement": "(a továbbiakban mint „Szerződő Felek”, és külön mint „Szerződő Fél”);"
+        }
+    ],
+    "2012. évi LXI. törvény": [
+        {
+            "needle": "„ , illetőleg” szövegrész helyébe az „és a” szöveg, a „Magyar Országos Levéltárnak” szövegrész helyébe a ”Magyar",
+            "replacement": "„ , illetőleg” szövegrész helyébe az „és a” szöveg, a „Magyar Országos Levéltárnak” szövegrész helyébe a „Magyar"
+        }
+    ],
+    "2012. évi LXXIV. törvény": [
+        {
+            "needle": "„5. § (1) A géntechnológiai hatóság az engedély iránti kérelmet a géntechnológiai testület véleményére figyelemmel",
+            "replacement": "5. § (1) A géntechnológiai hatóság az engedély iránti kérelmet a géntechnológiai testület véleményére figyelemmel"
+        }
+    ],
+    "2012. évi LXXVI. törvény": [
+        {
+            "needle": ",,(9) Az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény módosításáról szóló 2005. évi CXXII. törvény erejénél",
+            "replacement": "„(9) Az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény módosításáról szóló 2005. évi CXXII. törvény erejénél"
+        },
+        {
+            "needle": ",,(3) A (2) bekezdés alapján tulajdonba adott ingatlanokon fennálló elidegenítési és terhelési tilalmat az ingatlan",
+            "replacement": "„(3) A (2) bekezdés alapján tulajdonba adott ingatlanokon fennálló elidegenítési és terhelési tilalmat az ingatlan"
+        }
+    ],
+    "2012. évi LXXXIV. törvény": [
+        {
+            "needle": "szolgáltatás,’’",
+            "replacement": "szolgáltatás,”"
+        }
+    ],
+    "2012. évi V. törvény": [
+        {
+            "needle": "XXIII. törvény 30/A. § (2) bekezdése” szövegrész helyébe a közszolgálati tisztviselőkről szóló törvény” szöveg lép.",
+            "replacement": "XXIII. törvény 30/A. § (2) bekezdése” szövegrész helyébe „a közszolgálati tisztviselőkről szóló törvény” szöveg lép."
+        }
+    ],
+    "2012. évi XCII. törvény": [
+        {
+            "needle": "g) “Processing of personal data” (hereafter referred to as ”processing”) shall mean any operation or set of operations",
+            "replacement": "g) “Processing of personal data” (hereafter referred to as “processing”) shall mean any operation or set of operations"
+        }
+    ],
+    "2012. évi XCIII. törvény": [
+        {
+            "needle": "d) a 12/G. § (2) bekezdésében a „talajvédelmi szempontokra és” szövegrész helyébe a művelhetőségi, és",
+            "replacement": "d) a 12/G. § (2) bekezdésében a „talajvédelmi szempontokra és” szövegrész helyébe a „művelhetőségi, és"
+        },
+        {
+            "needle": "I. törvény 81. § (1) bekezdésében az „okmányiroda” szövegrész helyébe a ”fővárosi és megyei kormányhivatal járási",
+            "replacement": "I. törvény 81. § (1) bekezdésében az „okmányiroda” szövegrész helyébe a „fővárosi és megyei kormányhivatal járási"
+        },
+        {
+            "needle": "járási (fővárosi kerületi) hivatala\" szöveg lép.",
+            "replacement": "járási (fővárosi kerületi) hivatala” szöveg lép."
+        },
+        {
+            "needle": "megyei kormányhivatal járási (fővárosi kerületi) hivatalának (a továbbiakban: járási hivatal) szöveg,",
+            "replacement": "megyei kormányhivatal járási (fővárosi kerületi) hivatalának (a továbbiakban: járási hivatal)” szöveg,"
+        },
+        {
+            "needle": "b) 91. § (1) bekezdéséből „– a jegyző 90/A. §-on alapuló határozatának kivételével –\" szövegrész.",
+            "replacement": "b) 91. § (1) bekezdéséből „– a jegyző 90/A. §-on alapuló határozatának kivételével –” szövegrész."
+        },
+        {
+            "needle": "hivatal) szöveg, az 55. § (6) bekezdésében és 60. § (2) bekezdésében a „jegyző” szövegrész helyébe a „járási hivatal”",
+            "replacement": "hivatal)” szöveg, az 55. § (6) bekezdésében és 60. § (2) bekezdésében a „jegyző” szövegrész helyébe a „járási hivatal”"
+        }
+    ],
+    "2012. évi XVII. törvény": [
+        {
+            "needle": "helyébe a „szervek” szöveg”, 84. § (3) bekezdésében az „irányító szerv által választott” szövegrész helyébe az „irányító",
+            "replacement": "helyébe a „szervek” szöveg, 84. § (3) bekezdésében az „irányító szerv által választott” szövegrész helyébe az „irányító"
+        }
+    ],
     "2013. évi CCLII. törvény": [
         {
             "needle": "(4) A 6:198. § (3) bekezdése a következő szöveggel lép hatályba:",
