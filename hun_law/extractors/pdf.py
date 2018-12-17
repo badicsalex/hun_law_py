@@ -148,7 +148,7 @@ def extract_textboxes(f):
 
 def extract_lines(potb):
     result = PdfOfLines()
-    for page in potb.pages:
+    for page_num, page in enumerate(potb.pages):
         processed_page = PageOfLines()
         textboxes_as_dicts = {}
         for tb in page.textboxes:
@@ -158,8 +158,14 @@ def extract_lines(potb):
                 # And that sub and superscripts are not used
                 textboxes_as_dicts[tb.y] = {}
             if tb.x in textboxes_as_dicts[tb.y]:
-                raise ValueError("Multiple textboxes on the exact same coordinates")
-            textboxes_as_dicts[tb.y][tb.x] = tb
+                if tb.content != textboxes_as_dicts[tb.y][tb.x].content:
+                    raise ValueError(
+                        "Multiple textboxes on the exact same coordinates on page  {}"
+                        "(Already there: '{}', to-be-inserted: '{}')"
+                        .format(page_num, textboxes_as_dicts[tb.y][tb.x], tb.content)
+                    )
+            else:
+                textboxes_as_dicts[tb.y][tb.x] = tb
 
         prev_y = 0
         for y in sorted(textboxes_as_dicts, reverse=True):
