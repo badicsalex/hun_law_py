@@ -87,9 +87,18 @@ def extract_replacements(original_lines, new_lines):
             result.append({"needle": original_line, "replacement": new_line})
             continue
 
+        # Before needle context: this will be already modified, hence the "new_lines"
+        if new_lines.count(new_lines[line_num-1]) == 1:
+            result.append({
+                "needle": original_line,
+                "replacement": new_line,
+                "needle_prev_lines": [new_lines[line_num-1]]
+            })
+            continue
         # TODO
-        raise ValueError("Multiline needle not yet supported")
+        raise ValueError("Super multiline needle not yet supported")
     return result
+
 
 def save_replacements_and_reload(identifier, replacements):
     new_replacement_fixups = copy.deepcopy(hun_law.fixups.replacement_fixups.replacement_fixups)
