@@ -87,7 +87,7 @@ class PDFMinerAdapter(PDFTextDevice):
         # exactly where other characters are, and that throws an error in later processing.
         # We will just throw these away for now, as it's in an appendix
         # And we do not even parse Appendixes (TODO)
-        if unicodedata.category(text[0]) == 'Co':
+        if unicodedata.category(text[0]) in ('Co', 'Cf'):
             return textwidth
 
         if not text.isspace():
