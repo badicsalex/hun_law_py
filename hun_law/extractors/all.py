@@ -19,14 +19,14 @@ from . import extractors_for_class
 
 from . import file, kozlonyok_hu_downloader, magyar_kozlony, pdf
 
-def do_extraction(to_be_processed_objects):
+def do_extraction(to_be_processed_objects, *, end_result_classes=()):
     """Processes all objects, and returns the end result processed objects."""
     global extractors_for_class
     queue = list(to_be_processed_objects)  # simple copy, or listify if not list
     result = []
     while queue:
         data = queue.pop()
-        if data.__class__ not in extractors_for_class:
+        if data.__class__ not in extractors_for_class or data.__class__ in end_result_classes:
             result.append(data)
         else:
             for extractor_fn in extractors_for_class[data.__class__]:

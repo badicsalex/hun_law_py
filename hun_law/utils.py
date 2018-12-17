@@ -262,13 +262,13 @@ def quote_level_diff(s):
     return s.count("„") + s.count("“") - s.count("”")
 
 
-def iterate_with_quote_level(lines):
+def iterate_with_quote_level(lines, *, throw_exceptions=True):
     quote_level = 0
     for line in lines:
         yield quote_level, line
         quote_level = quote_level + quote_level_diff(line.content)
-        if quote_level < 0:
+        if throw_exceptions and quote_level < 0:
             raise ValueError("Malformed quoting. (Quote_level = {}, line='{}')".format(quote_level, line.content))
 
-    if quote_level != 0:
+    if throw_exceptions and quote_level != 0:
         raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
