@@ -21,6 +21,7 @@ regular_sentence: any_expression+ END_OF_SENTENCE
 
 ?any_expression: WORD DASH?
     | compound_reference
+    | constitution_reference
     | quoted_text
     | parenthesed_text
     | expression_from_now_on DASH?
@@ -88,6 +89,16 @@ ALPHABETIC_SUBPOINT_ID: "a".."z" "a".."z"
 ALPHABETIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
 
 LIST_SEPARATOR: ("," | "és" | "valamint" | "illetve" | "vagy")
+
+constitution_reference: "Alaptörvény" constitution_article_id CONSTITUTION_ARTICLE_SUFFIX (paragraph_reference alphabetic_point_reference?)?
+constitution_article_id: (constitution_article_alphabetic | constitution_article_roman | constitution_article_numeric)
+constitution_article_alphabetic: CONSTITUTION_ARTICLE_ALPHABETIC ")"
+constitution_article_roman: CONSTITUTION_ARTICLE_ROMAN "."
+constitution_article_numeric: CONSTITUTION_ARTICLE_NUMERIC "."
+CONSTITUTION_ARTICLE_ALPHABETIC: "A".."Z"
+CONSTITUTION_ARTICLE_ROMAN: ("I" | "V" | "X" | "L" | "C" | "D" | "M")+
+CONSTITUTION_ARTICLE_NUMERIC: NUMBER
+CONSTITUTION_ARTICLE_SUFFIX: /cikk[a-zéáőúöüóíű]+/ | "cikk"
 
 quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
 INSIDE_QUOTE: /[^„”]/+
