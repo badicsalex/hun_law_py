@@ -19,7 +19,7 @@ start: regular_sentence+
 
 regular_sentence: any_expression+ END_OF_SENTENCE
 
-?any_expression: WORD
+?any_expression: WORD DASH?
     | compound_reference
     | quoted_text
     | parenthesed_text
@@ -75,6 +75,7 @@ INSIDE_QUOTE: /[^„”]/+
 ABBREVIATION: UPPERCASE LOWERCASE+ "."
 
 parenthesed_text: "(" WORD+ ")"
+
 PARENTHESES: "(" | ")"
 WORD: LETTER+
 

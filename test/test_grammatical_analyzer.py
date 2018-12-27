@@ -53,6 +53,12 @@ CASES = [
         ["2012. évi CXVI. törvény"]
     ),
     (
+        "Ez a törvény – a (2) bekezdésben foglalt kivétellel – 2013. augusztus 1-jén lép hatályba.",
+        "                 <             >                                                         ",
+        [ref(None, None, "2")],
+        [],
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",
