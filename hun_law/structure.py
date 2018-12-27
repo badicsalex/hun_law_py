@@ -347,3 +347,66 @@ class Act:
 
     def article(self, article_id):
         return self.__articles_map[str(article_id)]
+
+
+class MutableReference:
+    def __init__(self, act=None, article=None, paragraph=None, point=None, subpoint=None):
+        self.act = act
+        self.article = article
+        self.paragraph = paragraph
+        self.point = point
+        self.subpoint = subpoint
+
+
+class Reference:
+    def __init__(self, other):
+        self.__act = other.act
+        self.__article = other.article
+        self.__paragraph = other.paragraph
+        self.__point = other.point
+        self.__subpoint = other.subpoint
+
+    @property
+    def act(self):
+        return self.__act
+
+    @property
+    def article(self):
+        return self.__article
+
+    @property
+    def paragraph(self):
+        return self.__paragraph
+
+    @property
+    def point(self):
+        return self.__point
+
+    @property
+    def subpoint(self):
+        return self.__subpoint
+
+    def __repr__(self):
+        return "<Reference act:'{}', article:'{}', paragraph:'{}', point:'{}', subpoint:'{}'>".format(
+            self.act, self.article, self.paragraph, self.point, self.subpoint
+        )
+
+    def __eq__(self, other):
+        return (
+            self.__act == other.act and
+            self.__article == other.article and
+            self.__paragraph == other.paragraph and
+            self.__point == other.point and
+            self.__subpoint == other.subpoint
+        )
+
+    def is_relative(self):
+        return self.act is None
+
+    def is_range(self):
+        return (
+            isinstance(self.article, tuple) or
+            isinstance(self.paragraph, tuple) or
+            isinstance(self.point, tuple) or
+            isinstance(self.subpoint, tuple)
+        )

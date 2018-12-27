@@ -1,6 +1,7 @@
 # Runing the extractors
 pdfminer.six
 chardet
+lark-parser
 
 # Development
 autopep8
