@@ -28,7 +28,6 @@ regular_sentence: any_expression+ END_OF_SENTENCE
     | expression_from_now_on DASH?
     | from_now_on
     | NUMBER
-    | NUMBER_WITH_DOT
 
 expression_from_now_on: "(" WORD* "a" "továbbiakban" "együtt"? ":" WORD+ ")"
 
