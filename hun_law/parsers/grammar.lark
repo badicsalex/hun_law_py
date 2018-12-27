@@ -48,13 +48,13 @@ ACT_NUMBER: ROMAN_WITH_DOT
 article_reference: ((article_id | article_range) ("," | "és" | "valamint")?)+ ARTICLE_SUFFIX
 article_range: ARTICLE_ID DASH ARTICLE_ID "."
 article_id: ARTICLE_ID "."
-ARTICLE_ID: NUMBER ("/" "A".."Z")?
+ARTICLE_ID: (NUMBER ":" )? NUMBER ("/" "A".."Z")?
 ARTICLE_SUFFIX: /§-[a-zéáőúöüóíű]+/ | "§"
 
 paragraph_reference: ((paragraph_id | paragraph_range) ("," | "és" | "valamint")?)+ PARAGRAPH_SUFFIX
 paragraph_range: "(" PARAGRAPH_ID ")" DASH "(" PARAGRAPH_ID ")"
 paragraph_id: "(" PARAGRAPH_ID ")"
-PARAGRAPH_ID: NUMBER
+PARAGRAPH_ID: NUMBER ("a".."z")?
 PARAGRAPH_SUFFIX: /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés"
 
 alphabetic_point_reference: ((alphabetic_point_id | alphabetic_point_range) ("," | "és" | "valamint")?)+ ALPHABETIC_POINT_SUFFIX
@@ -66,7 +66,7 @@ ALPHABETIC_POINT_SUFFIX: /pontj[a-zéáőúöüóíű]+/ | "pont"
 numeric_point_reference: ((numeric_point_id | numeric_point_range) ("," | "és" | "valamint")?)+ NUMERIC_POINT_SUFFIX
 numeric_point_range: NUMERIC_POINT_ID DASH NUMERIC_POINT_ID "."
 numeric_point_id: NUMERIC_POINT_ID "."
-NUMERIC_POINT_ID: NUMBER
+NUMERIC_POINT_ID: NUMBER ("a".."z")?
 NUMERIC_POINT_SUFFIX: /pontj[a-zéáőúöüóíű]+/ | "pont"
 
 quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
