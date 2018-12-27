@@ -17,19 +17,19 @@
 
 start: regular_sentence+
 
-regular_sentence: any_expression+ END_OF_SENTENCE
+regular_sentence: WORD_UCFIRST any_expression+ END_OF_SENTENCE
 
 ?any_expression: WORD DASH?
     | compound_reference
     | compound_structural_element_reference
+    | decree_act_reference
     | constitution_reference
     | quoted_text
     | parenthesed_text
     | expression_from_now_on DASH?
-    | from_now_on
-    | NUMBER
-
-expression_from_now_on: "(" WORD* "a" "továbbiakban" "együtt"? ":" (WORD | ABBREVIATION)+ ")"
+    | WORD WORD from_now_on
+    | date
+    | NUMBER WORD
 
 compound_reference: (act_reference reference?) | reference
 reference: (article_reference paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
@@ -59,10 +59,14 @@ structural_element_reference: chapter_reference
     | subtitle_reference
     | appendix_reference
 
+decree_act_reference: decree_act_id
+decree_act_id: ACT_YEAR "évi" DECREE_ACT_NUMBER "törvényerejű rendelet"
+DECREE_ACT_NUMBER: NUMBER_WITH_DOT
+
 act_reference: abbreviated_act_id | (act_id from_now_on?)
 from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
 abbreviated_act_id: ABBREVIATION
-act_id: ACT_YEAR "évi" ACT_NUMBER "törvény"
+act_id: ACT_YEAR "évi" ACT_NUMBER ("törvény" | /törvén[a-zéáőúöüóíű]+/)
 ACT_YEAR: NUMBER_WITH_DOT
 ACT_NUMBER: ROMAN_WITH_DOT
 
@@ -131,6 +135,12 @@ appendix_id: APPENDIX_ID "."
 APPENDIX_ID: NUMBER ("/" "a".."z")?
 APPENDIX_SUFFIX: (/melléklet[a-zéáőúöüóíű]+/ | "melléklet")
 
+expression_from_now_on: WORD WORD "(" WORD* "a" "továbbiakban" "együtt"? ":" (WORD | ABBREVIATION)+ ")"
+
+date: NUMBER_WITH_DOT ("év" | "évi") | NUMBER_WITH_DOT ("év" | "évi")? month NUMBER "."?
+month: "január" | "február" | "március" | "április" | "május" | "június" | "július" | "augusztus" | "szeptember" | "október" | "november" | "december"
+
+
 quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
 INSIDE_QUOTE: /[^„”]/+
 
@@ -139,7 +149,10 @@ ABBREVIATION: (UPPERCASE LOWERCASE+ "." "tv.") | (UPPERCASE LOWERCASE+ " " "tv."
 parenthesed_text: "(" WORD+ ")"
 
 PARENTHESES: "(" | ")"
-WORD: LETTER+
+WORD: WHITELISTED_SPECIAL_WORDS | LETTER+
+WORD_UCFIRST: UPPERCASE LOWERCASE*
+
+WHITELISTED_SPECIAL_WORDS: "pl."
 
 NUMBER: "0".."9"+
 NUMBER_WITH_DOT: NUMBER "."

@@ -121,6 +121,18 @@ CASES = [
         [],
     ),
     (
+        # Multiple sentences
+        "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki. Az Eht. 188. §-a a következő 31/a. ponttal egészül ki.",
+        "        <      >             <           >                     <      >             <           >            ",
+        [
+            ref(None, "188"),
+            ref(point="31/a"),
+            ref(None, "188"),
+            ref(point="31/a"),
+        ],
+        [],
+    ),
+    (
         "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
         "                                  [                     ]                                 <    >             <         >            ",
         [
@@ -200,12 +212,39 @@ CASES = [
         [],
     ),
     (
+        "Ha az egyesülő jogi személyek közül egyes jogok (pl. részvénykibocsátás joga) nem mindegyik jogi személyt illetik meg.",
+        None,
+        None,
+        None,
+    ),
+    (
+        "Az 1986. évi 14. törvényerejű rendelettel kihirdetett, A Gyermekek Jogellenes Külföldre Vitelének Polgári Jogi Vonatkozásairól szóló,"
+        "Hágában az 1980. évi október 25. napján kelt egyezmény alkalmazása szempontjából a Ptk. rendelkezéseit a Ptk. hatálybalépését követően"
+        "külföldre vitt vagy ott visszatartott gyermekek tekintetében kell alkalmazni.",
+        None,
+        None,
+        None,
+    ),
+    (
         "A jogi személynek a Ptk. rendelkezéseit a (2) bekezdés szerinti döntéstől, ennek hiányában 2015. március 15-étől kell alkalmaznia"
         "(ezen alcím alkalmazásában a továbbiakban együtt: a Ptk. rendelkezéseivel összhangban álló továbbműködés időpontja).",
         "                                          <          >                                                                           "
         "                                                                                                                    ",
         [ref(paragraph="2")],
         [],
+    ),
+    (
+        # Multiple sentences
+        "A tesztekről szóló 2337. évi I. törvény nem létezik. Egy második mondattól meg parse-olni sem lehet.",
+        "                   [                  ]                                                             ",
+        [],
+        ["2337. évi I. törvény"],
+    ),
+    (
+        "E törvény rendelkezéseit a Polgári Törvénykönyvről szóló 2013. évi V. törvénnyel (a továbbiakban: Ptk.) együtt kell alkalmazni.",
+        "                                                         [                     ]                                               ",
+        [],
+        ["2013. évi V. törvény"],
     ),
     (
         "Az 1–30. §, a 31. § (1) és (3)−(5) bekezdése, a 32–34. §, a 35. § (1) és (3)–(5) bekezdése, a 36. §, a 37. § "
@@ -321,6 +360,16 @@ ABBREVIATION_CASES = (
         [("Eurt.tv.", "2004. évi XLV. törvény")],
     ),
     (
+        "E törvény rendelkezéseit a Polgári Törvénykönyvről szóló 2013. évi V. törvénnyel (a továbbiakban: Ptk.) együtt kell alkalmazni.",
+        [("Ptk.", "2013. évi V. törvény")],
+    ),
+    (
+        # Abbreviation used in the text itself
+        "Nem kell módosítani, ha a szövetkezetekről szóló 2006. évi X. törvény (a továbbiakban: Sztv.) rendelkezéseire utal "
+        "Amennyiben azonban az alapszabály egyéb okból módosul, a szövetkezet köteles az Sztv.-re utalást is módosítani.",
+        [("Sztv.", "2006. évi X. törvény")],
+    ),
+    (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
         []
     ),
@@ -334,5 +383,6 @@ ABBREVIATION_CASES = (
 @pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)
 def test_new_abbreviations(analyzer, s, abbrevs):
     parsed = analyzer.analyze(s)
+    parsed.indented_print()
     new_abbrevs = list(parsed.get_new_abbreviations())
     assert new_abbrevs == abbrevs
