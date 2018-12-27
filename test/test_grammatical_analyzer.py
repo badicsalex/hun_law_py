@@ -65,6 +65,24 @@ CASES = [
         None,
     ),
     (
+        "Ha az (1) és a (2) bekezdésben meghatározott előzetes.",
+        "      < >      <             >                        ",
+        [
+            ref(None, None, "1"),
+            ref(None, None, "2"),
+        ],
+        []
+    ),
+    (
+        "Ha létrejött adás-vételi szerződést a 23. § (4) bekezdésének a) vagy b) pontjában foglalt esetek fennállása alapján jóváhagyja.",
+        "                                      <                       >      <          >                                              ",
+        [
+            ref(None, "23", "4", "a"),
+            ref(None, "23", "4", "b"),
+        ],
+        []
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",
