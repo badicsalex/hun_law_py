@@ -29,7 +29,7 @@ regular_sentence: any_expression+ END_OF_SENTENCE
     | from_now_on
     | NUMBER
 
-expression_from_now_on: "(" WORD* "a" "továbbiakban" "együtt"? ":" WORD+ ")"
+expression_from_now_on: "(" WORD* "a" "továbbiakban" "együtt"? ":" (WORD | ABBREVIATION)+ ")"
 
 compound_reference: (act_reference reference?) | reference
 reference: (article_reference paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
