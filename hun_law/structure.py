@@ -349,22 +349,13 @@ class Act:
         return self.__articles_map[str(article_id)]
 
 
-class MutableReference:
-    def __init__(self, act=None, article=None, paragraph=None, point=None, subpoint=None):
-        self.act = act
-        self.article = article
-        self.paragraph = paragraph
-        self.point = point
-        self.subpoint = subpoint
-
-
 class Reference:
-    def __init__(self, other):
-        self.__act = other.act
-        self.__article = other.article
-        self.__paragraph = other.paragraph
-        self.__point = other.point
-        self.__subpoint = other.subpoint
+    def __init__(self, act=None, article=None, paragraph=None, point=None, subpoint=None):
+        self.__act = act
+        self.__article = article
+        self.__paragraph = paragraph
+        self.__point = point
+        self.__subpoint = subpoint
 
     @property
     def act(self):
@@ -387,7 +378,7 @@ class Reference:
         return self.__subpoint
 
     def __repr__(self):
-        return "<Reference act:'{}', article:'{}', paragraph:'{}', point:'{}', subpoint:'{}'>".format(
+        return "<Reference act:{!r}, article:{!r}, paragraph:{!r}, point:{!r}, subpoint:{!r}>".format(
             self.act, self.article, self.paragraph, self.point, self.subpoint
         )
 

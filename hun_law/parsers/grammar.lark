@@ -30,6 +30,8 @@ compound_reference: (act_reference reference?) | reference
 reference: (article_reference paragraph_reference alphabetic_point_reference)
     | (article_reference paragraph_reference numeric_point_reference)
     | (article_reference paragraph_reference)
+    | (article_reference alphabetic_point_reference)
+    | (article_reference numeric_point_reference)
     | (article_reference)
     | (paragraph_reference alphabetic_point_reference)
     | (paragraph_reference numeric_point_reference)
@@ -44,25 +46,25 @@ ACT_YEAR: NUMBER_WITH_DOT
 ACT_NUMBER: ROMAN_WITH_DOT
 
 article_reference: ((article_id | article_range) ("," | "és" | "valamint")?)+ ARTICLE_SUFFIX
-article_range: ARTICLE_ID "–" ARTICLE_ID "."
+article_range: ARTICLE_ID DASH ARTICLE_ID "."
 article_id: ARTICLE_ID "."
 ARTICLE_ID: NUMBER ("/" "A".."Z")?
 ARTICLE_SUFFIX: /§-[a-zéáőúöüóíű]+/ | "§"
 
 paragraph_reference: ((paragraph_id | paragraph_range) ("," | "és" | "valamint")?)+ PARAGRAPH_SUFFIX
-paragraph_range: "(" PARAGRAPH_ID ")" "–" "(" PARAGRAPH_ID ")"
+paragraph_range: "(" PARAGRAPH_ID ")" DASH "(" PARAGRAPH_ID ")"
 paragraph_id: "(" PARAGRAPH_ID ")"
 PARAGRAPH_ID: NUMBER
 PARAGRAPH_SUFFIX: /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés"
 
 alphabetic_point_reference: ((alphabetic_point_id | alphabetic_point_range) ("," | "és" | "valamint")?)+ ALPHABETIC_POINT_SUFFIX
-alphabetic_point_range: ALPHABETIC_POINT_ID ")" "–" ALPHABETIC_POINT_ID ")"
+alphabetic_point_range: ALPHABETIC_POINT_ID ")" DASH ALPHABETIC_POINT_ID ")"
 alphabetic_point_id: ALPHABETIC_POINT_ID ")"
 ALPHABETIC_POINT_ID: "a".."z"
 ALPHABETIC_POINT_SUFFIX: /pontj[a-zéáőúöüóíű]+/ | "pont"
 
 numeric_point_reference: ((numeric_point_id | numeric_point_range) ("," | "és" | "valamint")?)+ NUMERIC_POINT_SUFFIX
-numeric_point_range: NUMERIC_POINT_ID "–" NUMERIC_POINT_ID "."
+numeric_point_range: NUMERIC_POINT_ID DASH NUMERIC_POINT_ID "."
 numeric_point_id: NUMERIC_POINT_ID "."
 NUMERIC_POINT_ID: NUMBER
 NUMERIC_POINT_SUFFIX: /pontj[a-zéáőúöüóíű]+/ | "pont"
@@ -86,8 +88,9 @@ LOWERCASE: /[a-zéáőúöüóíű]/
 LETTER: /[a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ\-]/
 END_OF_SENTENCE: "." | "?" | ":"
 SECTION_SIGN: "§"
+DASH: "−" | "–" | "-"
 
-OTHER: /[^ „”§()?:\.\t\f\r\n1-9a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ–\/\-]/
+OTHER: /[^ „”§()?:\.\t\f\r\n1-9a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ–−\/\-]/
 
 %ignore WS
 %ignore OTHER
