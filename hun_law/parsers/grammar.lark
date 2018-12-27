@@ -39,7 +39,7 @@ reference: (article_reference paragraph_reference alphabetic_point_reference)
     | (alphabetic_point_reference)
 
 act_reference: abbreviated_act_id | (act_id from_now_on?)
-from_now_on: "(a továbbiakban: " ABBREVIATION ")"
+from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
 abbreviated_act_id: ABBREVIATION
 act_id: ACT_YEAR "évi" ACT_NUMBER "törvény"
 ACT_YEAR: NUMBER_WITH_DOT

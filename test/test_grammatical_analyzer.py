@@ -47,6 +47,12 @@ CASES = [
         ["2012. évi CCIV. törvény"],
     ),
     (
+        "A pénzügyi tranzakciós illetékről szóló 2012. évi CXVI. törvény (a továbbiakban: Pti. törvény) 7. § (1) bekezdése helyébe a következő rendelkezés lép:",
+        "                                        [                     ]                                <                >                                     ",
+        [ref("2012. évi CXVI. törvény", "7", "1")],
+        ["2012. évi CXVI. törvény"]
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",
@@ -160,6 +166,10 @@ ABBREVIATION_CASES = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
         [('Hktv.', '2012. évi CCXIX. törvény')]
+    ),
+    (
+        "A pénzügyi tranzakciós illetékről szóló 2012. évi CXVI. törvény (a továbbiakban: Pti. törvény) 7. § (1) bekezdése helyébe a következő rendelkezés lép:",
+        [('Pti.', '2012. évi CXVI. törvény')]
     ),
     (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
