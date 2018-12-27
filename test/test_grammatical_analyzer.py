@@ -154,6 +154,30 @@ CASES = [
         [],
     ),
     (
+        # This will be a title reference later
+        "A Ctv. I. Fejezete a következő 6–8. címmel egészül ki:",
+        "                                                      ",
+        [],
+        [],
+    ),
+    (
+        # Appendix reference
+        "A Ctv. 1–3. számú melléklete az 1. melléklet szerint módosul.",
+        "                                                             ",
+        [],
+        [],
+    ),
+    (
+        # Subtitle + article reference
+        "A Cnytv. a következő 5/A. alcímmel, valamint 18. §-sal és 18/A. §-sal egészül ki:",
+        "                                             <       >    <         >            ",
+        [
+            ref(None, "18"),
+            ref(None, "18/A"),
+        ],
+        [],
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",

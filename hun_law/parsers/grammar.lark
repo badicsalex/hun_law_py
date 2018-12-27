@@ -55,6 +55,9 @@ reference: (article_reference paragraph_reference alphabetic_point_reference alp
 
 compound_structural_element_reference: (act_reference structural_element_reference?) | structural_element_reference
 structural_element_reference: chapter_reference
+    | title_reference
+    | subtitle_reference
+    | appendix_reference
 
 act_reference: abbreviated_act_id | (act_id from_now_on?)
 from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
@@ -109,6 +112,24 @@ chapter_reference: chapter_id CHAPTER_SUFFIX
 chapter_id: CHAPTER_ID "."
 CHAPTER_ID: ROMAN ("/" "A".."Z")?
 CHAPTER_SUFFIX:  /Fejezet[a-zéáőúöüóíű]+/ | "Fejezet"
+
+title_reference: ((title_id | title_range) LIST_SEPARATOR? /az?/?)+ TITLE_SUFFIX
+title_range: TITLE_ID DASH TITLE_ID "."
+title_id: TITLE_ID "."
+TITLE_ID: NUMBER ("/" "a".."z")?
+TITLE_SUFFIX: /cím[a-zéáőúöüóíű]+/ | "cím"
+
+subtitle_reference: ((subtitle_id | subtitle_range) LIST_SEPARATOR? /az?/?)+ SUBTITLE_SUFFIX
+subtitle_range: SUBTITLE_ID DASH SUBTITLE_ID "."
+subtitle_id: SUBTITLE_ID "."
+SUBTITLE_ID: NUMBER ("/" "A".."Z")?
+SUBTITLE_SUFFIX: /alcím[a-zéáőúöüóíű]+/ | "alcím"
+
+appendix_reference: ((appendix_id | appendix_range) LIST_SEPARATOR? /az?/?)+ "számú"? APPENDIX_SUFFIX
+appendix_range: APPENDIX_ID DASH APPENDIX_ID "."
+appendix_id: APPENDIX_ID "."
+APPENDIX_ID: NUMBER ("/" "a".."z")?
+APPENDIX_SUFFIX: (/melléklet[a-zéáőúöüóíű]+/ | "melléklet")
 
 quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
 INSIDE_QUOTE: /[^„”]/+
