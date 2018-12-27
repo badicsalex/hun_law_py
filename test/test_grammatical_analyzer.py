@@ -111,6 +111,15 @@ CASES = [
         [],
     ),
     (
+        "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
+        "        <      >             <           >            ",
+        [
+            ref(None, "188"),
+            ref(point="31/a"),
+        ],
+        [],
+    ),
+    (
         # This will later be a chapter reference, but not now.
         "A Gyvt. VIII/A. Fejezetének címe helyébe a következő cím lép:",
         "                                                             ",
