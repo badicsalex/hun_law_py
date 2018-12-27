@@ -71,6 +71,13 @@ CASES = [
         None,
     ),
     (
+        # Note the abbreviation without the rigid referenc to the Act.
+        "A haszonbérletre e törvény rendelkezései mellett a Polgári Törvénykönyv (a továbbiakban: Ptk.), valamint a földről szóló törvény haszonbérletre vonatkozó szabályait is alkalmazni kell.",
+        None,
+        None,
+        None,
+    ),
+    (
         "Ha az (1) és a (2) bekezdésben meghatározott előzetes.",
         "      < >      <             >                        ",
         [
