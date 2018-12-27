@@ -21,6 +21,7 @@ regular_sentence: any_expression+ END_OF_SENTENCE
 
 ?any_expression: WORD DASH?
     | compound_reference
+    | compound_structural_element_reference
     | constitution_reference
     | quoted_text
     | parenthesed_text
@@ -50,6 +51,9 @@ reference: (article_reference paragraph_reference alphabetic_point_reference alp
     | (alphabetic_point_reference alphabetic_subpoint_reference)
     | (alphabetic_point_reference)
     | (alphabetic_subpoint_reference)
+
+compound_structural_element_reference: (act_reference structural_element_reference?) | structural_element_reference
+structural_element_reference: chapter_reference
 
 act_reference: abbreviated_act_id | (act_id from_now_on?)
 from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
@@ -96,9 +100,14 @@ constitution_article_alphabetic: CONSTITUTION_ARTICLE_ALPHABETIC ")"
 constitution_article_roman: CONSTITUTION_ARTICLE_ROMAN "."
 constitution_article_numeric: CONSTITUTION_ARTICLE_NUMERIC "."
 CONSTITUTION_ARTICLE_ALPHABETIC: "A".."Z"
-CONSTITUTION_ARTICLE_ROMAN: ("I" | "V" | "X" | "L" | "C" | "D" | "M")+
+CONSTITUTION_ARTICLE_ROMAN: ROMAN
 CONSTITUTION_ARTICLE_NUMERIC: NUMBER
 CONSTITUTION_ARTICLE_SUFFIX: /cikk[a-zéáőúöüóíű]+/ | "cikk"
+
+chapter_reference: chapter_id CHAPTER_SUFFIX
+chapter_id: CHAPTER_ID "."
+CHAPTER_ID: ROMAN ("/" "A".."Z")?
+CHAPTER_SUFFIX:  /Fejezet[a-zéáőúöüóíű]+/ | "Fejezet"
 
 quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
 INSIDE_QUOTE: /[^„”]/+
@@ -112,7 +121,8 @@ WORD: LETTER+
 
 NUMBER: "0".."9"+
 NUMBER_WITH_DOT: NUMBER "."
-ROMAN_WITH_DOT: ("I" | "V" | "X" | "L" | "C" | "D" | "M")+ "."  //TODO: actual grammar for this.
+ROMAN: ("I" | "V" | "X" | "L" | "C" | "D" | "M")+ //TODO: actual grammar for this.
+ROMAN_WITH_DOT: ROMAN "."
 
 WS: /[ \t\f\r\n]/+
 UPPERCASE: /[A-ZÉÁŐÚÖÜÓÍŰ]/

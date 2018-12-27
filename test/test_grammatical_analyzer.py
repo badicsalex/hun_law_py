@@ -111,6 +111,13 @@ CASES = [
         [],
     ),
     (
+        # This will later be a chapter reference, but not now.
+        "A Gyvt. VIII/A. Fejezetének címe helyébe a következő cím lép:",
+        "                                                             ",
+        [],
+        [],
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",
