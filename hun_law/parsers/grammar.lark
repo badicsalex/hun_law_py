@@ -23,8 +23,11 @@ regular_sentence: any_expression+ END_OF_SENTENCE
     | compound_reference
     | quoted_text
     | parenthesed_text
+    | expression_from_now_on
     | NUMBER
     | NUMBER_WITH_DOT
+
+expression_from_now_on: "(" "a" "továbbiakban" "együtt"? ":" WORD+ ")"
 
 compound_reference: (act_reference reference?) | reference
 reference: (article_reference paragraph_reference alphabetic_point_reference)
