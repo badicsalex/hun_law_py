@@ -31,16 +31,24 @@ regular_sentence: any_expression+ END_OF_SENTENCE
 expression_from_now_on: "(" WORD* "a" "továbbiakban" "együtt"? ":" WORD+ ")"
 
 compound_reference: (act_reference reference?) | reference
-reference: (article_reference paragraph_reference alphabetic_point_reference)
+reference: (article_reference paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
+    | (article_reference paragraph_reference numeric_point_reference alphabetic_subpoint_reference)
+    | (article_reference paragraph_reference alphabetic_point_reference)
     | (article_reference paragraph_reference numeric_point_reference)
     | (article_reference paragraph_reference)
+    | (article_reference alphabetic_point_reference alphabetic_subpoint_reference)
+    | (article_reference numeric_point_reference alphabetic_subpoint_reference)
     | (article_reference alphabetic_point_reference)
     | (article_reference numeric_point_reference)
     | (article_reference)
+    | (paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
+    | (paragraph_reference numeric_point_reference alphabetic_subpoint_reference)
     | (paragraph_reference alphabetic_point_reference)
     | (paragraph_reference numeric_point_reference)
     | (paragraph_reference)
+    | (alphabetic_point_reference alphabetic_subpoint_reference)
     | (alphabetic_point_reference)
+    | (alphabetic_subpoint_reference)
 
 act_reference: abbreviated_act_id | (act_id from_now_on?)
 from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
@@ -65,13 +73,19 @@ alphabetic_point_reference: ((alphabetic_point_id | alphabetic_point_range) LIST
 alphabetic_point_range: ALPHABETIC_POINT_ID ")" DASH ALPHABETIC_POINT_ID ")"
 alphabetic_point_id: ALPHABETIC_POINT_ID ")"
 ALPHABETIC_POINT_ID: "a".."z"
-ALPHABETIC_POINT_SUFFIX: /pontj[a-zéáőúöüóíű]+/ | "pont"
+ALPHABETIC_POINT_SUFFIX: /pont[a-zéáőúöüóíű]+/ | "pont"
 
 numeric_point_reference: ((numeric_point_id | numeric_point_range) LIST_SEPARATOR? /az?/?)+ NUMERIC_POINT_SUFFIX
 numeric_point_range: NUMERIC_POINT_ID DASH NUMERIC_POINT_ID "."
 numeric_point_id: NUMERIC_POINT_ID "."
 NUMERIC_POINT_ID: NUMBER ("a".."z")?
-NUMERIC_POINT_SUFFIX: /pontj[a-zéáőúöüóíű]+/ | "pont"
+NUMERIC_POINT_SUFFIX: /pont[a-zéáőúöüóíű]+/ | "pont"
+
+alphabetic_subpoint_reference: ((alphabetic_subpoint_id | alphabetic_subpoint_range) LIST_SEPARATOR? /az?/?)+ ALPHABETIC_SUBPOINT_SUFFIX
+alphabetic_subpoint_range: ALPHABETIC_SUBPOINT_ID ")" DASH ALPHABETIC_SUBPOINT_ID ")"
+alphabetic_subpoint_id: ALPHABETIC_SUBPOINT_ID ")"
+ALPHABETIC_SUBPOINT_ID: "a".."z" "a".."z"
+ALPHABETIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
 
 LIST_SEPARATOR: ("," | "és" | "valamint" | "illetve" | "vagy")
 

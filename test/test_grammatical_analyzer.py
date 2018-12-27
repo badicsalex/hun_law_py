@@ -96,6 +96,12 @@ CASES = [
         []
     ),
     (
+        "Az (1) bekezdés b) pont bb) alpontban meghatározott esetben a tilos a hasznosítás.",
+        "   <                                >                                             ",
+        [ref(None, None, "1", "b", "bb")],
+        [],
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",

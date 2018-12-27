@@ -26,9 +26,10 @@ class ReferenceCollector:
         self.articles = [(None, 0, 0)]
         self.paragraphs = [(None, 0, 0)]
         self.points = [(None, 0, 0)]
-        self.alphabetic_points = self.points
-        self.numeric_points = self.points
+        self.alphabetic_points = self.points  # alias
+        self.numeric_points = self.points  # alias
         self.subpoints = [(None, 0, 0)]
+        self.alphabetic_subpoints = self.subpoints  # alias
 
     def add_item(self, ref_type, ref_data, start_pos, end_pos):
         ref_list = getattr(self, ref_type + 's')
