@@ -46,10 +46,17 @@ class GrammaticalAnalysisResult:
 
     @classmethod
     def update_mutable_ref(cls, mutable_ref, token):
+        # TODO: Ranges and  lists
         if token.type == "ABBREVIATION" and mutable_ref.act is None:
             mutable_ref.act = str(token)
         if token.type == "ARTICLE_ID":
             mutable_ref.article = str(token)
+        if token.type == "PARAGRAPH_ID":
+            mutable_ref.paragraph= str(token)
+        if token.type == "ALPHABETIC_POINT_ID":
+            mutable_ref.point = str(token)
+        if token.type == "NUMERIC_POINT_ID":
+            mutable_ref.point = str(token)
 
     def get_act_references(self):
         for act_ref in self.tree.find_data('act_reference'):

@@ -29,15 +29,15 @@ def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
 CASES = [
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        "                        [                      ]                         <   >                                       ",
+        "                        [                      ]                         <     >                                     ",
         [ref("2012. évi CCXIX. törvény", '28')],
         ["2012. évi CCXIX. törvény", ],
     ),
     (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
-        "   [  ] <   >                                                                                                                                                  ",
-        [ref("Flt.", "30"), ],
+        "   [  ] <                             >                                                                                                                        ",
+        [ref("Flt.", "30", '1', 'a'), ],
         ["Flt.", ],
     ),
     (
