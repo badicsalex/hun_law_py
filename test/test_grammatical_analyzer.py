@@ -28,6 +28,7 @@ def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
 
 ABBREVIATIONS = {
     "Flt.": "1991. évi IV. törvény",
+    "Víziközmű tv.": "2011. évi CCIX. törvény",
 }
 
 CASES = [
@@ -118,6 +119,32 @@ CASES = [
             ref(point="31/a"),
         ],
         [],
+    ),
+    (
+        "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
+        "                                  [                     ]                                 <    >             <         >            ",
+        [
+            ref("2011. évi CCIX. törvény", "2"),
+            ref(point="31"),
+        ],
+        ["2011. évi CCIX. törvény"],
+    ),
+    (
+        "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
+        "  [           ] <     >             <                 >            ",
+        [
+            ref("2011. évi CCIX. törvény", "63"),
+            ref(paragraph=("5", "7")),
+        ],
+        ["2011. évi CCIX. törvény"]
+    ),
+    (
+        "Az európai részvénytársaságról szóló 2004. évi XLV. törvény (a továbbiakban: Eurt.tv.) 2. §-a helyébe a következő rendelkezés lép:",
+        "                                     [                    ]                            <    >                                     ",
+        [
+            ref("2004. évi XLV. törvény", "2"),
+        ],
+        ["2004. évi XLV. törvény"],
     ),
     (
         # This will later be a chapter reference, but not now.
@@ -252,6 +279,14 @@ ABBREVIATION_CASES = (
     (
         "A pénzügyi tranzakciós illetékről szóló 2012. évi CXVI. törvény (a továbbiakban: Pti. törvény) 7. § (1) bekezdése helyébe a következő rendelkezés lép:",
         [('Pti.', '2012. évi CXVI. törvény')]
+    ),
+    (
+        "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
+        [("Víziközmű tv.", "2011. évi CCIX. törvény")],
+    ),
+    (
+        "Az európai részvénytársaságról szóló 2004. évi XLV. törvény (a továbbiakban: Eurt.tv.) 2. §-a helyébe a következő rendelkezés lép:",
+        [("Eurt.tv.", "2004. évi XLV. törvény")],
     ),
     (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
