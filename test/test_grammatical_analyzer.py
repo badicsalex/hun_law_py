@@ -102,6 +102,15 @@ CASES = [
         [],
     ),
     (
+        "A Gyvt. 5. §-a a következő ny) ponttal egészül ki:",
+        "        <    >             <         >            ",
+        [
+            ref(None, "5"),
+            ref(point="ny")
+        ],
+        [],
+    ),
+    (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",

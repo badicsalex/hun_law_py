@@ -73,7 +73,7 @@ PARAGRAPH_SUFFIX: /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés"
 alphabetic_point_reference: ((alphabetic_point_id | alphabetic_point_range) LIST_SEPARATOR? /az?/?)+ ALPHABETIC_POINT_SUFFIX
 alphabetic_point_range: ALPHABETIC_POINT_ID ")" DASH ALPHABETIC_POINT_ID ")"
 alphabetic_point_id: ALPHABETIC_POINT_ID ")"
-ALPHABETIC_POINT_ID: "a".."z"
+ALPHABETIC_POINT_ID: "ny" | "sz" | "a".."z"
 ALPHABETIC_POINT_SUFFIX: /pont[a-zéáőúöüóíű]+/ | "pont"
 
 numeric_point_reference: ((numeric_point_id | numeric_point_range) LIST_SEPARATOR? /az?/?)+ NUMERIC_POINT_SUFFIX
