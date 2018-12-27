@@ -65,6 +65,12 @@ CASES = [
         None,
     ),
     (
+        "Az adás-vételnek nem minősülő, a föld tulajdonjogának átruházásáról szóló szerződést (ezen alcímben a továbbiakban: szerződés) – annak létrejöttétől számított 8 napon belül – a tulajdonjogot szerző félnek (csere esetén a cserepartnerek valamelyikének) a mezőgazdasági igazgatási szerv részére kell megküldeni jóváhagyás céljából.",
+        None,
+        None,
+        None,
+    ),
+    (
         "Ha az (1) és a (2) bekezdésben meghatározott előzetes.",
         "      < >      <             >                        ",
         [
@@ -165,7 +171,7 @@ def test_parse_results_are_stable(analyzer, s, positions, refs, act_refs):
     first_result = analyzer.analyze(s)
     for i in range(3):
         other_result = analyzer.analyze(s)
-        assert first_result == other_result, ("Parsing always yields  the same result", case)
+        assert first_result == other_result, ("Parsing always yields  the same result", s)
 
 
 @pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
