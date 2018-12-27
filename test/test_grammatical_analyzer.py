@@ -133,6 +133,15 @@ CASES = [
         [],
     ),
     (
+        "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
+        "                          [                      ] <     >             <         >            ",
+        [
+            ref("1995. évi XCVII. törvény", "71"),
+            ref(point="3a"),
+        ],
+        ["1995. évi XCVII. törvény"],
+    ),
+    (
         "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
         "                                  [                     ]                                 <    >             <         >            ",
         [
