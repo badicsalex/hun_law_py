@@ -26,19 +26,39 @@ def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
     return Reference(act, article, paragraph, point, subpoint)
 
 
+ABBREVIATIONS = {
+    "Flt.": "1991. évi IV. törvény",
+}
+
 CASES = [
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
         "                        [                      ]                         <     >                                     ",
         [ref("2012. évi CCXIX. törvény", '28')],
-        ["2012. évi CCXIX. törvény", ],
+        ["2012. évi CCXIX. törvény"],
+    ),
+    (
+        "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
+        "                                                         [                     ] <   >    <       >                                     ",
+        [
+            ref("2012. évi CCIV. törvény", "44/B"),
+            ref("2012. évi CCIV. törvény", "44/C"),
+        ],
+        ["2012. évi CCIV. törvény"],
     ),
     (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",
-        [ref("Flt.", "30", '1', 'a'), ],
-        ["Flt.", ],
+        [ref("1991. évi IV. törvény", "30", '1', 'a'), ],
+        ["1991. évi IV. törvény", ],
+    ),
+    (
+        # Ptk purposefully left out of ABBREVIATIONS to test missing abbreviations.
+        "A Ptk. 3:222. § (1) bekezdése a következő szöveggel lép hatályba:",
+        "       <                    >                                    ",
+        [ref(None, "3:222", "1")],
+        [],
     ),
     (
         "Az 1–30. §, a 31. § (1) és (3)−(5) bekezdése, a 32–34. §, a 35. § (1) és (3)–(5) bekezdése, a 36. §, a 37. § "
@@ -121,11 +141,11 @@ def test_parse_results(analyzer, s, positions, refs, act_refs):
     parsed_refs = []
     parsed_act_refs = []
     parsed_pos_string = [" "] * len(s)
-    for ref, start, stop in parsed.get_references():
+    for ref, start, stop in parsed.get_references(ABBREVIATIONS):
         parsed_pos_string[start] = '<'
         parsed_pos_string[stop] = '>'
         parsed_refs.append(ref)
-    for act_ref, start, stop in parsed.get_act_references():
+    for act_ref, start, stop in parsed.get_act_references(ABBREVIATIONS):
         parsed_pos_string[start] = '['
         parsed_pos_string[stop] = ']'
         parsed_act_refs.append(act_ref)
@@ -134,3 +154,26 @@ def test_parse_results(analyzer, s, positions, refs, act_refs):
     assert act_refs == parsed_act_refs
     if positions is not None:
         assert positions == parsed_pos_string
+
+
+ABBREVIATION_CASES = (
+    (
+        "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
+        [('Hktv.', '2012. évi CCXIX. törvény')]
+    ),
+    (
+        "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
+        []
+    ),
+    (
+        "A Kvtv. 72. §-a a következő (9)–(12) bekezdésekkel egészül ki:",
+        []
+    ),
+)
+
+
+@pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)
+def test_new_abbreviations(analyzer, s, abbrevs):
+    parsed = analyzer.analyze(s)
+    new_abbrevs = list(parsed.get_new_abbreviations())
+    assert new_abbrevs == abbrevs

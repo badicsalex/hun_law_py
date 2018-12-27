@@ -75,12 +75,16 @@ class ReferenceCollector:
         yield from self.subpoints
 
 
+class AbbreviationNotFoundError(Exception):
+    pass
+
+
 class GrammaticalAnalysisResult:
     def __init__(self, s, tree):
         self.s = s
         self.tree = tree
 
-    def get_references(self):
+    def get_references(self, abbreviations):
         for ref_container in self.tree.find_data('compound_reference'):
             reference_collector = ReferenceCollector()
             if len(ref_container.children) == 1:
@@ -90,7 +94,11 @@ class GrammaticalAnalysisResult:
             else:
                 act_ref, ref = ref_container.children
                 assert act_ref.data == 'act_reference'
-                reference_collector.act = self.get_act_id_from_parse_result(act_ref)
+                try:
+                    reference_collector.act = self.get_act_id_from_parse_result(act_ref, abbreviations)
+                except AbbreviationNotFoundError:
+                    pass
+
             assert ref.data == 'reference', ref
             for ref_part in ref.children:
                 assert ref_part.data.endswith("_reference")
@@ -129,16 +137,22 @@ class GrammaticalAnalysisResult:
         if token.type == "NUMERIC_POINT_ID":
             mutable_ref.point = str(token)
 
-    def get_act_references(self):
+    def get_act_references(self, abbreviations):
         for act_ref in self.tree.find_data('act_reference'):
             start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.children[0])
-            yield self.get_act_id_from_parse_result(act_ref), start_pos, end_pos
+            try:
+                yield self.get_act_id_from_parse_result(act_ref, abbreviations), start_pos, end_pos
+            except AbbreviationNotFoundError:
+                pass
 
     @classmethod
-    def get_act_id_from_parse_result(cls, act_ref):
+    def get_act_id_from_parse_result(cls, act_ref, abbreviations):
         act_id = act_ref.children[0]
         if act_id.data == 'abbreviated_act_id':
-            return str(act_id.children[0])
+            abbrev = str(act_id.children[0])
+            if abbrev not in abbreviations:
+                raise AbbreviationNotFoundError()
+            return abbreviations[abbrev]
         elif act_id.data == 'act_id':
             assert len(act_id.children) == 4
             return "{} évi {} törvény".format(act_id.children[0], act_id.children[2])
@@ -154,6 +168,15 @@ class GrammaticalAnalysisResult:
         while not isinstance(last_token, Token):
             last_token = last_token.children[-1]
         return first_token.column - 1, last_token.column + len(last_token) - 2
+
+    def get_new_abbreviations(self):
+        for act_ref in self.tree.find_data('act_reference'):
+            try:
+                from_now_on = next(self.tree.find_data('from_now_on'))
+            except StopIteration:
+                continue
+            abbrev = next(t for t in from_now_on.children if t.type == 'ABBREVIATION')
+            yield str(abbrev), self.get_act_id_from_parse_result(act_ref, {})
 
     def indented_print(self,  tree=None, indent=''):
         if tree is None:
