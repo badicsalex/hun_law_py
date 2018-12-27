@@ -173,7 +173,7 @@ class GrammaticalAnalysisResult:
     def get_new_abbreviations(self):
         for act_ref in self.tree.find_data('act_reference'):
             try:
-                from_now_on = next(self.tree.find_data('from_now_on'))
+                from_now_on = next(act_ref.find_data('from_now_on'))
             except StopIteration:
                 continue
             abbrev = next(t for t in from_now_on.children if t.type == 'ABBREVIATION')
