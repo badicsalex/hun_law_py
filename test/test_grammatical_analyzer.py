@@ -117,6 +117,13 @@ CASES = [
         None, None, None
     ),
     (
+        # TODO: Fix "this article" parsing. I just can't be bothered TBH.
+        "E § (2) bekezdés d) pontjában foglaltaktól eltérni tilos.",
+        "    <                       >                            ",
+        [ref(None, None, "2", "d")],
+        [],
+    ),
+    (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
         "                                         [                  ]                              <                          >                                     ",
         [ref("2012. évi I. törvény", "29", "2", "e")],

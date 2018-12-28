@@ -17,7 +17,11 @@
 
 start: regular_sentence+
 
-regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
+regular_sentence: sentence_starting_expression any_expression+ END_OF_SENTENCE
+
+sentence_starting_expression: WORD_UCFIRST DASH?
+    | compound_reference
+    | "E" ARTICLE_SUFFIX
 
 ?any_expression: WORD DASH?
     | compound_reference
@@ -29,6 +33,7 @@ regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
     | WORD WORD from_now_on
     | date
     | relative_date
+    | (this | previous) ARTICLE_SUFFIX
     | NUMBER WORD
     | NUMBER+ "," NUMBER
     | ":"
@@ -71,7 +76,6 @@ ACT_YEAR: NUMBER_WITH_DOT
 ACT_NUMBER: ROMAN_WITH_DOT
 
 article_reference: ((article_id | article_range) LIST_SEPARATOR? /az?/?)+ ARTICLE_SUFFIX
-    | (this | previous) ARTICLE_SUFFIX
 article_range: ARTICLE_ID DASH ARTICLE_ID "."
 article_id: ARTICLE_ID "."
 ARTICLE_ID: (NUMBER ":" )? NUMBER ("/" "A".."Z")?
@@ -108,7 +112,7 @@ NUMERIC_SUBPOINT_ID: NUMBER
 NUMERIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
 
 previous: "az"? "előző"
-this: "e" | "ezen"
+this: "E" | "e" | "ezen"
 
 LIST_SEPARATOR: ("," | "és" | "valamint" | "illetve" | "vagy")
 
