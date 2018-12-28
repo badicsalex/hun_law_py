@@ -118,6 +118,7 @@ LIST_SEPARATOR: ("," | "és" | "valamint" | "illetve" | "vagy")
 
 
 other_reference: decree_act_reference
+    | decree_reference
     | constitution_reference
     | appendix_reference
     | agreement_reference
@@ -126,6 +127,10 @@ other_reference: decree_act_reference
 decree_act_reference: decree_act_id (from_now_on | from_now_on_long)?
 decree_act_id: ACT_YEAR "évi" DECREE_ACT_NUMBER "törvényerejű rendelet"
 DECREE_ACT_NUMBER: NUMBER_WITH_DOT
+
+decree_reference: decree_id decree_suffix (from_now_on | from_now_on_long)?
+decree_id: NUMBER "/" NUMBER_WITH_DOT "(" ROMAN_WITH_DOT NUMBER_WITH_DOT ")"
+decree_suffix: "Kormányrendelet"
 
 constitution_reference: "Alaptörvény" constitution_article_id CONSTITUTION_ARTICLE_SUFFIX (paragraph_reference alphabetic_point_reference?)?
 constitution_article_id: (constitution_article_alphabetic | constitution_article_roman | constitution_article_numeric)

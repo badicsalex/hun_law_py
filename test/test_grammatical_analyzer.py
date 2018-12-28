@@ -309,6 +309,10 @@ CASES = [
         [],
     ),
     (
+        "E szolgáltatások fedezetéről szóló 1997. évi LXXX. törvény végrehajtásáról szóló 195/1997. (XI. 5.) Kormányrendelet (a továbbiakban: Tbj. vhr.) 7/B. §-a szerint kell igazolni.",
+        None, None, None
+    ),
+    (
         "Ha az egyesülő jogi személyek közül egyes jogok (pl. részvénykibocsátás joga) nem mindegyik jogi személyt illetik meg.",
         None,
         None,
