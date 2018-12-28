@@ -29,6 +29,7 @@ regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
     | expression_from_now_on DASH?
     | WORD WORD from_now_on
     | date
+    | relative_date
     | NUMBER WORD
     | ":"
 
@@ -145,6 +146,7 @@ APPENDIX_SUFFIX: /melléklet[a-zéáőúöüóíű]+/ | "melléklet" | /Mellékl
 expression_from_now_on: WORD WORD "(" WORD* "a" "továbbiakban" "együtt"? ":" (WORD | ABBREVIATION)+ ")"
     | "(" WORD* "alkalmazásában" ":" WORD+ ")"
 
+relative_date: "követő" NUMBER_WITH_DOT "napon"
 date: NUMBER_WITH_DOT ("év" | "évi") | NUMBER_WITH_DOT ("év" | "évi")? month NUMBER "."? |  month NUMBER "."
 month: "január" | "február" | "március" | "április" | "május" | "június" | "július" | "augusztus" | "szeptember" | "október" | "november" | "december"
 
