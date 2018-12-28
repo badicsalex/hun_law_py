@@ -22,8 +22,7 @@ regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
 ?any_expression: WORD DASH?
     | compound_reference
     | compound_structural_element_reference
-    | decree_act_reference
-    | constitution_reference
+    | other_reference
     | quoted_text
     | parenthesed_text
     | expression_from_now_on DASH?
@@ -55,19 +54,10 @@ reference: (article_reference paragraph_reference alphabetic_point_reference alp
     | (alphabetic_point_reference)
     | (alphabetic_subpoint_reference)
 
-compound_structural_element_reference: (act_reference structural_element_reference?) | structural_element_reference
-structural_element_reference: chapter_reference
-    | title_reference
-    | subtitle_reference
-    | appendix_reference
-
-decree_act_reference: decree_act_id (from_now_on | from_now_on_long)?
-decree_act_id: ACT_YEAR "évi" DECREE_ACT_NUMBER "törvényerejű rendelet"
-DECREE_ACT_NUMBER: NUMBER_WITH_DOT
 
 act_reference: abbreviated_act_id | act_id (from_now_on | from_now_on_long)?
-from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
-from_now_on_long: "(a továbbiakban: " WORD+ "törvény" ")"
+from_now_on: "(" "a" "továbbiakban" ":"? ABBREVIATION "törvény"? ")"
+from_now_on_long: "(" "a" "továbbiakban" ":"? WORD+ "törvény" ")"
 abbreviated_act_id: ABBREVIATION
 act_id: ACT_YEAR "évi" ACT_NUMBER ("törvény" | /törvén[a-zéáőúöüóíű]+/)
 ACT_YEAR: NUMBER_WITH_DOT
@@ -109,6 +99,16 @@ this: "e" | "ezen"
 
 LIST_SEPARATOR: ("," | "és" | "valamint" | "illetve" | "vagy")
 
+
+other_reference: decree_act_reference
+    | constitution_reference
+    | appendix_reference
+    | agreement_reference
+
+decree_act_reference: decree_act_id (from_now_on | from_now_on_long)?
+decree_act_id: ACT_YEAR "évi" DECREE_ACT_NUMBER "törvényerejű rendelet"
+DECREE_ACT_NUMBER: NUMBER_WITH_DOT
+
 constitution_reference: "Alaptörvény" constitution_article_id CONSTITUTION_ARTICLE_SUFFIX (paragraph_reference alphabetic_point_reference?)?
 constitution_article_id: (constitution_article_alphabetic | constitution_article_roman | constitution_article_numeric)
 constitution_article_alphabetic: CONSTITUTION_ARTICLE_ALPHABETIC ")"
@@ -118,6 +118,21 @@ CONSTITUTION_ARTICLE_ALPHABETIC: "A".."Z"
 CONSTITUTION_ARTICLE_ROMAN: ROMAN
 CONSTITUTION_ARTICLE_NUMERIC: NUMBER
 CONSTITUTION_ARTICLE_SUFFIX: /cikk[a-zéáőúöüóíű]+/ | "cikk"
+
+appendix_reference: ((appendix_id | appendix_range) LIST_SEPARATOR? /az?/?)+ "számú"? APPENDIX_SUFFIX
+appendix_range: APPENDIX_ID DASH APPENDIX_ID "."
+appendix_id: APPENDIX_ID "."
+APPENDIX_ID: NUMBER ("/" "a".."z")?
+APPENDIX_SUFFIX: /melléklet[a-zéáőúöüóíű]+/ | "melléklet" | /Melléklet[a-zéáőúöüóíű]+/ | "Melléklet"
+
+agreement_reference: "Egyezmény" (agreement_article_id LIST_SEPARATOR?)+ agreement_article_suffix paragraph_reference?
+agreement_article_id: NUMBER_WITH_DOT
+agreement_article_suffix: /cikk[a-zéáőúöüóíű]+/ | "cikk"
+
+compound_structural_element_reference: (act_reference structural_element_reference?) | structural_element_reference
+structural_element_reference: chapter_reference
+    | title_reference
+    | subtitle_reference
 
 chapter_reference: ((chapter_id | chapter_range) LIST_SEPARATOR? /az?/?)+ CHAPTER_SUFFIX
 chapter_range: CHAPTER_ID DASH CHAPTER_ID "."
@@ -137,16 +152,10 @@ subtitle_id: SUBTITLE_ID "."
 SUBTITLE_ID: NUMBER ("/" "A".."Z")?
 SUBTITLE_SUFFIX: /alcím[a-zéáőúöüóíű]+/ | "alcím" | /Alcím[a-zéáőúöüóíű]+/ | "Alcím"
 
-appendix_reference: ((appendix_id | appendix_range) LIST_SEPARATOR? /az?/?)+ "számú"? APPENDIX_SUFFIX
-appendix_range: APPENDIX_ID DASH APPENDIX_ID "."
-appendix_id: APPENDIX_ID "."
-APPENDIX_ID: NUMBER ("/" "a".."z")?
-APPENDIX_SUFFIX: /melléklet[a-zéáőúöüóíű]+/ | "melléklet" | /Melléklet[a-zéáőúöüóíű]+/ | "Melléklet"
-
 expression_from_now_on: WORD WORD "(" WORD* "a" "továbbiakban" "együtt"? ":" (WORD | ABBREVIATION)+ ")"
     | "(" WORD* "alkalmazásában" ":" WORD+ ")"
 
-relative_date: "követő" NUMBER_WITH_DOT "napon"
+relative_date: ("számított" | "követő") NUMBER_WITH_DOT "napon"
 date: NUMBER_WITH_DOT ("év" | "évi") | NUMBER_WITH_DOT ("év" | "évi")? month NUMBER "."? |  month NUMBER "."
 month: "január" | "február" | "március" | "április" | "május" | "június" | "július" | "augusztus" | "szeptember" | "október" | "november" | "december"
 

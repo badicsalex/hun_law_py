@@ -61,22 +61,29 @@ CASES = [
     ),
     (
         "Az erdőről, az erdő védelméről és az erdőgazdálkodásról szóló törvény szerint erdőnek, valamint erdőgazdálkodási célt közvetlenül szolgáló földterületnek minősülő földre (a továbbiakban együtt: erdőnek minősülő föld) e törvény rendelkezéseit kell alkalmazni.",
-        None,
-        None,
-        None,
+        None, None, None,
     ),
     (
         "Az adás-vételnek nem minősülő, a föld tulajdonjogának átruházásáról szóló szerződést (ezen alcímben a továbbiakban: szerződés) – annak létrejöttétől számított 8 napon belül – a tulajdonjogot szerző félnek (csere esetén a cserepartnerek valamelyikének) a mezőgazdasági igazgatási szerv részére kell megküldeni jóváhagyás céljából.",
-        None,
-        None,
-        None,
+        None, None, None,
     ),
     (
         # Note the abbreviation without the rigid referenc to the Act.
         "A haszonbérletre e törvény rendelkezései mellett a Polgári Törvénykönyv (a továbbiakban: Ptk.), valamint a földről szóló törvény haszonbérletre vonatkozó szabályait is alkalmazni kell.",
-        None,
-        None,
-        None,
+        None, None, None,
+    ),
+    (
+        "Az UNESCO Világörökség Bizottsága által az Egyezmény 11. cikk (2) bekezdése alapján létrehozott és vezetett lista.",
+        None, None, None
+    ),
+    (
+        "Világörökségi várományos helyszín (a továbbiakban: várományos helyszín): a kiemelkedõ kulturális örökségi, illetve természeti értékei (a továbbiakban: kiemelkedõ érték) révén, az Egyezmény 1. és 2. cikkében meghatározott kritériumok szerint az UNESCO Világörökség Központhoz (a továbbiakban: Központ) bejelentett.",
+        None, None, None
+    ),
+    (
+        "Az egyéb használati jogviszonyt alapító szerzõdés a miniszteri döntés minisztériumi honlapon történõ közzétételétõl számított 60. napon e törvény erejénél fogva megszûnik.",
+        None, None, None
+    ),
     (
         "A (2) bekezdés szerinti hitelezõkkel szemben a kényszerértékesítési kvótára vonatkozó szabályok (6–8. §) és a (2) bekezdés megsértése esetén:",
         "  <          >                                                                                   <    >       <          >                   ",
@@ -407,6 +414,11 @@ ABBREVIATION_CASES = (
         "Nem kell módosítani, ha a szövetkezetekről szóló 2006. évi X. törvény (a továbbiakban: Sztv.) rendelkezéseire utal "
         "Amennyiben azonban az alapszabály egyéb okból módosul, a szövetkezet köteles az Sztv.-re utalást is módosítani.",
         [("Sztv.", "2006. évi X. törvény")],
+    ),
+    (
+        # No colon
+        "A fogyasztóvédelmi hatósága fogyasztóvédelemrõl szóló 1997. évi CLV. törvény (a továbbiakban Fgytv.) szabályai szerint jár el.",
+        [("Fgytv.", "1997. évi CLV. törvény")],
     ),
     (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
