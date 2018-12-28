@@ -100,7 +100,7 @@ NUMERIC_POINT_SUFFIX: /pont[a-zéáőúöüóíű]+/ | "pont"
 alphabetic_subpoint_reference: ((alphabetic_subpoint_id | alphabetic_subpoint_range) LIST_SEPARATOR? /az?/?)+ ALPHABETIC_SUBPOINT_SUFFIX
 alphabetic_subpoint_range: ALPHABETIC_SUBPOINT_ID ")" DASH ALPHABETIC_SUBPOINT_ID ")"
 alphabetic_subpoint_id: ALPHABETIC_SUBPOINT_ID ")"
-ALPHABETIC_SUBPOINT_ID: "a".."z" "a".."z"
+ALPHABETIC_SUBPOINT_ID: "a".."z" "a".."z"?
 ALPHABETIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
 
 previous: "az"? "előző"

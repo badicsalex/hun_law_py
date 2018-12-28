@@ -121,6 +121,12 @@ CASES = [
         [],
     ),
     (
+        "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
+        "                            [                     ]                       <                                   >                                     ",
+        [ref("2111. évi LXXV. törvény", "1", "1", "1", "c")],
+        ["2111. évi LXXV. törvény"],
+    ),
+    (
         # Multiple sentences
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki. Az Eht. 188. §-a a következő 31/a. ponttal egészül ki.",
         "        <      >             <           >                     <      >             <           >            ",
