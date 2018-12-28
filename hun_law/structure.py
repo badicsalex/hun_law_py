@@ -231,11 +231,20 @@ class SubArticleElement(ABC):
     def header_prefix(cls, identifier):
         return "{}. ".format(identifier)
 
+    @property
+    @abstractmethod
+    def relative_reference(self):
+        pass
+
 
 class AlphabeticSubpoint(SubArticleElement):
     @classmethod
     def header_prefix(cls, identifier):
         return "{}) ".format(identifier)
+
+    @property
+    def relative_reference(self):
+        return Reference(subpoint=self.identifier)
 
 
 class NumericPoint(SubArticleElement):
@@ -248,6 +257,10 @@ class NumericPoint(SubArticleElement):
     def subpoint(self, sp_id):
         return self.child(sp_id)
 
+    @property
+    def relative_reference(self):
+        return Reference(point=self.identifier)
+
 
 class AlphabeticPoint(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
@@ -258,6 +271,10 @@ class AlphabeticPoint(SubArticleElement):
 
     def subpoint(self, sp_id):
         return self.child(sp_id)
+
+    @property
+    def relative_reference(self):
+        return Reference(point=self.identifier)
 
 
 class Paragraph(SubArticleElement):
@@ -275,6 +292,10 @@ class Paragraph(SubArticleElement):
         if self.children_type not in (AlphabeticPoint, NumericPoint):
             raise KeyError("There are no points in this paragraph")
         return self.child(point_id)
+
+    @property
+    def relative_reference(self):
+        return Reference(paragraph=self.identifier)
 
 
 class Article:
@@ -314,6 +335,10 @@ class Article:
             return self.__paragraph_map[str(paragraph_id)]
         else:
             return self.__paragraph_map[None]
+
+    @property
+    def relative_reference(self):
+        return Reference(article=self.identifier)
 
 
 class Act:
@@ -401,3 +426,23 @@ class Reference:
             isinstance(self.point, tuple) or
             isinstance(self.subpoint, tuple)
         )
+
+    def relative_to(self, other):
+        params = []
+        my_part = False
+        for key in ("act", "article", "paragraph", "point", "subpoint"):
+            if getattr(self, key) is not None:
+                my_part = True
+            params.append(getattr(self if my_part else other, key))
+        return Reference(*params)
+
+    @property
+    def relative_id_string(self):
+        result = "ref"
+        for key, id_key in (("article", "a"), ("paragraph", "p"), ("point", "pt"), ("subpoint", "sp")):
+            val = getattr(self, key)
+            if val is not None:
+                if isinstance(val, tuple):
+                    val = val[0]
+                result = "{}_{}{}".format(result, id_key, val)
+        return result
