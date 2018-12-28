@@ -142,6 +142,15 @@ CASES = [
         ["1995. évi XCVII. törvény"],
     ),
     (
+        "A temetőkről és a temetkezésről szóló 1999. évi XLIII. törvény (a továbbiakban: temetőkről és a temetkezésről szóló törvény) 3. §-a a következő k) ponttal egészül ki:",
+        "                                      [                      ]                                                               <    >             <        >            ",
+        [
+            ref("1999. évi XLIII. törvény", "3"),
+            ref(point="k"),
+        ],
+        ["1999. évi XLIII. törvény"],
+    ),
+    (
         "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
         "                                  [                     ]                                 <    >             <         >            ",
         [
@@ -169,10 +178,16 @@ CASES = [
     ),
     (
         # This will later be a chapter reference, but not now.
-        "A Gyvt. VIII/A. Fejezetének címe helyébe a következő cím lép:",
-        "                                                             ",
+        "A szövetkezetekről szóló 2006. évi X. törvény (a továbbiakban: Szövtv.) I. és II. Fejezete helyébe a következő I. és II. Fejezet lép:",
+        "                         [                  ]                                                                                        ",
         [],
-        [],
+        ["2006. évi X. törvény"],
+    ),
+    (
+        "Semmis az alapszabály olyan rendelkezése, amely a vagyoni hozzájárulásokkal kapcsolatban az e §-ban meghatározottnál későbbi teljesítési határidőt ír elő.",
+        None,
+        None,
+        None,
     ),
     (
         # This will be a title reference later

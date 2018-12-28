@@ -115,6 +115,9 @@ class GrammaticalAnalysisResult:
                     elif ref_list_item.data == ref_type + '_range':
                         assert len(relevant_children) == 2, ("Wrong amount of IDs in", ref_list_item)
                         reference_collector.add_item(ref_type, (relevant_children[0], relevant_children[1]), start_pos, end_pos)
+                    elif ref_list_item.data in ("this", "previous"):
+                        # TODO: actually handle this case
+                        pass
                     else:
                         raise ValueError("Unknown type in reference list: {}".format(ref_list_item.data))
             collected_refs = [list(r) for r in reference_collector.iter()]
