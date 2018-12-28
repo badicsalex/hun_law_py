@@ -156,7 +156,7 @@ INSIDE_QUOTE: /[^„”]/+
 
 ABBREVIATION: (UPPERCASE LOWERCASE+ "." "tv.") | (UPPERCASE LOWERCASE+ " " "tv.") | (UPPERCASE LOWERCASE+ ".")
 
-parenthesed_text: "(" WORD+ ")"
+parenthesed_text: "(" (reference | WORD)+ ")"
 
 PARENTHESES: "(" | ")"
 WORD: WHITELISTED_SPECIAL_WORDS | LETTER+

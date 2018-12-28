@@ -77,6 +77,15 @@ CASES = [
         None,
         None,
         None,
+    (
+        "A (2) bekezdés szerinti hitelezõkkel szemben a kényszerértékesítési kvótára vonatkozó szabályok (6–8. §) és a (2) bekezdés megsértése esetén:",
+        "  <          >                                                                                   <    >       <          >                   ",
+        [
+            ref(paragraph="2"),
+            ref(article=("6", "8")),
+            ref(paragraph="2"),
+        ],
+        [],
     ),
     (
         "Ha az (1) és a (2) bekezdésben meghatározott előzetes.",

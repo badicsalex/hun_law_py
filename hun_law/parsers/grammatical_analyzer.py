@@ -86,8 +86,11 @@ class GrammaticalAnalysisResult:
         self.tree = tree
 
     def get_references(self, abbreviations):
+        refs_to_parse = []
+        refs_found = set()
+        # Collect references where we might have Act Id
         for ref_container in self.tree.find_data('compound_reference'):
-            reference_collector = ReferenceCollector()
+            act_id = None
             if len(ref_container.children) == 1:
                 ref = ref_container.children[0]
                 if ref.data == 'act_reference':
@@ -96,36 +99,56 @@ class GrammaticalAnalysisResult:
                 act_ref, ref = ref_container.children
                 assert act_ref.data == 'act_reference'
                 try:
-                    reference_collector.act = self.get_act_id_from_parse_result(act_ref, abbreviations)
+                    act_id = self.get_act_id_from_parse_result(act_ref, abbreviations)
                 except AbbreviationNotFoundError:
                     pass
+            refs_to_parse.append((act_id, ref))
+            refs_found.add(ref)
 
-            assert ref.data == 'reference', ref
-            for ref_part in ref.children:
-                assert ref_part.data.endswith("_reference")
-                ref_type = ref_part.data[:-10]
-                for ref_list_item in ref_part.children:
-                    if not isinstance(ref_list_item, Tree):
-                        continue
-                    relevant_children = [str(c) for c in ref_list_item.children if c.type == ref_type.upper() + "_ID"]
-                    start_pos, end_pos = self.get_subtree_start_and_end_pos(ref_list_item)
-                    if ref_list_item.data == ref_type + '_id':
-                        assert len(relevant_children) == 1, ("Wrong amount of IDs in", ref_list_item)
-                        reference_collector.add_item(ref_type, relevant_children[0], start_pos, end_pos)
-                    elif ref_list_item.data == ref_type + '_range':
-                        assert len(relevant_children) == 2, ("Wrong amount of IDs in", ref_list_item)
-                        reference_collector.add_item(ref_type, (relevant_children[0], relevant_children[1]), start_pos, end_pos)
-                    elif ref_list_item.data in ("this", "previous"):
-                        # TODO: actually handle this case
-                        pass
-                    else:
-                        raise ValueError("Unknown type in reference list: {}".format(ref_list_item.data))
+        # Collect all other refs scattered elsewhere
+        for ref in self.tree.find_data('reference'):
+            if ref in refs_found:
+                continue
+            refs_to_parse.append((None, ref))
+
+        result = []
+        for act_id, ref in refs_to_parse:
+            reference_collector = ReferenceCollector()
+            if act_id is not None:
+                reference_collector.act = act_id
+
+            self.fill_reference_collector(ref, reference_collector)
             collected_refs = [list(r) for r in reference_collector.iter()]
             if collected_refs:
                 full_start_pos, full_end_pos = self.get_subtree_start_and_end_pos(ref)
                 collected_refs[0][1] = full_start_pos
                 collected_refs[-1][2] = full_end_pos
-                yield from collected_refs
+                result.extend(collected_refs)
+        result.sort(key=lambda x: x[1])
+        return result
+
+    @classmethod
+    def fill_reference_collector(cls, parsed_ref, reference_collector):
+        assert parsed_ref.data == 'reference', ref
+        for ref_part in parsed_ref.children:
+            assert ref_part.data.endswith("_reference")
+            ref_type = ref_part.data[:-10]
+            for ref_list_item in ref_part.children:
+                if not isinstance(ref_list_item, Tree):
+                    continue
+                relevant_children = [str(c) for c in ref_list_item.children if c.type == ref_type.upper() + "_ID"]
+                start_pos, end_pos = cls.get_subtree_start_and_end_pos(ref_list_item)
+                if ref_list_item.data == ref_type + '_id':
+                    assert len(relevant_children) == 1, ("Wrong amount of IDs in", ref_list_item)
+                    reference_collector.add_item(ref_type, relevant_children[0], start_pos, end_pos)
+                elif ref_list_item.data == ref_type + '_range':
+                    assert len(relevant_children) == 2, ("Wrong amount of IDs in", ref_list_item)
+                    reference_collector.add_item(ref_type, (relevant_children[0], relevant_children[1]), start_pos, end_pos)
+                elif ref_list_item.data in ("this", "previous"):
+                    # TODO: actually handle this case
+                    pass
+                else:
+                    raise ValueError("Unknown type in reference list: {}".format(ref_list_item.data))
 
     @classmethod
     def update_mutable_ref(cls, mutable_ref, token):
