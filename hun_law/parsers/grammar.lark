@@ -15,25 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-start: regular_sentence+
+start: any_expression+
 
-regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
-
-?any_expression: WORD DASH?
-    | compound_reference
-    | compound_structural_element_reference
-    | decree_act_reference
-    | constitution_reference
+?any_expression: compound_reference
     | quoted_text
-    | parenthesed_text
-    | expression_from_now_on DASH?
-    | WORD WORD from_now_on
-    | date
-    | NUMBER WORD
-    | ":"
+    | anything
 
-compound_reference: (act_reference reference?) | reference
-reference: (article_reference paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
+compound_reference.100: (act_reference reference?) | reference
+reference.300: (article_reference paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
     | (article_reference paragraph_reference numeric_point_reference alphabetic_subpoint_reference)
     | (article_reference paragraph_reference alphabetic_point_reference)
     | (article_reference paragraph_reference numeric_point_reference)
@@ -54,126 +43,93 @@ reference: (article_reference paragraph_reference alphabetic_point_reference alp
     | (alphabetic_point_reference)
     | (alphabetic_subpoint_reference)
 
-compound_structural_element_reference: (act_reference structural_element_reference?) | structural_element_reference
-structural_element_reference: chapter_reference
-    | title_reference
-    | subtitle_reference
-    | appendix_reference
+act_reference.50: abbreviation | act_id (from_now_on | from_now_on_long)?
+from_now_on: "(" "a" "továbbiakban" ":" abbreviation "törvény"? ")"
+from_now_on_long: "(" "a" "továbbiakban" ":"  any_word+ "törvény" ")"
+act_id: act_year "évi" act_number act_suffix
+act_year: NUMBER "."
+act_number: roman "."
+act_suffix: "törvény" | /törvén[a-zéáőúöüóíű]+/
 
-decree_act_reference: decree_act_id (from_now_on | from_now_on_long)?
-decree_act_id: ACT_YEAR "évi" DECREE_ACT_NUMBER "törvényerejű rendelet"
-DECREE_ACT_NUMBER: NUMBER_WITH_DOT
+article_reference.50: ((article_id | article_range) "." list_separator? /az?/?)+ article_suffix
+    | (this | previous) article_suffix
+article_range: article_id DASH article_id
+article_id: (NUMBER ":" )? NUMBER ("/" uc_letter)?
+article_suffix: /§-[a-zéáőúöüóíű]+/ | "§"
 
-act_reference: abbreviated_act_id | act_id (from_now_on | from_now_on_long)?
-from_now_on: "(a továbbiakban: " ABBREVIATION "törvény"? ")"
-from_now_on_long: "(a továbbiakban: " WORD+ "törvény" ")"
-abbreviated_act_id: ABBREVIATION
-act_id: ACT_YEAR "évi" ACT_NUMBER ("törvény" | /törvén[a-zéáőúöüóíű]+/)
-ACT_YEAR: NUMBER_WITH_DOT
-ACT_NUMBER: ROMAN_WITH_DOT
+paragraph_reference.50: (( "(" paragraph_id ")" | paragraph_range) list_separator? /az?/?)+ paragraph_suffix
+paragraph_range: "(" paragraph_id ")" DASH "(" paragraph_id ")"
+paragraph_id: NUMBER one_letter?
+paragraph_suffix: /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés"
 
-article_reference: ((article_id | article_range) LIST_SEPARATOR? /az?/?)+ ARTICLE_SUFFIX
-    | (this | previous) ARTICLE_SUFFIX
-article_range: ARTICLE_ID DASH ARTICLE_ID "."
-article_id: ARTICLE_ID "."
-ARTICLE_ID: (NUMBER ":" )? NUMBER ("/" "A".."Z")?
-ARTICLE_SUFFIX: /§-[a-zéáőúöüóíű]+/ | "§"
+alphabetic_point_reference.50: ((alphabetic_point_id ")" | alphabetic_point_range) list_separator? /az?/?)+ point_suffix
+alphabetic_point_range: alphabetic_point_id ")" DASH alphabetic_point_id ")"
+alphabetic_point_id: "ny" | "sz" |  one_letter
 
-paragraph_reference: ((paragraph_id | paragraph_range) LIST_SEPARATOR? /az?/?)+ PARAGRAPH_SUFFIX
-paragraph_range: "(" PARAGRAPH_ID ")" DASH "(" PARAGRAPH_ID ")"
-paragraph_id: "(" PARAGRAPH_ID ")"
-PARAGRAPH_ID: NUMBER ("a".."z")?
-PARAGRAPH_SUFFIX: /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés"
+numeric_point_reference.50: ((numeric_point_id | numeric_point_range) "." list_separator? /az?/?)+ point_suffix
+numeric_point_range: numeric_point_id DASH numeric_point_id
+numeric_point_id: NUMBER ("/"? one_letter)?
+point_suffix: /pont[a-zéáőúöüóíű]+/ | "pont"
 
-alphabetic_point_reference: ((alphabetic_point_id | alphabetic_point_range) LIST_SEPARATOR? /az?/?)+ ALPHABETIC_POINT_SUFFIX
-alphabetic_point_range: ALPHABETIC_POINT_ID ")" DASH ALPHABETIC_POINT_ID ")"
-alphabetic_point_id: ALPHABETIC_POINT_ID ")"
-ALPHABETIC_POINT_ID: "ny" | "sz" | "a".."z"
-ALPHABETIC_POINT_SUFFIX: /pont[a-zéáőúöüóíű]+/ | "pont"
-
-numeric_point_reference: ((numeric_point_id | numeric_point_range) LIST_SEPARATOR? /az?/?)+ NUMERIC_POINT_SUFFIX
-numeric_point_range: NUMERIC_POINT_ID DASH NUMERIC_POINT_ID "."
-numeric_point_id: NUMERIC_POINT_ID "."
-NUMERIC_POINT_ID: NUMBER ("/"? "a".."z")?
-NUMERIC_POINT_SUFFIX: /pont[a-zéáőúöüóíű]+/ | "pont"
-
-alphabetic_subpoint_reference: ((alphabetic_subpoint_id | alphabetic_subpoint_range) LIST_SEPARATOR? /az?/?)+ ALPHABETIC_SUBPOINT_SUFFIX
-alphabetic_subpoint_range: ALPHABETIC_SUBPOINT_ID ")" DASH ALPHABETIC_SUBPOINT_ID ")"
-alphabetic_subpoint_id: ALPHABETIC_SUBPOINT_ID ")"
-ALPHABETIC_SUBPOINT_ID: "a".."z" "a".."z"
-ALPHABETIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
+alphabetic_subpoint_reference.50: ((alphabetic_subpoint_id ")" | alphabetic_subpoint_range) list_separator? /az?/?)+ alphabetic_subpoint_suffix
+alphabetic_subpoint_range: alphabetic_subpoint_id ")" DASH alphabetic_subpoint_id ")"
+alphabetic_subpoint_id: two_letters
+alphabetic_subpoint_suffix: /alpont[a-zéáőúöüóíű]+/ | "alpont"
 
 previous: "az"? "előző"
 this: "e" | "ezen"
 
-LIST_SEPARATOR: ("," | "és" | "valamint" | "illetve" | "vagy")
+list_separator: ("," | "és" | "valamint" | "illetve" | "vagy")
 
-constitution_reference: "Alaptörvény" constitution_article_id CONSTITUTION_ARTICLE_SUFFIX (paragraph_reference alphabetic_point_reference?)?
-constitution_article_id: (constitution_article_alphabetic | constitution_article_roman | constitution_article_numeric)
-constitution_article_alphabetic: CONSTITUTION_ARTICLE_ALPHABETIC ")"
-constitution_article_roman: CONSTITUTION_ARTICLE_ROMAN "."
-constitution_article_numeric: CONSTITUTION_ARTICLE_NUMERIC "."
-CONSTITUTION_ARTICLE_ALPHABETIC: "A".."Z"
-CONSTITUTION_ARTICLE_ROMAN: ROMAN
-CONSTITUTION_ARTICLE_NUMERIC: NUMBER
-CONSTITUTION_ARTICLE_SUFFIX: /cikk[a-zéáőúöüóíű]+/ | "cikk"
+quoted_text: "„" anything+ "”"
 
-chapter_reference: ((chapter_id | chapter_range) LIST_SEPARATOR? /az?/?)+ CHAPTER_SUFFIX
-chapter_range: CHAPTER_ID DASH CHAPTER_ID "."
-chapter_id: CHAPTER_ID "."
-CHAPTER_ID: ROMAN ("/" "A".."Z")?
-CHAPTER_SUFFIX:  /fejezet[a-zéáőúöüóíű]+/ | "fejezet" | /Fejezet[a-zéáőúöüóíű]+/ | "Fejezet"
+abbreviation: ucfirst "." | ucfirst "."? "tv."
 
-title_reference: ((title_id | title_range) LIST_SEPARATOR? /az?/?)+ TITLE_SUFFIX
-title_range: TITLE_ID DASH TITLE_ID "."
-title_id: TITLE_ID "."
-TITLE_ID: NUMBER ("/" "a".."z")?
-TITLE_SUFFIX: /cím[a-zéáőúöüóíű]+/ | "cím" | /Cím[a-zéáőúöüóíű]+/ | "Cím"
+// -----------------  SPECIAL RULES -------------------
+?anything.0: any_word
+    | NUMBER
+    | "(" | ")"
+    | "." | ";" | "?"
+    | ":"
+    | ","
+    | "/"
+    | DASH
 
-subtitle_reference: ((subtitle_id | subtitle_range) LIST_SEPARATOR? /az?/?)+ SUBTITLE_SUFFIX
-subtitle_range: SUBTITLE_ID DASH SUBTITLE_ID "."
-subtitle_id: SUBTITLE_ID "."
-SUBTITLE_ID: NUMBER ("/" "A".."Z")?
-SUBTITLE_SUFFIX: /alcím[a-zéáőúöüóíű]+/ | "alcím" | /Alcím[a-zéáőúöüóíű]+/ | "Alcím"
+?any_word.0: _OTHER_WORD
+    | _UC_FIRST
+    | one_letter
+    | uc_letter
+    | two_letters
+    | ucfirst
+    | "évi" | "törvény"
+    | "előző" | "ezen"
+    | "és" | "valamint" | "illetve" | "vagy"
+    | "továbbiakban"
+    | act_suffix
+    | article_suffix
+    | paragraph_suffix
+    | point_suffix
+    | alphabetic_subpoint_suffix
+    | roman
 
-appendix_reference: ((appendix_id | appendix_range) LIST_SEPARATOR? /az?/?)+ "számú"? APPENDIX_SUFFIX
-appendix_range: APPENDIX_ID DASH APPENDIX_ID "."
-appendix_id: APPENDIX_ID "."
-APPENDIX_ID: NUMBER ("/" "a".."z")?
-APPENDIX_SUFFIX: /melléklet[a-zéáőúöüóíű]+/ | "melléklet" | /Melléklet[a-zéáőúöüóíű]+/ | "Melléklet"
+one_letter.0: _ONE_LETTER | "a" | "e"
+uc_letter.0: _UC_LETTER | "A" | "I" | "V" | "X" | "L" | "C" | "D" | "M"
+two_letters.0: _TWO_LETTERS | "az" | "és"
+ucfirst.0: _UC_FIRST
+roman.0: "I" | "V" | "X" | "L" | "C" | "D" | "M" | ROMAN_TWO_CHARS
 
-expression_from_now_on: WORD WORD "(" WORD* "a" "továbbiakban" "együtt"? ":" (WORD | ABBREVIATION)+ ")"
-    | "(" WORD* "alkalmazásában" ":" WORD+ ")"
+// -----------------     TOKENS     -------------------
 
-date: NUMBER_WITH_DOT ("év" | "évi") | NUMBER_WITH_DOT ("év" | "évi")? month NUMBER "."? |  month NUMBER "."
-month: "január" | "február" | "március" | "április" | "május" | "június" | "július" | "augusztus" | "szeptember" | "október" | "november" | "december"
-
-
-quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
-INSIDE_QUOTE: /[^„”]/+
-
-ABBREVIATION: (UPPERCASE LOWERCASE+ "." "tv.") | (UPPERCASE LOWERCASE+ " " "tv.") | (UPPERCASE LOWERCASE+ ".")
-
-parenthesed_text: "(" WORD+ ")"
-
-PARENTHESES: "(" | ")"
-WORD: WHITELISTED_SPECIAL_WORDS | LETTER+
-WORD_UCFIRST: UPPERCASE LOWERCASE*
-
-WHITELISTED_SPECIAL_WORDS: "pl." | "X. pont" | "kkt." | "bt." | "rt." | "kft." | "nyrt." | "zrt."
-
+_UC_FIRST: /[A-ZÉÁŐÚÖÜÓÍŰ][a-zéáőúöüóíű]{2,100}/
+_OTHER_WORD: /[a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ\-]{3,100}/
+_ONE_LETTER: /[a-zéáőúöüóíű]/
+_UC_LETTER: /[A-ZÉÁŐÚÖÜÓÍŰ]/
+_TWO_LETTERS: /[a-zéáőúöüóíű]{2}/
 NUMBER: "0".."9"+
-NUMBER_WITH_DOT: NUMBER "."
-ROMAN: ("I" | "V" | "X" | "L" | "C" | "D" | "M")+ //TODO: actual grammar for this.
-ROMAN_WITH_DOT: ROMAN "."
+ROMAN_TWO_CHARS.10: /[IVXLCDM]{2,15}/  //TODO: actual grammar for this.
+DASH: "−" | "–" | "-"
 
 WS: /[ \t\f\r\n]/+
-UPPERCASE: /[A-ZÉÁŐÚÖÜÓÍŰ]/
-LOWERCASE: /[a-zéáőúöüóíű]/
-LETTER: /[a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ\-]/
-END_OF_SENTENCE: "." | "?" | ":"
-SECTION_SIGN: "§"
-DASH: "−" | "–" | "-"
 
 OTHER: /[^ „”§()?:\.\t\f\r\n1-9a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ–−\/\-]/
 

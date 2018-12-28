@@ -198,7 +198,12 @@ class GrammaticalAnalysisResult:
 
 class GrammaticalAnalyzer:
     def __init__(self):
-        self.parser = Lark.open('grammar.lark', rel_to=__file__, keep_all_tokens=True)
+        self.parser = Lark.open(
+            'grammar.lark', rel_to=__file__,
+            keep_all_tokens=True,
+            parser="cyk",
+            lexer="standard"
+        )
 
     def analyze(self, s):
         return GrammaticalAnalysisResult(s, self.parser.parse(s))
