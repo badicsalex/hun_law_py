@@ -34,25 +34,31 @@ regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
 
 compound_reference: (act_reference reference?) | reference
 reference: (article_reference paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
+    | (article_reference paragraph_reference alphabetic_point_reference numeric_subpoint_reference)
     | (article_reference paragraph_reference numeric_point_reference alphabetic_subpoint_reference)
     | (article_reference paragraph_reference alphabetic_point_reference)
     | (article_reference paragraph_reference numeric_point_reference)
     | (article_reference paragraph_reference)
     | (article_reference alphabetic_point_reference alphabetic_subpoint_reference)
+    | (article_reference alphabetic_point_reference numeric_subpoint_reference)
     | (article_reference numeric_point_reference alphabetic_subpoint_reference)
     | (article_reference alphabetic_point_reference)
     | (article_reference numeric_point_reference)
     | (article_reference)
     | (paragraph_reference alphabetic_point_reference alphabetic_subpoint_reference)
+    | (paragraph_reference alphabetic_point_reference numeric_subpoint_reference)
     | (paragraph_reference numeric_point_reference alphabetic_subpoint_reference)
     | (paragraph_reference alphabetic_point_reference)
     | (paragraph_reference numeric_point_reference)
     | (paragraph_reference)
     | (numeric_point_reference alphabetic_subpoint_reference)
+    | (numeric_point_reference numeric_subpoint_reference)
     | (numeric_point_reference)
     | (alphabetic_point_reference alphabetic_subpoint_reference)
+    | (alphabetic_point_reference numeric_subpoint_reference)
     | (alphabetic_point_reference)
     | (alphabetic_subpoint_reference)
+    | (numeric_subpoint_reference)
 
 
 act_reference: abbreviated_act_id | act_id (from_now_on | from_now_on_long)?
@@ -93,6 +99,12 @@ alphabetic_subpoint_range: ALPHABETIC_SUBPOINT_ID ")" DASH ALPHABETIC_SUBPOINT_I
 alphabetic_subpoint_id: ALPHABETIC_SUBPOINT_ID ")"
 ALPHABETIC_SUBPOINT_ID: "a".."z" "a".."z"?
 ALPHABETIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
+
+numeric_subpoint_reference: ((numeric_subpoint_id | numeric_subpoint_range) LIST_SEPARATOR? /az?/?)+ NUMERIC_SUBPOINT_SUFFIX
+numeric_subpoint_range: NUMERIC_SUBPOINT_ID  DASH NUMERIC_SUBPOINT_ID "."
+numeric_subpoint_id: NUMERIC_SUBPOINT_ID "."
+NUMERIC_SUBPOINT_ID: NUMBER
+NUMERIC_SUBPOINT_SUFFIX: /alpont[a-zéáőúöüóíű]+/ | "alpont"
 
 previous: "az"? "előző"
 this: "e" | "ezen"

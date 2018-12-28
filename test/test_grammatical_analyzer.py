@@ -177,6 +177,12 @@ CASES = [
         ["2111. évi LXXV. törvény"],
     ),
     (
+        "Amely a Tbj. 4. § k) pont 2. alpontja alapján járulékalapot képez.",
+        "             <                      >                             ",
+        [ref(None, "4", None, "k", "2")],
+        []
+    ),
+    (
         # Multiple sentences
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki. Az Eht. 188. §-a a következő 31/a. ponttal egészül ki.",
         "        <      >             <           >                     <      >             <           >            ",
