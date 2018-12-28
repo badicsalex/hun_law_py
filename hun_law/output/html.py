@@ -20,123 +20,6 @@ from hun_law.structure import SubArticleElement, QuotedBlock, Article, Subtitle
 from hun_law.utils import EMPTY_LINE
 
 
-STYLE = """
-body {
-    font-family: sans;
-    font-size: 11pt;
-    text-align: center;
-    line-height: 1.5;
-    background: #ddd;
-    padding: 0px;
-    margin: 0px;
-}
-
-div {
-    margin: 0px;
-    padding: 0px;
-}
-
-blockquote {
-    margin: 0px 0px 0px 00px;
-    padding: 0px;
-}
-
-table {
-    border-spacing: 0px;
-}
-
-td {
-    padding: 0px;
-}
-
-.main_container {
-    max-width: 950px;
-    border: 1px solid gray;
-    display: inline-block;
-    background: white;
-    padding: 30px 80px 30px 80px;
-    text-align: left;
-    box-shadow: 5px 5px 10px #888888;
-}
-
-.act_title {
-    font-size: 18pt;
-    font-weight: bold;
-    margin: 20px 20px 30px 0px;
-}
-
-.preamble {
-    margin-bottom: 1.5em;
-    text-align: justify;
-}
-
-.se_book {
-    font-size: 16pt;
-    font-weight: bold;
-}
-
-.se_part {
-    font-size: 16pt;
-}
-
-.se_chapter, .se_title {
-    font-size: 14pt;
-    font-style: italic;
-}
-
-.se_subtitle {
-    font-weight: bold;
-}
-
-.list_header {
-    vertical-align: top;
-}
-
-.list_item {
-    vertical-align: top;
-}
-
-.list_item_content {
-    text-align: justify;
-}
-
-.list_table {
-    font-weight: normal;
-}
-
-.sae_alphabeticsubpoint_header,
-.sae_numericpoint_header,
-.sae_alphabeticpoint_header {
-    width: 50px;
-}
-
-.sae_paragraph_header {
-    width: 40px;
-}
-
-.sae_quotedblock_header {
-}
-
-.sae_article_header {
-    font-weight: bold;
-    width: 70px;
-}
-
-.sae_article_item {
-    padding-bottom: 1.5em;
-}
-
-.structural_element {
-    margin: 0px 0px 0px 40px;
-}
-
-.article_title {
-    font-style: italic;
-    margin: 0px 0px 0px 40px;
-}
-"""
-
-
 def indent_etree_element_in_place(element, level=0):
     indent = "\n" + level * "  "
     if len(element):
@@ -228,20 +111,8 @@ def generate_html_node_for_article(article):
     return container
 
 
-def generate_head_section(title_text):
-    head = ET.Element('head')
-    title = ET.SubElement(head, 'title')
-    title.text = title_text
-    ET.SubElement(head, 'meta', {'http-equiv': "Content-Type", 'content': "text/html; charset=utf-8"})
-    ET.SubElement(head, 'style').text = STYLE
-    return head
-
-
-def generate_html_document_for_act(act, output_file):
-    html = ET.Element('html')
-    html.append(generate_head_section(act.identifier))
-
-    body = ET.SubElement(ET.SubElement(html, 'body'), 'div', {'class': 'main_container'})
+def generate_html_body_for_act(act, indent=True):
+    body = ET.Element('div', {'class': 'act_container'})
     act_title = ET.SubElement(body, 'div', {'class': 'act_title'})
     act_title.text = act.identifier
     ET.SubElement(act_title, 'br').tail = act.subject
@@ -258,8 +129,6 @@ def generate_html_document_for_act(act, output_file):
             content = generate_html_node_for_structural_element(c)
         body_elements.append((id_string, content))
     body.append(generate_html_list(body_elements, Article))
-
-    indent_etree_element_in_place(html)
-    document = ET.ElementTree(html)
-    output_file.write('<!DOCTYPE html>\n')
-    document.write(output_file, encoding="unicode", method="html", xml_declaration=True)
+    if indent:
+        indent_etree_element_in_place(body)
+    return body

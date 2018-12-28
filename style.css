@@ -1,0 +1,132 @@
+/*
+ Copyright 2018 Alex Badics <admin@stickman.hu>
+
+ This file is part of Hun-Law.
+
+ Hun-Law is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Hun-Law is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+body {
+    font-family: sans;
+    font-size: 11pt;
+    text-align: center;
+    line-height: 1.5;
+    background: #ddd;
+    padding: 0px;
+    margin: 0px;
+}
+
+div {
+    margin: 0px;
+    padding: 0px;
+}
+
+blockquote {
+    margin: 0px 0px 0px 00px;
+    padding: 0px;
+}
+
+table {
+    border-spacing: 0px;
+}
+
+td {
+    padding: 0px;
+}
+
+.act_container {
+    max-width: 950px;
+    border: 1px solid gray;
+    display: inline-block;
+    background: white;
+    padding: 30px 80px 30px 80px;
+    text-align: left;
+    box-shadow: 5px 5px 10px #888888;
+}
+
+.act_title {
+    font-size: 18pt;
+    font-weight: bold;
+    margin: 20px 20px 30px 0px;
+}
+
+.preamble {
+    margin-bottom: 1.5em;
+    text-align: justify;
+}
+
+.se_book {
+    font-size: 16pt;
+    font-weight: bold;
+}
+
+.se_part {
+    font-size: 16pt;
+}
+
+.se_chapter, .se_title {
+    font-size: 14pt;
+    font-style: italic;
+}
+
+.se_subtitle {
+    font-weight: bold;
+}
+
+.list_header {
+    vertical-align: top;
+}
+
+.list_item {
+    vertical-align: top;
+}
+
+.list_item_content {
+    text-align: justify;
+}
+
+.list_table {
+    font-weight: normal;
+}
+
+.sae_alphabeticsubpoint_header,
+.sae_numericpoint_header,
+.sae_alphabeticpoint_header {
+    width: 50px;
+}
+
+.sae_paragraph_header {
+    width: 40px;
+}
+
+.sae_quotedblock_header {
+}
+
+.sae_article_header {
+    font-weight: bold;
+    width: 70px;
+}
+
+.sae_article_item {
+    padding-bottom: 1.5em;
+}
+
+.structural_element {
+    margin: 0px 0px 0px 40px;
+}
+
+.article_title {
+    font-style: italic;
+    margin: 0px 0px 0px 40px;
+}

@@ -20,7 +20,7 @@ import os
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction
 from hun_law.cache import init_cache
-from hun_law.output.html import generate_html_document_for_act
+from hun_law.output.html import generate_html_body_for_act
 from hun_law.structure import Act
 
 
@@ -37,7 +37,7 @@ def test_html_output_ptk(tmpdir):
     ptk = acts[0]
 
     html_path = tmpdir.join("ptk.html")
-    generate_html_document_for_act(ptk, html_path.open('w'))
+    generate_html_body_for_act(ptk, html_path.open('w'))
     assert html_path.size() > 0
 
 
@@ -48,5 +48,5 @@ def test_html_output_2018_123(tmpdir):
 
     for act_id, act in acts.items():
         html_path = tmpdir.join(act_id + ".html")
-        generate_html_document_for_act(act, html_path.open('w'))
+        generate_html_body_for_act(act, html_path.open('w'))
         assert html_path.size() > 0
