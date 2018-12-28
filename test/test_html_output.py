@@ -30,23 +30,23 @@ def parse_single_kozlony(year, issue):
     return extracted
 
 
-def test_html_output_ptk(tmpdir):
+def test_html_output_ptk():
     # Just simply test if html output works.
     acts = [a for a in parse_single_kozlony(2013, 31) if isinstance(a, Act)]
     assert len(acts) == 1, "Issue 2013/31 of Magyar Kozlony contains a single Act"
     ptk = acts[0]
 
-    html_path = tmpdir.join("ptk.html")
-    generate_html_body_for_act(ptk, html_path.open('w'))
-    assert html_path.size() > 0
+    body = generate_html_body_for_act(ptk)
+    all_links = body.findall('.//a')
+    assert len(all_links) > 50
 
 
-def test_html_output_2018_123(tmpdir):
+def test_html_output_2018_123():
     # Just simply test if html output works on modern MK issues
     acts = {a.identifier: a for a in parse_single_kozlony(2018, 123) if isinstance(a, Act)}
     assert len(acts) == 6, "Issue 2018/123 of Magyar Kozlony contains 6 separate Acts"
 
     for act_id, act in acts.items():
-        html_path = tmpdir.join(act_id + ".html")
-        generate_html_body_for_act(act, html_path.open('w'))
-        assert html_path.size() > 0
+        body = generate_html_body_for_act(act)
+        all_links = body.findall('.//a')
+        assert len(all_links) > 1

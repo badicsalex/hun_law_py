@@ -14,10 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+import re
 import xml.etree.ElementTree as ET
 
-from hun_law.structure import SubArticleElement, QuotedBlock, Article, Subtitle
-from hun_law.utils import EMPTY_LINE
+from hun_law.structure import SubArticleElement, QuotedBlock, Article, Subtitle, Reference
+from hun_law.utils import EMPTY_LINE, is_uppercase_hun
+from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer, GrammaticalAnalysisError
 
 
 def indent_etree_element_in_place(element, level=0):
@@ -60,18 +62,94 @@ def generate_html_node_for_structural_element(element):
     return container
 
 
-def generate_html_node_for_sub_article_elements(elements):
+def get_href_for_ref(ref):
+    result = ''
+    if ref.act is not None:
+        result = ref.act + ".html"
+    result = result + "#" + ref.relative_id_string
+    return result
+
+
+grammatical_analyzer = None
+
+
+def generate_text_with_ref_links(container, text, current_ref, abbreviations):
+    global grammatical_analyzer
+    interesting_substrings = (")", "§", "törvén")
+    if not any(s in text for s in interesting_substrings):
+        container.text = text
+        return
+
+    if grammatical_analyzer is None:
+        grammatical_analyzer = GrammaticalAnalyzer()
+
+    # TODO: Points are actually parts of a bigger sentence, and we don't really put the
+    # intro and wrap-up around them right now.
+    intro = ''
+    if not is_uppercase_hun(text[0]):
+        intro = 'A '
+    wrap_up = ''
+    if text[-1] not in (".", ":", "?"):
+        wrap_up = '.'
+    offset = len(intro)
+    text = intro + text + wrap_up
+    try:
+        analysis_result = grammatical_analyzer.analyze(text)
+    except GrammaticalAnalysisError as e:
+        print("Error during parsing {}: {}".format(current_ref, e))
+        container.text = text
+        return
+
+    for k, v in analysis_result.get_new_abbreviations():
+        abbreviations[k] = v
+
+    links_to_create = []
+    for ref, start, end in analysis_result.get_references(abbreviations):
+        absolute_ref = ref.relative_to(current_ref)
+        links_to_create.append((start, end, get_href_for_ref(absolute_ref)))
+
+    for ref, start, end in analysis_result.get_act_references(abbreviations):
+        links_to_create.append((start, end, ref + ".html"))
+
+    links_to_create.sort()
+    last_a_tag = None
+    for start, end, href in links_to_create:
+        assert start >= offset
+        assert end > start
+        if last_a_tag is None:
+            container.text = text[offset:start]
+        else:
+            last_a_tag.tail = text[offset:start]
+        last_a_tag = ET.SubElement(container, 'a', {'href': href})
+        last_a_tag.text = text[start:end+1]
+        offset = end + 1
+
+    if last_a_tag is None:
+        container.text = text[offset:]
+    else:
+        last_a_tag.tail = text[offset:]
+
+
+def generate_html_node_for_sub_article_elements(elements, parent_ref, abbreviations):
     processed_elements = []
     for e in elements:
         if isinstance(e, SubArticleElement):
-            container = ET.Element('div', {'class': 'list_item_content'})
+            current_ref = e.relative_reference.relative_to(parent_ref)
+            container = ET.Element('div', {'class': 'list_item_content', 'id': current_ref.relative_id_string})
             if e.text:
-                container.text = e.text
+                generate_text_with_ref_links(container, e.text, current_ref, abbreviations)
             else:
                 if e.intro:
                     intro = ET.SubElement(container, 'div')
-                    intro.text = e.intro
-                container.append(generate_html_node_for_sub_article_elements(e.children))
+                    # TODO: We don't currently parse structural amendments properly
+                    # They have a two-part intro, which we unfortunately merge, which looks bad.
+                    matches = re.match(r"^(.*): ?(\([^\)]*\)|\[[^\]]*\])$", e.intro)
+                    if matches is not None:
+                        generate_text_with_ref_links(intro, matches.group(1), current_ref, abbreviations)
+                        ET.SubElement(intro, 'br').tail = matches.group(2)
+                    else:
+                        generate_text_with_ref_links(intro, e.intro, current_ref, abbreviations)
+                container.append(generate_html_node_for_sub_article_elements(e.children, current_ref, abbreviations))
                 if e.wrap_up:
                     wrap_up = ET.SubElement(container, 'div')
                     wrap_up.text = e.wrap_up
@@ -99,14 +177,15 @@ def generate_html_node_for_quoted_block(element):
     return container
 
 
-def generate_html_node_for_article(article):
-    container = ET.Element('div')
+def generate_html_node_for_article(article, abbreviations):
+    current_ref = article.relative_reference
+    container = ET.Element('div', {"id": current_ref.relative_id_string})
     if article.title:
         title = ET.Element('div', {'class': 'article_title'})
         title.text = '[{}]'.format(article.title)
         container.append(title)
 
-    container.append(generate_html_node_for_sub_article_elements(article.children))
+    container.append(generate_html_node_for_sub_article_elements(article.children, current_ref, abbreviations))
 
     return container
 
@@ -120,10 +199,11 @@ def generate_html_body_for_act(act, indent=True):
         preamble = ET.SubElement(body, 'div', {'class': 'preamble'})
         preamble.text = act.preamble
     body_elements = []
+    abbreviations = {}
     for c in act.children:
         if isinstance(c, Article):
             id_string = '{}. §'.format(c.identifier)
-            content = generate_html_node_for_article(c)
+            content = generate_html_node_for_article(c, abbreviations)
         else:
             id_string = ''
             content = generate_html_node_for_structural_element(c)

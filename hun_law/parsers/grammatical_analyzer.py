@@ -16,6 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 from lark import Lark, Tree, Token
+from lark.exceptions import LarkError
 
 from hun_law.structure import Reference
 
@@ -203,6 +204,9 @@ class GrammaticalAnalysisResult:
 
     def __eq__(self, other):
         return self.s == other.s and self.tree == other.tree
+
+
+GrammaticalAnalysisError = LarkError
 
 
 class GrammaticalAnalyzer:

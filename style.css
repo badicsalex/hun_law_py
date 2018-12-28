@@ -27,6 +27,10 @@ body {
     margin: 0px;
 }
 
+a {
+    color: #008;
+}
+
 div {
     margin: 0px;
     padding: 0px;
