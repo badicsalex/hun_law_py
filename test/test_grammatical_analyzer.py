@@ -81,6 +81,14 @@ CASES = [
         None, None, None
     ),
     (
+        "A gyermeknevelési támogatás (e § alkalmazásában a továbbiakban együtt: anyasági ellátás) folyósításának időszakát nem kell beszámítani.",
+        None, None, None
+    ),
+    (
+        "A minimálbér után a 2. § (1) bekezdés szerinti adómérték 50 százalékával megállapított összeggel a foglalkoztatás harmadik évében (a továbbiakban e § alkalmazásában: érvényesítési időszak).",
+        None, None, None
+    ),
+    (
         "Az egyéb használati jogviszonyt alapító szerzõdés a miniszteri döntés minisztériumi honlapon történõ közzétételétõl számított 60. napon e törvény erejénél fogva megszûnik.",
         None, None, None
     ),
@@ -94,6 +102,14 @@ CASES = [
         "a 64/221/EGK, a 68/360/EGK, a 72/194/EGK, a 73/148/EGK, a 75/34/EGK, a 75/35/EGK, a 90/364/EGK, a 90/365/EGK"
         "és a 93/96/EGK irányelv hatályon kívül helyezéséről szóló, 2004. április 29-i 2004/38/EK európai parlamenti és tanácsi"
         "irányelv 24. cikkének való megfelelést szolgálja.",
+        None, None, None
+    ),
+    (
+        "A felhívás előtt legalább 48 órával köteles bejelenteni az illetékes rendőrkapitányságnak – Budapesten a Budapesti Rendőr-főkapitányságnak – (a továbbiakban: gyülekezési hatóság).",
+        None, None, None
+    ),
+    (
+        "A jogosultnak joga van az üzleti titok hasznosítására, mással történő közlésére és nyilvánosságra hozatalára (a közlés és nyilvánosságra hozatal együtt: az üzleti titok felfedése).",
         None, None, None
     ),
     (
