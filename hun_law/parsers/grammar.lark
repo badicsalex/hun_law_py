@@ -30,6 +30,7 @@ regular_sentence: WORD_UCFIRST DASH? any_expression+ END_OF_SENTENCE
     | date
     | relative_date
     | NUMBER WORD
+    | NUMBER+ "," NUMBER
     | ":"
 
 compound_reference: (act_reference reference?) | reference

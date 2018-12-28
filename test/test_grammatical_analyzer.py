@@ -113,6 +113,10 @@ CASES = [
         None, None, None
     ),
     (
+        " Az adó mértéke az adóalap 19,5 százaléka, az 1. § (4) bekezdésben foglalt esetekben a juttatások adóalapként meghatározott összegének 19,5 százaléka.",
+        None, None, None
+    ),
+    (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
         "                                         [                  ]                              <                          >                                     ",
         [ref("2012. évi I. törvény", "29", "2", "e")],
