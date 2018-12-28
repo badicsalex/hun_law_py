@@ -169,7 +169,7 @@ month: "január" | "február" | "március" | "április" | "május" | "június" |
 quoted_text: "„" INSIDE_QUOTE quoted_text? INSIDE_QUOTE? "”"
 INSIDE_QUOTE: /[^„”]/+
 
-ABBREVIATION: (UPPERCASE LOWERCASE+ "." "tv.") | (UPPERCASE LOWERCASE+ " " "tv.") | (UPPERCASE LOWERCASE+ ".")
+ABBREVIATION: (UPPERCASE LOWERCASE+ "."? ( " tv." | "tv." | " vhr.")) | (UPPERCASE LOWERCASE+ ".")
 
 parenthesed_text: "(" (reference | WORD)+ ")"
 

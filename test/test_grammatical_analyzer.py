@@ -113,6 +113,12 @@ CASES = [
         None, None, None
     ),
     (
+        "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
+        "                                         [                  ]                              <                          >                                     ",
+        [ref("2012. évi I. törvény", "29", "2", "e")],
+        ["2012. évi I. törvény"],
+    ),
+    (
         "A (2) bekezdés szerinti hitelezõkkel szemben a kényszerértékesítési kvótára vonatkozó szabályok (6–8. §) és a (2) bekezdés megsértése esetén:",
         "  <          >                                                                                   <    >       <          >                   ",
         [
@@ -447,6 +453,10 @@ ABBREVIATION_CASES = (
         # No colon
         "A fogyasztóvédelmi hatósága fogyasztóvédelemrõl szóló 1997. évi CLV. törvény (a továbbiakban Fgytv.) szabályai szerint jár el.",
         [("Fgytv.", "1997. évi CLV. törvény")],
+    ),
+    (
+        "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
+        [("Szabs. tv.", "2012. évi I. törvény")]
     ),
     (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
