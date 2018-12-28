@@ -85,6 +85,18 @@ CASES = [
         None, None, None
     ),
     (
+        "Tilos a 67/548/EGK tanácsi irányelv 2. cikkének (2) bekezdésében meghatározott veszélyes anyagot vagy ezek utánzatát magánál tartva megjelenni.",
+        None, None, None
+    ),
+    (
+        "E törvény 3. § (3) bekezdésének b) pontja az Unió polgárainak és családtagjaiknak a tagállamok területén történő"
+        "szabad mozgáshoz és tartózkodáshoz való jogáról, valamint az 1612/68/EGK rendelet módosításáról, továbbá"
+        "a 64/221/EGK, a 68/360/EGK, a 72/194/EGK, a 73/148/EGK, a 75/34/EGK, a 75/35/EGK, a 90/364/EGK, a 90/365/EGK"
+        "és a 93/96/EGK irányelv hatályon kívül helyezéséről szóló, 2004. április 29-i 2004/38/EK európai parlamenti és tanácsi"
+        "irányelv 24. cikkének való megfelelést szolgálja.",
+        None, None, None
+    ),
+    (
         "A (2) bekezdés szerinti hitelezõkkel szemben a kényszerértékesítési kvótára vonatkozó szabályok (6–8. §) és a (2) bekezdés megsértése esetén:",
         "  <          >                                                                                   <    >       <          >                   ",
         [
