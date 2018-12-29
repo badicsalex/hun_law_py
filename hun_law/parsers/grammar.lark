@@ -205,6 +205,7 @@ WORD_UCFIRST: UPPERCASE LOWERCASE*
 
 WHITELISTED_SPECIAL_WORDS: "pl."
     | "X. pont"
+    | "E."
     | "kkt." | "bt." | "rt." | "kft." | "nyrt." | "zrt."
     | "FEOR-08"
     | "forint/"
