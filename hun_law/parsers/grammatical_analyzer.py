@@ -40,41 +40,26 @@ class ReferenceCollector:
             ref_list.append((ref_data, start_pos, end_pos))
 
     def iter(self):
-        for article, paragraph, point, subpoint, start_pos, end_pos in self.__iter_articles():
-            yield Reference(self.act, article, paragraph, point, subpoint), start_pos, end_pos
-
-    def __iter_articles(self):
-        if len(self.articles) == 1:
-            for paragraph, point, subpoint, start_pos, end_pos in self.__iter_paragraphs():
-                yield self.articles[0][0], paragraph, point, subpoint, start_pos, end_pos
-        else:
-            assert self.paragraphs[0][0] is None
-            assert self.points[0][0] is None
-            assert self.subpoints[0][0] is None
-            for article, start_pos, end_pos in self.articles:
-                yield article, None, None, None, start_pos, end_pos
-
-    def __iter_paragraphs(self):
-        if len(self.paragraphs) == 1:
-            for point, subpoint, start_pos, end_pos in self.__iter_points():
-                yield self.paragraphs[0][0], point, subpoint, start_pos, end_pos
-        else:
-            assert self.points[0][0] is None
-            assert self.subpoints[0][0] is None
-            for paragraph, start_pos, end_pos in self.paragraphs:
-                yield paragraph, None, None, start_pos, end_pos
-
-    def __iter_points(self):
-        if len(self.points) == 1:
-            for subpoint, start_pos, end_pos in self.__iter_subpoints():
-                yield self.points[0][0], subpoint, start_pos, end_pos
-        else:
-            assert self.subpoints[0][0] is None
-            for point, start_pos, end_pos in self.points:
-                yield point, None, start_pos, end_pos
-
-    def __iter_subpoints(self):
-        yield from self.subpoints
+        ref_args = [self.act, None, None, None, None]
+        levels = ("articles", "paragraphs", "points", "subpoints")
+        start_override = None
+        last_end = 0
+        for arg_pos, level in enumerate(levels, start=1):
+            level_vals = getattr(self, level)
+            if len(level_vals) == 1:
+                ref_args[arg_pos] = level_vals[0][0]
+            else:
+                for level_val, start, end in level_vals[:-1]:
+                    if start_override is not None:
+                        start = start_override
+                        start_override = None
+                    ref_args[arg_pos] = level_val
+                    yield Reference(*ref_args), start, end
+                ref_args[arg_pos] = level_vals[-1][0]
+            if start_override is None:
+                start_override = level_vals[-1][1]
+            last_end = max(last_end, level_vals[-1][2])
+        yield Reference(*ref_args), start_override, last_end
 
 
 class AbbreviationNotFoundError(Exception):

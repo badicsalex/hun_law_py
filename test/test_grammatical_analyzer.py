@@ -215,6 +215,16 @@ CASES = [
         ["1995. évi XCVII. törvény"],
     ),
     (
+        "A (6) bekezdés szerinti adóalap csökkenti a mezőgazdasági őstermelőként az 1. § (1) és (5) bekezdés f)–g) pont szerint fennálló adókötelezettség alapját.",
+        "  <          >                                                             <      >    <                     >                                           ",
+        [
+            ref(paragraph="6"),
+            ref(None, "1", "1"),
+            ref(None, "1", "5", ("f", "g")),
+        ],
+        []
+    ),
+    (
         "A temetőkről és a temetkezésről szóló 1999. évi XLIII. törvény (a továbbiakban: temetőkről és a temetkezésről szóló törvény) 3. §-a a következő k) ponttal egészül ki:",
         "                                      [                      ]                                                               <    >             <        >            ",
         [
