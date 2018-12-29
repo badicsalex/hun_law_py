@@ -207,6 +207,7 @@ WHITELISTED_SPECIAL_WORDS: "pl."
     | "X. pont"
     | "kkt." | "bt." | "rt." | "kft." | "nyrt." | "zrt."
     | "FEOR-08"
+    | "forint/"
 
 NUMBER: "0".."9"+
 NUMBER_WITH_DOT: NUMBER "."
