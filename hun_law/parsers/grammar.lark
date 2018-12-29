@@ -76,7 +76,7 @@ ACT_YEAR: NUMBER_WITH_DOT
 ACT_NUMBER: ROMAN_WITH_DOT
 
 article_reference: ((article_id | article_range) LIST_SEPARATOR? /az?/?)+ ARTICLE_SUFFIX
-article_range: ARTICLE_ID DASH ARTICLE_ID "."
+article_range: ARTICLE_ID ("." ARTICLE_SUFFIX)? DASH ARTICLE_ID "."
 article_id: ARTICLE_ID "."
 ARTICLE_ID: (NUMBER ":" )? NUMBER ("/" "A".."Z")?
 ARTICLE_SUFFIX: /§-[a-zéáőúöüóíű]+/ | "§"
