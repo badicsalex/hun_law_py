@@ -149,7 +149,7 @@ appendix_id: APPENDIX_ID "."
 APPENDIX_ID: NUMBER ("/" "a".."z")?
 APPENDIX_SUFFIX: /melléklet[a-zéáőúöüóíű]+/ | "melléklet" | /Melléklet[a-zéáőúöüóíű]+/ | "Melléklet"
 
-agreement_reference: "Egyezmény" (agreement_article_id LIST_SEPARATOR?)+ agreement_article_suffix paragraph_reference?
+agreement_reference: ("Egyezmény" | "Szerződés") (agreement_article_id LIST_SEPARATOR?)+ agreement_article_suffix paragraph_reference?
 agreement_article_id: NUMBER_WITH_DOT
 agreement_article_suffix: /cikk[a-zéáőúöüóíű]+/ | "cikk"
 
