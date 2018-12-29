@@ -187,8 +187,8 @@ expression_from_now_on: (ABBREVIATION | WORD | DASH)~2 "(" WORD* ("a" "továbbia
     | "(" WORD* "alkalmazásában" WORD* ":" WORD+ ")"
     | "(" WORD* "e" "§" "alkalmazásában" WORD* ":" WORD+ ")"
 
-relative_date: ("számított" | "követő") NUMBER_WITH_DOT "napon"
-date: NUMBER_WITH_DOT ("év" | "évi") | NUMBER_WITH_DOT ("év" | "évi")? month NUMBER "."? |  month NUMBER "."
+relative_date: ("számított" | "követő") ("hónap" | "hó")? NUMBER_WITH_DOT "nap"
+date: NUMBER_WITH_DOT ("év" | "évi") | NUMBER_WITH_DOT ("év" | "évi")? month ("hónap" | "hó")? NUMBER "."? |  month NUMBER "."
 month: "január" | "február" | "március" | "április" | "május" | "június" | "július" | "augusztus" | "szeptember" | "október" | "november" | "december"
 
 
