@@ -123,6 +123,7 @@ other_reference: decree_act_reference
     | appendix_reference
     | agreement_reference
     | eu_directive_reference
+    | group_id
 
 decree_act_reference: decree_act_id (from_now_on | from_now_on_long)?
 decree_act_id: ACT_YEAR "évi" DECREE_ACT_NUMBER "törvényerejű rendelet"
@@ -155,6 +156,9 @@ agreement_article_suffix: /cikk[a-zéáőúöüóíű]+/ | "cikk"
 eu_directive_reference: (eu_directive_id LIST_SEPARATOR? /az?/?)+ eu_directive_suffix (agreement_article_id agreement_article_suffix paragraph_reference?)?
 eu_directive_id: NUMBER "/" NUMBER "/" ("EGK" | "EK" | "EU")
 eu_directive_suffix: "tanácsi"? "rendelet" | ("európai" ("parlamenti" | "parlament") "és")? "tanácsi"? "irányelv"
+
+group_id: NUMBER_WITH_DOT ("csoport" | "főcsoport")
+    | (ROMAN_WITH_DOT LIST_SEPARATOR? /az?/?)+ ("csoport" | "főcsoport")
 
 compound_structural_element_reference: (act_reference structural_element_reference?) | structural_element_reference
 structural_element_reference: chapter_reference
@@ -199,7 +203,10 @@ PARENTHESES: "(" | ")"
 WORD: WHITELISTED_SPECIAL_WORDS | LETTER+
 WORD_UCFIRST: UPPERCASE LOWERCASE*
 
-WHITELISTED_SPECIAL_WORDS: "pl." | "X. pont" | "kkt." | "bt." | "rt." | "kft." | "nyrt." | "zrt."
+WHITELISTED_SPECIAL_WORDS: "pl."
+    | "X. pont"
+    | "kkt." | "bt." | "rt." | "kft." | "nyrt." | "zrt."
+    | "FEOR-08"
 
 NUMBER: "0".."9"+
 NUMBER_WITH_DOT: NUMBER "."

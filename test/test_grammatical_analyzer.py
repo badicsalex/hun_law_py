@@ -337,6 +337,18 @@ CASES = [
         None,
     ),
     (
+        "A Foglalkozások Egységes Osztályozási Rendszeréről szóló, 2012. január 1-jén hatályos KSH-közlemény (FEOR-08):"
+        "6. főcsoport 61. csoportjába tartozó, a 7. főcsoport 7333 számú foglalkozásából a mezőgazdasági gép"
+        "(motor) karbantartója, javítója munkakörben és a 8. főcsoport 8421 számú foglalkozás szerinti munkakörben"
+        "(a továbbiakban együtt: mezőgazdasági munkakör).",
+        None, None, None
+    ),
+    (
+        "Aki 2011. december 31-én – a társadalombiztosítási nyugellátásról szóló törvény alapján megállapított –"
+        "I., II., vagy III. csoportos rokkantsági, baleseti rokkantsági nyugdíjra volt jogosult, azzal most nem foglalkozunk.",
+        None, None, None
+    ),
+    (
         "A jogi személynek a Ptk. rendelkezéseit a (2) bekezdés szerinti döntéstől, ennek hiányában 2015. március 15-étől kell alkalmaznia"
         "(ezen alcím alkalmazásában a továbbiakban együtt: a Ptk. rendelkezéseivel összhangban álló továbbműködés időpontja).",
         "                                          <          >                                                                           "
@@ -431,9 +443,9 @@ def test_parse_results_are_stable(analyzer, s, positions, refs, act_refs):
 
 @pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
 def test_parse_results(analyzer, s, positions, refs, act_refs):
+    parsed = analyzer.analyze(s)
     if refs is None:
         return
-    parsed = analyzer.analyze(s)
     parsed.indented_print()
     parsed_refs = []
     parsed_act_refs = []
