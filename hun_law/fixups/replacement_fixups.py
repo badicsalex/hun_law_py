@@ -602,5 +602,11 @@ replacement_fixups = {
             "needle": "MAĎARSKO SLOVENSKÚ REPUBLIKU“",
             "replacement": "MAĎARSKO SLOVENSKÚ REPUBLIKU”"
         }
+    ],
+    "2018. évi LII. törvény": [
+        {
+            "needle": "3. a szociális igazgatásról és szociális ellátásokról szóló 1993. évi III. törvény 4. § (1c) pontjában az „egészségügyi",
+            "replacement": "3. a szociális igazgatásról és szociális ellátásokról szóló 1993. évi III. törvény 4. § (1c) bekezdésében az „egészségügyi"
+        }
     ]
 }
