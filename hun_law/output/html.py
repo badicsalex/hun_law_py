@@ -92,12 +92,13 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
     if text[-1] not in (".", ":", "?"):
         wrap_up = '.'
     offset = len(intro)
+    end_offset = len(intro) + len(text)
     text = intro + text + wrap_up
     try:
         analysis_result = grammatical_analyzer.analyze(text)
     except GrammaticalAnalysisError as e:
         print("Error during parsing {}: {}".format(current_ref, e))
-        container.text = text
+        container.text = text[offset:end_offset]
         return
 
     for k, v in analysis_result.get_new_abbreviations():
@@ -125,9 +126,9 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
         offset = end + 1
 
     if last_a_tag is None:
-        container.text = text[offset:]
+        container.text = text[offset:end_offset]
     else:
-        last_a_tag.tail = text[offset:]
+        last_a_tag.tail = text[offset:end_offset]
 
 
 def generate_html_node_for_sub_article_elements(elements, parent_ref, abbreviations):
