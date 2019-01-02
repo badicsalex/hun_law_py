@@ -293,6 +293,11 @@ class Paragraph(SubArticleElement):
             raise KeyError("There are no points in this paragraph")
         return self.child(point_id)
 
+    def quoted_block(self, block_num):
+        if self.children_type not in (QuotedBlock,):
+            raise KeyError("There are no quoted blocks in this paragraph")
+        return self.children[block_num]
+
     @property
     def relative_reference(self):
         return Reference(paragraph=self.identifier)

@@ -197,3 +197,12 @@ def test_end_to_end_2018_123():
 
     assert acts["2018. évi LIV. törvény"].article(2).paragraph().point(4).text.endswith("felfedett üzleti titokra épül."), \
         "Multiline numeric points parsed correctly"
+
+    # International convention parsing
+    assert acts["2018. évi LI. törvény"].article(3).paragraph().children_type == QuotedBlock
+    assert len(acts["2018. évi LI. törvény"].article(3).paragraph().children) == 2, \
+        "Multiple quote blocks parsed properly"
+    last_line_of_hungarian_version = acts["2018. évi LI. törvény"].article(3).paragraph().quoted_block(0).lines[-1].content
+    assert last_line_of_hungarian_version.endswith("Szlovák Köztársaság nevében"), \
+        "Quote blocks are separated correctly"
+    assert acts["2018. évi LI. törvény"].article(3).paragraph().wrap_up is None, "No junk is parsed after Quote blocks"

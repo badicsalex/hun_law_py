@@ -477,11 +477,13 @@ class ParagraphParser(SubArticleElementParser):
 
 
 class QuotedBlockParser:
-    ParseStates = Enum('ParseStates', ('START', 'INTRO', 'QUOTED_BLOCK', 'WRAP_UP'))
+    ParseStates = Enum('ParseStates', ('START', 'INTRO', 'QUOTED_BLOCK', 'WRAP_UP_MAYBE', 'WRAP_UP'))
 
     @classmethod
     def try_parse(cls, lines):
         state = cls.ParseStates.START
+        blocks = []
+        wrap_up = None
         for quote_level, line in iterate_with_quote_level(lines):
             # No if "EMPTY_LINE:continue" here, because QUOTED_BLOCK
             # state needs them to operate correctly.
@@ -495,8 +497,9 @@ class QuotedBlockParser:
                     if line.content[0] == "„" and quote_level == 0:
                         if line.content[-1] == "”":
                             quoted_lines = [line.slice(1, -1)]
-                            wrap_up = None
-                            state = cls.ParseStates.WRAP_UP
+                            blocks.append(QuotedBlock(quoted_lines))
+                            quoted_lines = None
+                            state = cls.ParseStates.WRAP_UP_MAYBE
                         else:
                             quoted_lines = [line.slice(1)]
                             state = cls.ParseStates.QUOTED_BLOCK
@@ -504,28 +507,41 @@ class QuotedBlockParser:
                         intro = intro + " " + line.content
 
             elif state == cls.ParseStates.QUOTED_BLOCK:
-                if line != EMPTY_LINE and line.content[-1] == "”" and quote_level == 1:
+                quote_level_at_line_end = quote_level + quote_level_diff(line.content)
+                if line != EMPTY_LINE and line.content[-1] == "”" and quote_level_at_line_end == 0:
                     quoted_lines.append(line.slice(0, -1))
-                    wrap_up = None
-                    state = cls.ParseStates.WRAP_UP
+                    blocks.append(QuotedBlock(quoted_lines))
+                    quoted_lines = None
+                    state = cls.ParseStates.WRAP_UP_MAYBE
                 # Note that this else also applies to EMPTY_LINEs
                 else:
                     quoted_lines.append(line)
 
+            elif state == cls.ParseStates.WRAP_UP_MAYBE:
+                if line != EMPTY_LINE:
+                    if line.content[0] == "„" and quote_level == 0:
+                        if line.content[-1] == "”":
+                            quoted_lines = [line.slice(1, -1)]
+                            blocks.append(QuotedBlock(quoted_lines))
+                            quoted_lines = None
+                        else:
+                            quoted_lines = [line.slice(1)]
+                            state = cls.ParseStates.QUOTED_BLOCK
+                    else:
+                        wrap_up = line.content
+                        state = cls.ParseStates.WRAP_UP
+
             elif state == cls.ParseStates.WRAP_UP:
                 if line != EMPTY_LINE:
-                    if wrap_up is None:
-                        wrap_up = line.content
-                    else:
-                        wrap_up = wrap_up + ' ' + line.content
+                    wrap_up = wrap_up + ' ' + line.content
 
             else:
                 raise RuntimeError('Unknown state')
 
-        if state != cls.ParseStates.WRAP_UP:
+        if state not in (cls.ParseStates.WRAP_UP, cls.ParseStates.WRAP_UP_MAYBE):
             raise SubArticleElementNotFoundError()
 
-        return intro, [QuotedBlock(quoted_lines)], wrap_up
+        return intro, blocks, wrap_up
 
 
 class ArticleParsingError(StructureParsingError):
