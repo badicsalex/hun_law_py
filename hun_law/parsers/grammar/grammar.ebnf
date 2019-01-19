@@ -1,0 +1,111 @@
+# Copyright 2018 Alex Badics <admin@stickman.hu>
+#
+# This file is part of Hun-Law.
+#
+# Hun-Law is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Hun-Law is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+
+@@namechars :: 'éáőúöüóíűÉÁŐÚÖÜÓÍŰ'
+@@grammar :: ActGrammar
+
+start = {any_expression}+ $;
+
+any_expression =
+    | quote
+    | compound_reference
+    | abbreviation
+    | word
+    | number
+    | /./ # Anything else
+    ;
+
+compound_reference::CompoundReference = (act_reference:act_reference reference:[reference]) | reference:reference;
+
+ref_with_subpoint = (alphabetic_subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference);
+ref_with_point =  (point:alphabetic_point_reference | subpoint:numeric_point_reference) [>ref_with_subpoint];
+ref_with_paragraph = paragraph:paragraph_reference [>ref_with_point];
+
+ref_with_article_with_paragraph = article:article_reference >ref_with_paragraph;
+ref_with_article_no_paragraph = article:article_reference [>ref_with_point];
+
+reference::Reference =
+    | >ref_with_article_with_paragraph
+    | >ref_with_article_no_paragraph
+    | >ref_with_paragraph
+    | >ref_with_point
+    | >ref_with_subpoint
+    ;
+
+
+act_reference::ActReference = abbreviation:abbreviation | (act_id:act_id [from_now_on:from_now_on | from_now_on_long] );
+from_now_on = "(" "a" "továbbiakban" [":"] abbreviation:abbreviation ["törvény"] ")" ;
+from_now_on_long = "(" "a" "továbbiakban" [":"] {word}+ ")" ;
+act_id::ActId = year:number "." "évi" number:roman "." act_suffix;
+act_suffix = "törvény" | /törvén[a-zéáőúöüóíű]+/;
+
+article_reference::ArticleReferencePart::ReferencePart
+    = {(ranges+:article_range | singles+:article_single) [list_separator [az]]}+ article_suffix ;
+article_range = start:article_id ["." article_suffix] dash end:article_id "." ;
+article_single = id:article_id ".";
+article_id = id:([number ":" ] number ["/" /[A-Z]/]);
+article_suffix = /§-[a-zéáőúöüóíű]+/ | "§" ;
+
+paragraph_reference::ParagraphReferencePart::ReferencePart
+    = {(ranges+:paragraph_range | singles+:paragraph_single) [list_separator [az]]}+ paragraph_suffix ;
+paragraph_range = "(" start:paragraph_id ")" dash "(" end:paragraph_id ")" ;
+paragraph_single = "(" id:paragraph_id ")";
+paragraph_id = id:(number [/[a-z]/]);
+paragraph_suffix = /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés" ;
+
+alphabetic_point_reference::AlphabeticPointReferencePart::ReferencePart
+    = {(ranges+:alphabetic_point_range | singles+:alphabetic_point_single) [list_separator [az]]}+ alphabetic_point_suffix ;
+alphabetic_point_range = start:alphabetic_point_id ")" dash end:alphabetic_point_id ")" ;
+alphabetic_point_single = id:alphabetic_point_id ")";
+alphabetic_point_id = id:("ny" | "sz" | /[a-z]/);
+alphabetic_point_suffix = /pont[a-zéáőúöüóíű]+/ | "pont" ;
+
+numeric_point_reference::NumericPointReferencePart::ReferencePart
+    = {(ranges+:numeric_point_range | singles+:numeric_point_single) [list_separator [az]]}+ numeric_point_suffix ;
+numeric_point_range = start:numeric_point_id dash end:numeric_point_id "." ;
+numeric_point_single = id:numeric_point_id ".";
+numeric_point_id = id:(number [["/"] /[a-z]/]);
+numeric_point_suffix = /pont[a-zéáőúöüóíű]+/ | "pont" ;
+
+alphabetic_subpoint_reference::AlphabeticSubpointReferencePart::ReferencePart
+    = {(ranges+:alphabetic_subpoint_range | singles+:alphabetic_subpoint_single) [list_separator [az]]}+ alphabetic_subpoint_suffix ;
+alphabetic_subpoint_range = start:alphabetic_subpoint_id ")" dash end:alphabetic_subpoint_id ")" ;
+alphabetic_subpoint_single = id:alphabetic_subpoint_id ")";
+alphabetic_subpoint_id = id:(/[a-z][a-z]?/);
+alphabetic_subpoint_suffix = /alpont[a-zéáőúöüóíű]+/ | "alpont" ;
+
+numeric_subpoint_reference::NumericSubpointReferencePart::ReferencePart
+    = {(ranges+:numeric_subpoint_range | singles+:numeric_subpoint_single) [list_separator [az]]}+ numeric_subpoint_suffix ;
+numeric_subpoint_range = start:numeric_subpoint_id  dash end:numeric_subpoint_id "." ;
+numeric_subpoint_single = id:numeric_subpoint_id ".";
+numeric_subpoint_id = id:number ;
+numeric_subpoint_suffix = /alpont[a-zéáőúöüóíű]+/ | "alpont" ;
+
+list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
+az = /az?/;
+
+abbreviation::Abbreviation = s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]+\.? ?(tv\.|vhr\.)/ | s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]+\./ ;
+
+quote = "„" /[^„”]*/ { quote /[^„”]*/ }* "”" ;
+
+number_with_dot = number "." ;
+roman_with_dot = roman "." ;
+number = /[0-9]+/ ;
+word = /[a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ\-]+/ ;
+roman = /[IVXLCDM]+/ ; # TODO = actual grammar for this.
+
+dash = "−" | "–" | "-" ;

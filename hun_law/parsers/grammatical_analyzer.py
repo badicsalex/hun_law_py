@@ -15,10 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from lark import Lark, Tree, Token
-from lark.exceptions import LarkError
+import os
+import collections
+import tatsu
+import tatsu.model
+
+from .grammar import model
+from .grammar.parser import ActGrammarParser
 
 from hun_law.structure import Reference
+
+
+def iterate_depth_first(node, filter_class=None):
+    if isinstance(node, tatsu.model.Node):
+        to_iter = node.ast
+    else:
+        to_iter = node
+    if isinstance(to_iter, dict):
+        for k, v in to_iter.items():
+            if k == 'parseinfo':
+                continue
+            yield from iterate_depth_first(v, filter_class)
+    elif isinstance(to_iter, list):
+        for v in to_iter:
+            yield from iterate_depth_first(v, filter_class)
+    if filter_class is None or isinstance(node, filter_class):
+        yield node
 
 
 class ReferenceCollector:
@@ -27,11 +49,11 @@ class ReferenceCollector:
         self.articles = [(None, 0, 0)]
         self.paragraphs = [(None, 0, 0)]
         self.points = [(None, 0, 0)]
-        self.alphabetic_points = self.points  # alias
-        self.numeric_points = self.points  # alias
+        self.alphabeticpoints = self.points  # alias
+        self.numericpoints = self.points  # alias
         self.subpoints = [(None, 0, 0)]
-        self.alphabetic_subpoints = self.subpoints  # alias
-        self.numeric_subpoints = self.subpoints  # alias
+        self.alphabeticsubpoints = self.subpoints  # alias
+        self.numericsubpoints = self.subpoints  # alias
 
     def add_item(self, ref_type, ref_data, start_pos, end_pos):
         ref_list = getattr(self, ref_type + 's')
@@ -50,6 +72,7 @@ class ReferenceCollector:
             if len(level_vals) == 1:
                 ref_args[arg_pos] = level_vals[0][0]
             else:
+                level_vals.sort(key=lambda x: x[1])
                 for level_val, start, end in level_vals[:-1]:
                     if start_override is not None:
                         start = start_override
@@ -76,24 +99,20 @@ class GrammaticalAnalysisResult:
         refs_to_parse = []
         refs_found = set()
         # Collect references where we might have Act Id
-        for ref_container in self.tree.find_data('compound_reference'):
+        for ref_container in iterate_depth_first(self.tree, model.CompoundReference):
+            if ref_container.reference is None:
+                continue
             act_id = None
-            if len(ref_container.children) == 1:
-                ref = ref_container.children[0]
-                if ref.data == 'act_reference':
-                    continue
-            else:
-                act_ref, ref = ref_container.children
-                assert act_ref.data == 'act_reference'
+            if ref_container.act_reference is not None:
                 try:
-                    act_id = self.get_act_id_from_parse_result(act_ref, abbreviations)
+                    act_id = self.get_act_id_from_parse_result(ref_container.act_reference, abbreviations)
                 except AbbreviationNotFoundError:
                     pass
-            refs_to_parse.append((act_id, ref))
-            refs_found.add(ref)
+            refs_to_parse.append((act_id, ref_container.reference))
+            refs_found.add(ref_container.reference)
 
         # Collect all other refs scattered elsewhere
-        for ref in self.tree.find_data('reference'):
+        for ref in iterate_depth_first(self.tree, model.Reference):
             if ref in refs_found:
                 continue
             refs_to_parse.append((None, ref))
@@ -111,49 +130,31 @@ class GrammaticalAnalysisResult:
                 collected_refs[0][1] = full_start_pos
                 collected_refs[-1][2] = full_end_pos
                 result.extend(collected_refs)
-        result.sort(key=lambda x: x[1])
         return result
 
     @classmethod
     def fill_reference_collector(cls, parsed_ref, reference_collector):
-        assert parsed_ref.data == 'reference', ref
-        for ref_part in parsed_ref.children:
-            assert ref_part.data.endswith("_reference")
-            ref_type = ref_part.data[:-10]
-            for ref_list_item in ref_part.children:
-                if not isinstance(ref_list_item, Tree):
-                    continue
-                relevant_children = [str(c) for c in ref_list_item.children if c.type == ref_type.upper() + "_ID"]
+        assert isinstance(parsed_ref, model.Reference), parsed_ref
+        for ref_part in parsed_ref.children():
+            assert isinstance(ref_part, model.ReferencePart), ref_part
+            ref_type_name = ref_part.__class__.__name__[:-len('ReferencePart')].lower()
+            for ref_list_item in ref_part.singles:
                 start_pos, end_pos = cls.get_subtree_start_and_end_pos(ref_list_item)
-                if ref_list_item.data == ref_type + '_id':
-                    assert len(relevant_children) == 1, ("Wrong amount of IDs in", ref_list_item)
-                    reference_collector.add_item(ref_type, relevant_children[0], start_pos, end_pos)
-                elif ref_list_item.data == ref_type + '_range':
-                    assert len(relevant_children) == 2, ("Wrong amount of IDs in", ref_list_item)
-                    reference_collector.add_item(ref_type, (relevant_children[0], relevant_children[1]), start_pos, end_pos)
-                elif ref_list_item.data in ("this", "previous"):
-                    # TODO: actually handle this case
-                    pass
-                else:
-                    raise ValueError("Unknown type in reference list: {}".format(ref_list_item.data))
-
-    @classmethod
-    def update_mutable_ref(cls, mutable_ref, token):
-        # TODO: Ranges and  lists
-        if token.type == "ABBREVIATION" and mutable_ref.act is None:
-            mutable_ref.act = str(token)
-        if token.type == "ARTICLE_ID":
-            mutable_ref.article = str(token)
-        if token.type == "PARAGRAPH_ID":
-            mutable_ref.paragraph = str(token)
-        if token.type == "ALPHABETIC_POINT_ID":
-            mutable_ref.point = str(token)
-        if token.type == "NUMERIC_POINT_ID":
-            mutable_ref.point = str(token)
+                id_as_string = "".join(ref_list_item.id.id)
+                reference_collector.add_item(ref_type_name, id_as_string, start_pos, end_pos)
+            for ref_list_item in ref_part.ranges:
+                start_pos, end_pos = cls.get_subtree_start_and_end_pos(ref_list_item)
+                start_id_as_string = "".join(ref_list_item.start.id)
+                end_id_as_string = "".join(ref_list_item.end.id)
+                reference_collector.add_item(ref_type_name, (start_id_as_string, end_id_as_string), start_pos, end_pos)
 
     def get_act_references(self, abbreviations):
-        for act_ref in self.tree.find_data('act_reference'):
-            start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.children[0])
+        for act_ref in iterate_depth_first(self.tree, model.ActReference):
+            if act_ref.abbreviation is not None:
+                start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.abbreviation)
+            elif act_ref.act_id is not None:
+                start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.act_id)
+
             try:
                 yield self.get_act_id_from_parse_result(act_ref, abbreviations), start_pos, end_pos
             except AbbreviationNotFoundError:
@@ -161,57 +162,57 @@ class GrammaticalAnalysisResult:
 
     @classmethod
     def get_act_id_from_parse_result(cls, act_ref, abbreviations):
-        act_id = act_ref.children[0]
-        if act_id.data == 'abbreviated_act_id':
-            abbrev = str(act_id.children[0])
+        if act_ref.act_id is not None:
+            return "{}. évi {}. törvény".format(act_ref.act_id.year, act_ref.act_id.number)
+        if act_ref.abbreviation is not None:
+            abbrev = act_ref.abbreviation.s
             if abbrev not in abbreviations:
                 raise AbbreviationNotFoundError()
             return abbreviations[abbrev]
-        elif act_id.data == 'act_id':
-            assert len(act_id.children) == 4
-            return "{} évi {} törvény".format(act_id.children[0], act_id.children[2])
-        else:
-            raise ValueError('Unknown act id type in parse result: {}'.format(act_id.type))
+        raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
     @classmethod
     def get_subtree_start_and_end_pos(cls, subtree):
-        first_token = subtree
-        while not isinstance(first_token, Token):
-            first_token = first_token.children[0]
-        last_token = subtree
-        while not isinstance(last_token, Token):
-            last_token = last_token.children[-1]
-        return first_token.column - 1, last_token.column + len(last_token) - 2
+        return subtree.parseinfo.pos, subtree.parseinfo.endpos-1
 
     def get_new_abbreviations(self):
-        for act_ref in self.tree.find_data('act_reference'):
-            try:
-                from_now_on = next(act_ref.find_data('from_now_on'))
-            except StopIteration:
+        for act_ref in iterate_depth_first(self.tree, model.ActReference):
+            if act_ref.from_now_on is None:
                 continue
-            abbrev = next(t for t in from_now_on.children if t.type == 'ABBREVIATION')
-            yield str(abbrev), self.get_act_id_from_parse_result(act_ref, {})
+            yield str(act_ref.from_now_on.abbreviation.s), self.get_act_id_from_parse_result(act_ref, {})
 
-    def indented_print(self,  tree=None, indent=''):
-        if tree is None:
-            tree = self.tree
-        if isinstance(tree, Token):
-            print(indent + tree.type + ":  " + str(tree))
-            return
-        print(indent + tree.data)
-        for c in tree.children:
-            self.indented_print(c, indent + '  ')
+    @classmethod
+    def _indented_print(cls, node=None, indent=''):
+        if isinstance(node, tatsu.model.Node):
+            print('<Node:{}>'.format(node.__class__.__name__), end='')
+            node = node.ast
+        if isinstance(node, dict):
+            print('<Dict>')
+            for k, v in node.items():
+                if k == 'parseinfo':
+                    continue
+                print("{}  {}: ".format(indent, k), end='')
+                cls._indented_print(v, indent + '    ')
+        elif isinstance(node, list):
+            print('<List>')
+            for v in node:
+                print("{}  - ".format(indent), end='')
+                cls._indented_print(v, indent + '    ')
+        else:
+            print(node)
 
-    def __eq__(self, other):
-        return self.s == other.s and self.tree == other.tree
+    def indented_print(self, indent=''):
+        self._indented_print(self.tree, indent)
 
 
-GrammaticalAnalysisError = LarkError
+class GrammaticalAnalysisError(Exception):
+    pass
 
 
 class GrammaticalAnalyzer:
     def __init__(self):
-        self.parser = Lark.open('grammar.lark', rel_to=__file__, keep_all_tokens=True)
+        self.parser = ActGrammarParser(semantics=model.ActGrammarModelBuilderSemantics(), parseinfo=True)
+#        self.parser._use_parseinfo = True
 
-    def analyze(self, s):
-        return GrammaticalAnalysisResult(s, self.parser.parse(s))
+    def analyze(self, s, debug=False):
+        return GrammaticalAnalysisResult(s, self.parser.parse(s, trace=debug, colorize=debug))

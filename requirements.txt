@@ -1,9 +1,10 @@
 # Runing the extractors
 pdfminer.six
 chardet
-lark-parser
+tatsu
 
 # Development
 autopep8
 pylint
 pytest
+colorama
