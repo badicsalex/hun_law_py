@@ -62,9 +62,13 @@ grammatical_analyzer = None
 
 def generate_text_with_ref_links(container, text, current_ref, abbreviations):
     global grammatical_analyzer
+
+    container.text = text
+    if len(text)>10000:
+        return
+
     interesting_substrings = (")", "§", "törvén")
     if not any(s in text for s in interesting_substrings):
-        container.text = text
         return
 
     if grammatical_analyzer is None:
@@ -85,7 +89,6 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
         analysis_result = grammatical_analyzer.analyze(text)
     except GrammaticalAnalysisError as e:
         print("Error during parsing {}: {}".format(current_ref, e))
-        container.text = text[offset:end_offset]
         return
 
     for k, v in analysis_result.get_new_abbreviations():
