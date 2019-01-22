@@ -953,6 +953,144 @@ replacement_fixups = {
             "replacement": "helyébe a „miniszter” szöveg lép."
         }
     ],
+    "2014. évi CVI. törvény": [
+        {
+            "needle": "a „letett” szöveg”,",
+            "replacement": "a „letett” szöveg,"
+        }
+    ],
+    "2014. évi LIII. törvény": [
+        {
+            "needle": "”the Parties”) have approved an Arrangement on the operation of a Working Holiday Scheme (hereinafter referred",
+            "replacement": "“the Parties”) have approved an Arrangement on the operation of a Working Holiday Scheme (hereinafter referred"
+        },
+        {
+            "needle": "to as ”the Scheme”) between the Parties. The purpose of the Scheme is to enhance cultural and people-to-people",
+            "replacement": "to as “the Scheme”) between the Parties. The purpose of the Scheme is to enhance cultural and people-to-people"
+        },
+        {
+            "needle": "(a) ”Taiwan” means the territory in respect of which the immigration laws administered by the Ministry of the",
+            "replacement": "(a) “Taiwan” means the territory in respect of which the immigration laws administered by the Ministry of the"
+        },
+        {
+            "needle": "(b) ”Hungary” means the territory in respect of which Hungarian immigration laws are applied at the date of the",
+            "replacement": "(b) “Hungary” means the territory in respect of which Hungarian immigration laws are applied at the date of the"
+        },
+        {
+            "needle": "a ”working holiday visa”), valid for a period of twelve (12) months from the date of issue, to any person who satisfies",
+            "replacement": "a “working holiday visa”), valid for a period of twelve (12) months from the date of issue, to any person who satisfies"
+        },
+        {
+            "needle": "A tajpeji Magyar Kereskedelmi Iroda és a Magyarországi Tajpej Képviseleti Iroda (a továbbiakban: ,,Szerződő",
+            "replacement": "A tajpeji Magyar Kereskedelmi Iroda és a Magyarországi Tajpej Képviseleti Iroda (a továbbiakban: „Szerződő"
+        },
+        {
+            "needle": "Felek”) az ideiglenesen munkát vállaló turisták programjáról szóló Megállapodás (a továbbiakban: ,,Program”)",
+            "replacement": "Felek”) az ideiglenesen munkát vállaló turisták programjáról szóló Megállapodás (a továbbiakban: „Program”)"
+        }
+    ],
+    "2014. évi LVII. törvény": [
+        {
+            "needle": "„",
+            "replacement": "”"
+        }
+    ],
+    "2014. évi LXII. törvény": [
+        {
+            "needle": "(2) ,,A helyi önkormányzatok általános működésének és ágazati feladatainak támogatása” cím előirányzatait és",
+            "replacement": "(2) „A helyi önkormányzatok általános működésének és ágazati feladatainak támogatása” cím előirányzatait és"
+        },
+        {
+            "needle": ",,a helyi önkormányzatok általános működésének és ágazati feladatainak támogatása” címen megillető, és a részükre",
+            "replacement": "„a helyi önkormányzatok általános működésének és ágazati feladatainak támogatása” címen megillető, és a részükre"
+        }
+    ],
+    "2014. évi LXXIV. törvény": [
+        {
+            "needle": "a „2013. január 1-jétől” szövegrész helyébe a „2013. július 1-jétől” szöveg, a 2015. január 1-jével” szövegrész",
+            "replacement": "a „2013. január 1-jétől” szövegrész helyébe a „2013. július 1-jétől” szöveg, a „2015. január 1-jével” szövegrész"
+        }
+    ],
+    "2014. évi VI. törvény": [
+        {
+            "needle": "ОРГАНИЗАЦИИ КОСМИЧЕСКОЙ СВЯЗИ ”ИНТЕРСПУТНИК”",
+            "replacement": "ОРГАНИЗАЦИИ КОСМИЧЕСКОЙ СВЯЗИ “ИНТЕРСПУТНИК”"
+        }
+    ],
+    "2014. évi XCIII. törvény": [
+        {
+            "needle": "d) „133. § (2) bekezdésében az „a helyi önkormányzat működésére” szövegrész helyébe az „az érintett",
+            "replacement": "d) 133. § (2) bekezdésében az „a helyi önkormányzat működésére” szövegrész helyébe az „az érintett"
+        }
+    ],
+    "2014. évi XI. törvény": [
+        {
+            "needle": "meg.”” szövegrész helyébe az „* A rezsicsökkentés a fogyasztókat a 2012. április 14. napján alkalmazott díj",
+            "replacement": "meg.” szövegrész helyébe az „* A rezsicsökkentés a fogyasztókat a 2012. április 14. napján alkalmazott díj"
+        }
+    ],
+    "2014. évi XLIV. törvény": [
+        {
+            "needle": "a) ”Aeronautical Authority” means in the case of the Government of the United Arab Emirates (UAE), the",
+            "replacement": "a) “Aeronautical Authority” means in the case of the Government of the United Arab Emirates (UAE), the"
+        },
+        {
+            "needle": "b) ”Agreed Services” means scheduled international air services which can be operated for the transport",
+            "replacement": "b) “Agreed Services” means scheduled international air services which can be operated for the transport"
+        },
+        {
+            "needle": "c) ”Agreement” means this Agreement, its Annexes and any amendments thereto;",
+            "replacement": "c) “Agreement” means this Agreement, its Annexes and any amendments thereto;"
+        },
+        {
+            "needle": "d) ”Convention” means the Convention on International Civil Aviation, opened for signature at Chicago on",
+            "replacement": "d) “Convention” means the Convention on International Civil Aviation, opened for signature at Chicago on"
+        },
+        {
+            "needle": "e) ”Air Service”, “Airline”, ”International Air Service” and ”stop for non traffic purposes” have the meanings",
+            "replacement": "e) “Air Service”, “Airline”, ”International Air Service” and ”stop for non traffic purposes” have the meanings"
+        },
+        {
+            "needle": "f) ”Annexes” shall include provisions annexed to the Agreement such as the Route Schedule, the List of",
+            "replacement": "f) “Annexes” shall include provisions annexed to the Agreement such as the Route Schedule, the List of"
+        },
+        {
+            "needle": "g) ”Designated Airlines” means an airline or airlines that have been designated and authorized in accordance",
+            "replacement": "g) “Designated Airlines” means an airline or airlines that have been designated and authorized in accordance"
+        },
+        {
+            "needle": "i) ”Territory” in relation to a State has the meaning assigned to it in Article 2 of the Convention;",
+            "replacement": "i) “Territory” in relation to a State has the meaning assigned to it in Article 2 of the Convention;"
+        },
+        {
+            "needle": "l) References in this Agreement to the ”EU Treaties” shall be understood as referring to the Treaty on European",
+            "replacement": "l) References in this Agreement to the “EU Treaties” shall be understood as referring to the Treaty on European"
+        },
+        {
+            "needle": "called ”ramp inspection”), provided this does not lead to unreasonable delay.",
+            "replacement": "called “ramp inspection”), provided this does not lead to unreasonable delay."
+        },
+        {
+            "needle": "e) “Air Service”, “Airline”, ”International Air Service” and ”stop for non traffic purposes” have the meanings",
+            "replacement": "e) “Air Service”, “Airline”, “International Air Service” and “stop for non traffic purposes” have the meanings"
+        },
+        {
+            "needle": "légitársaságai üzemeltetik.",
+            "replacement": "légitársaságai üzemeltetik.”"
+        }
+    ],
+    "2014. évi XLIX. törvény": [
+        {
+            "needle": "(a) in Bahrain, to income tax payable under Amiri Decree No. 22/1979 (hereinafter referred to as ”Bahrain Tax”);",
+            "replacement": "(a) in Bahrain, to income tax payable under Amiri Decree No. 22/1979 (hereinafter referred to as “Bahrain Tax”);"
+        }
+    ],
+    "2014. évi XXXIX. törvény": [
+        {
+            "needle": ",,(4) Az ajánlat az egyetemes szolgáltatásra jogosult azon felhasználók ellátásához szükséges földgázmennyiség",
+            "replacement": "„(4) Az ajánlat az egyetemes szolgáltatásra jogosult azon felhasználók ellátásához szükséges földgázmennyiség"
+        }
+    ],
     "2015. évi CIV. törvény": [
         {
             "needle": "„Felhatalmazás",
