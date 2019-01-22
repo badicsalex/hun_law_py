@@ -941,6 +941,174 @@ replacement_fixups = {
             "replacement": "b) 39. § (2) bekezdésében az „s)–v) pontja” szövegrész helyébe az „s)–w) pontja” szöveg,"
         }
     ],
+    "2013. évi XLII. törvény": [
+        {
+            "needle": "„When there is not enougn space in the manifest to enter all the goods carried,\"",
+            "replacement": "„When there is not enougn space in the manifest to enter all the goods carried,”"
+        },
+        {
+            "needle": "Replace twice in the second sentence the words”TIR operation” by „TIR transport”.",
+            "replacement": "Replace twice in the second sentence the words „TIR operation” by „TIR transport”."
+        },
+        {
+            "needle": "rögzítve a (9) bekezdésben említett kábellel vagy kötéllel.” “",
+            "replacement": "rögzítve a (9) bekezdésben említett kábellel vagy kötéllel.” ”"
+        },
+        {
+            "needle": "TIR operation and/or transmission of the claim for payment to the TIR Carnet holder.“",
+            "replacement": "TIR operation and/or transmission of the claim for payment to the TIR Carnet holder.”"
+        },
+        {
+            "needle": "“1. cikk (b) pont” szavakat váltsa fel az “1. cikk (f) pont.",
+            "replacement": "“1. cikk (b) pont” szavakat váltsa fel az “1. cikk (f) pont”."
+        },
+        {
+            "needle": "“1. cikk (e), (i) pont” szavakat váltsa fel az “1. cikk (j), (i) pont.",
+            "replacement": "“1. cikk (e), (i) pont” szavakat váltsa fel az “1. cikk (j), (i) pont”."
+        },
+        {
+            "needle": "”42b. cikk",
+            "replacement": "„42b. cikk"
+        },
+        {
+            "needle": "\"1 ANNEX 1",
+            "replacement": "„1 ANNEX 1"
+        },
+        {
+            "needle": "recognizable form and all other provisions of Rule 10 (c) are complied with.\"",
+            "replacement": "recognizable form and all other provisions of Rule 10 (c) are complied with.”"
+        },
+        {
+            "needle": "load compartments.\"",
+            "replacement": "load compartments.”"
+        },
+        {
+            "needle": "\"2.3.11 (a)-3”.",
+            "replacement": "„2.3.11 (a)-3”."
+        },
+        {
+            "needle": "biztosított dohány, illetve alkohol kategóriájáról.",
+            "replacement": "biztosított dohány, illetve alkohol kategóriájáról.”"
+        },
+        {
+            "needle": "részében.",
+            "replacement": "részében.”"
+        },
+        {
+            "needle": ",,8.13.1–1. Finanszírozási rendelkezések",
+            "replacement": "„8.13.1–1. Finanszírozási rendelkezések"
+        },
+        {
+            "needle": ",,9. I. 1. a) Elismerten működő egyesület",
+            "replacement": "„9. I. 1. a) Elismerten működő egyesület"
+        },
+        {
+            "needle": ",,9. II. 3. Engedélyező bizottság",
+            "replacement": "„9. II. 3. Engedélyező bizottság"
+        },
+        {
+            "needle": ",,Nem kötelező a zárólap a csúszóponyvás járművek esetén sem.”",
+            "replacement": "„Nem kötelező a zárólap a csúszóponyvás járművek esetén sem.”"
+        },
+        {
+            "needle": ",, Nem kötelező a zárólap a csúszóponyvás járművek esetében sem.” ”",
+            "replacement": "„ Nem kötelező a zárólap a csúszóponyvás járművek esetében sem.” ”"
+        },
+        {
+            "needle": "„b) a ,,TIR-művelet'' kifejezés a TIR-fuvarozásnak azt a részét jelenti, amely egy Szerződő Fél",
+            "replacement": "„b) a „TIR-művelet'' kifejezés a TIR-fuvarozásnak azt a részét jelenti, amely egy Szerződő Fél"
+        },
+        {
+            "needle": "c) a ,,TIR-művelet kezdete'' kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt vagy",
+            "replacement": "c) a „TIR-művelet kezdete'' kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt vagy"
+        },
+        {
+            "needle": "d) a ,,TIR-művelet befejezése'' kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt",
+            "replacement": "d) a „TIR-művelet befejezése'' kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt"
+        },
+        {
+            "needle": "e) a ,,TIR-művelet mentesítése'' kifejezés azt jelenti, hogy a vámhatóságok elfogadták, hogy a",
+            "replacement": "e) a „TIR-művelet mentesítése'' kifejezés azt jelenti, hogy a vámhatóságok elfogadták, hogy a"
+        },
+        {
+            "needle": "„k) az ,,indulási vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát",
+            "replacement": "„k) az „indulási vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát"
+        },
+        {
+            "needle": "l) a ,,rendeltetési vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát",
+            "replacement": "l) a „rendeltetési vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát"
+        },
+        {
+            "needle": "m) az ,,átmenő vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát",
+            "replacement": "m) az „átmenő vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát"
+        },
+        {
+            "needle": "„o) a TIR-igazolvány ,,birtokosa'' kifejezés azt a személyt jelenti, aki számára a TIR-igazolványt",
+            "replacement": "„o) a TIR-igazolvány „birtokosa'' kifejezés azt a személyt jelenti, aki számára a TIR-igazolványt"
+        },
+        {
+            "needle": "Példa a csúszóponyvás jármű szerkezetére",
+            "needle_prev_lines": [
+                "“ 9. számú vázlat"
+            ],
+            "replacement": "Példa a csúszóponyvás jármű szerkezetére”"
+        },
+        {
+            "needle": "Példa a csúszóponyvás jármű szerkezetére",
+            "needle_prev_lines": [
+                "“9. számú vázlat"
+            ],
+            "replacement": "Példa a csúszóponyvás jármű szerkezetére”"
+        },
+        {
+            "needle": "„b) a „TIR-művelet'' kifejezés a TIR-fuvarozásnak azt a részét jelenti, amely egy Szerződő Fél",
+            "replacement": "„b) a „TIR-művelet” kifejezés a TIR-fuvarozásnak azt a részét jelenti, amely egy Szerződő Fél"
+        },
+        {
+            "needle": "c) a „TIR-művelet kezdete'' kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt vagy",
+            "replacement": "c) a „TIR-művelet kezdete” kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt vagy"
+        },
+        {
+            "needle": "d) a „TIR-művelet befejezése'' kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt",
+            "replacement": "d) a „TIR-művelet befejezése” kifejezés azt jelenti, hogy a közúti járművet, járműszerelvényt"
+        },
+        {
+            "needle": "e) a „TIR-művelet mentesítése'' kifejezés azt jelenti, hogy a vámhatóságok elfogadták, hogy a",
+            "replacement": "e) a „TIR-művelet mentesítése” kifejezés azt jelenti, hogy a vámhatóságok elfogadták, hogy a"
+        },
+        {
+            "needle": "„k) az „indulási vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát",
+            "replacement": "„k) az „indulási vámhivatal” kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát"
+        },
+        {
+            "needle": "l) a „rendeltetési vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát",
+            "replacement": "l) a „rendeltetési vámhivatal” kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát"
+        },
+        {
+            "needle": "m) az „átmenő vámhivatal'' kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát",
+            "replacement": "m) az „átmenő vámhivatal” kifejezés valamely Szerződő Fél bármelyik olyan vámhivatalát"
+        },
+        {
+            "needle": "ventilation aperture.''",
+            "replacement": "ventilation aperture.\""
+        },
+        {
+            "needle": "„o) a TIR-igazolvány „birtokosa'' kifejezés azt a személyt jelenti, aki számára a TIR-igazolványt",
+            "replacement": "„o) a TIR-igazolvány „birtokosa” kifejezés azt a személyt jelenti, aki számára a TIR-igazolványt"
+        },
+        {
+            "needle": "above-mentioned international organization.”",
+            "replacement": "above-mentioned international organization.””"
+        },
+        {
+            "needle": "A bekezdésben kerüljön törlésre a minimum szó az „A“ szó után.",
+            "replacement": "A bekezdésben kerüljön törlésre a minimum szó az „A” szó után."
+        },
+        {
+            "needle": "helyen.”",
+            "replacement": "helyen.””"
+        }
+    ],
     "2013. évi XX. törvény": [
         {
             "needle": ",,(4) A 3. § (4) bekezdése szerinti esetben az OBH elnöke a kinevezésre vonatkozó javaslatának felterjesztése előtt",

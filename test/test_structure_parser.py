@@ -87,6 +87,21 @@ def test_end_to_end_2013_31():
     assert ptk.article('7:65').title == "Dédszülő és a dédszülő leszármazójának öröklése"
 
 
+def test_end_to_end_2013_67():
+    # This issue has empty pages, with which we had problems.
+    # It also has a document, where words are not correctly parsed into lines,
+    # because y coordinates are not exactly the same
+
+    # It is also a huge "TIR" international agreement, which had:
+    # - A ton of quoting errors
+    # - Old-style article markings in the Act itself
+    # - so many lines I had to enable swap.
+    # TODO: It is not parsed correctly, but I couldn't care less right now
+
+    acts = {a.identifier: a for a in parse_single_kozlony(2013, 67) if isinstance(a, Act)}
+    assert len(acts) == 6, "Issue 2013/67 of Magyar Kozlony contains 6 separate Acts"
+
+
 def test_end_to_end_2013_185():
     # This test tests two things: a rather large MK issue with lots  of small Acts,
     # so the Act separation in the Kozlony Extractor. The other is that there are
