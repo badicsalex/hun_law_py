@@ -549,6 +549,30 @@ replacement_fixups = {
             "replacement": "helyébe a „szervek” szöveg, 84. § (3) bekezdésében az „irányító szerv által választott” szövegrész helyébe az „irányító"
         }
     ],
+    "2013. évi CC. törvény": [
+        {
+            "needle": "tartalmazza az összeférhetetlenség megszüntetésére vonatkozó felszólítást is.”",
+            "replacement": "tartalmazza az összeférhetetlenség megszüntetésére vonatkozó felszólítást is."
+        }
+    ],
+    "2013. évi CCL. törvény": [
+        {
+            "needle": ",,(7) A közigazgatási hatósági eljárás és szolgáltatás általános szabályairól szóló törvény hatósági bizonyítvány",
+            "replacement": "„(7) A közigazgatási hatósági eljárás és szolgáltatás általános szabályairól szóló törvény hatósági bizonyítvány"
+        },
+        {
+            "needle": "n) 75. § (4) bekezdésében az ,,a (2)–(3) bekezdések szerint” szövegrész helyébe az ,,a (2)–(2a) bekezdés szerint”",
+            "replacement": "n) 75. § (4) bekezdésében az „a (2)–(3) bekezdések szerint” szövegrész helyébe az „a (2)–(2a) bekezdés szerint”"
+        },
+        {
+            "needle": "e) 38. § (1) bekezdés a) pontjában a „feladatait és hatáskörét” szövegrész helyébe a feladatait, hatáskörét és",
+            "replacement": "e) 38. § (1) bekezdés a) pontjában a „feladatait és hatáskörét” szövegrész helyébe a „feladatait, hatáskörét és"
+        },
+        {
+            "needle": "(2) A Hktv. 40. § (4) bekezdésében a ,,térítésmentesen” szövegrész helyébe a ,,térítésmentesen, valamint az elektronikus",
+            "replacement": "(2) A Hktv. 40. § (4) bekezdésében a „térítésmentesen” szövegrész helyébe a „térítésmentesen, valamint az elektronikus"
+        }
+    ],
     "2013. évi CCLII. törvény": [
         {
             "needle": "(4) A 6:198. § (3) bekezdése a következő szöveggel lép hatályba:",
@@ -561,6 +585,372 @@ replacement_fixups = {
         {
             "needle": ",,(3) A nyilvántartó bíróság jogszabályban meghatározott szervezetnek juttatja a vagyont, ha az alapító okirat, vagy",
             "replacement": "„(3) A nyilvántartó bíróság jogszabályban meghatározott szervezetnek juttatja a vagyont, ha az alapító okirat, vagy"
+        }
+    ],
+    "2013. évi CCXLIII. törvény": [
+        {
+            "needle": "p) 3. melléklet 4. sorában a „kollégiumvezető-helyettese” szövegrész helyébe a kollégiumvezető-helyettese és",
+            "replacement": "p) 3. melléklet 4. sorában a „kollégiumvezető-helyettese” szövegrész helyébe a „kollégiumvezető-helyettese és"
+        }
+    ],
+    "2013. évi CCXLVIII. törvény": [
+        {
+            "needle": "1.1. ”AIP” or Aeronautical Information Publication means the collection and dissemination of all",
+            "replacement": "1.1. “AIP” or Aeronautical Information Publication means the collection and dissemination of all"
+        },
+        {
+            "needle": "1.2. ”ANS” or Air Navigation Services for the purpose of this Agreement includes Air Traffic Management",
+            "replacement": "1.2. “ANS” or Air Navigation Services for the purpose of this Agreement includes Air Traffic Management"
+        },
+        {
+            "needle": "1.3. ”ANSP” or Air Navigation Service Provider means any public or private entity providing air navigation",
+            "replacement": "1.3. “ANSP” or Air Navigation Service Provider means any public or private entity providing air navigation"
+        },
+        {
+            "needle": "1.4. ”Appropriate NATO CAOC” means the competent NATO Combined Air Operations Centre.",
+            "replacement": "1.4. “Appropriate NATO CAOC” means the competent NATO Combined Air Operations Centre."
+        },
+        {
+            "needle": "1.5. ”Assignment” means the preparatory works and service provision carried out on the basis of this",
+            "replacement": "1.5. “Assignment” means the preparatory works and service provision carried out on the basis of this"
+        },
+        {
+            "needle": "1.6. ”ATM” means ATS, Airspace Management and Air Traffic Flow Management.",
+            "replacement": "1.6. “ATM” means ATS, Airspace Management and Air Traffic Flow Management."
+        },
+        {
+            "needle": "1.7. ”ATS” means area control service flight information service and alerting service.",
+            "replacement": "1.7. “ATS” means area control service flight information service and alerting service."
+        },
+        {
+            "needle": "1.8. ”Designated Airspace” shall have the meaning attributed thereto under Article 3.",
+            "replacement": "1.8. “Designated Airspace” shall have the meaning attributed thereto under Article 3."
+        },
+        {
+            "needle": "1.9. ”FIR” stands for Flight Information Region which is an airspace of defined dimensions within which",
+            "replacement": "1.9. “FIR” stands for Flight Information Region which is an airspace of defined dimensions within which"
+        },
+        {
+            "needle": "1.10. ”GAT” or General Air Traffic means flights conducted in accordance with the rules and provisions of",
+            "replacement": "1.10. “GAT” or General Air Traffic means flights conducted in accordance with the rules and provisions of"
+        },
+        {
+            "needle": "1.11. ”ICAO Class C Airspace” means aircraft operations may be conducted under Instrument Flight Rules",
+            "replacement": "1.11. “ICAO Class C Airspace” means aircraft operations may be conducted under Instrument Flight Rules"
+        },
+        {
+            "needle": "1.12. ”NSA” stands for National Supervisory Authority. For the purpose of this Agreement, NSA means the",
+            "replacement": "1.12. “NSA” stands for National Supervisory Authority. For the purpose of this Agreement, NSA means the"
+        },
+        {
+            "needle": "1.13. ”OAT” or Operational Air Traffic means flights which do not comply with the provisions stated for",
+            "replacement": "1.13. “OAT” or Operational Air Traffic means flights which do not comply with the provisions stated for"
+        },
+        {
+            "needle": "1.14. ”Safety investigation” means a process conducted by a safety investigation authority for the purpose",
+            "replacement": "1.14. “Safety investigation” means a process conducted by a safety investigation authority for the purpose"
+        },
+        {
+            "needle": "1.15. ”SPINS” stands for Special Instructions is the Unclassified Special Instructions or specific information,",
+            "replacement": "1.15. “SPINS” stands for Special Instructions is the Unclassified Special Instructions or specific information,"
+        },
+        {
+            "needle": "1.16. ”State flights” are flights engaged in missions undertaken by government, military, customs and",
+            "replacement": "1.16. “State flights” are flights engaged in missions undertaken by government, military, customs and"
+        },
+        {
+            "needle": "1.17. ”TRA” stands for Temporary Restricted Area and refers to an airspace of defined dimensions in",
+            "replacement": "1.17. “TRA” stands for Temporary Restricted Area and refers to an airspace of defined dimensions in"
+        },
+        {
+            "needle": "1.18. ”SIA” stands for Safety Investigation Authority. For the purpose of this Agreement, the SIA means the",
+            "replacement": "1.18. “SIA” stands for Safety Investigation Authority. For the purpose of this Agreement, the SIA means the"
+        },
+        {
+            "needle": "1.19. ”UAV/RPA” stands for Unmanned Aerial Vehicle/Remotely Piloted Aircraft.",
+            "replacement": "1.19. “UAV/RPA” stands for Unmanned Aerial Vehicle/Remotely Piloted Aircraft."
+        },
+        {
+            "needle": "P2 – Intersection of SKOPJE FIR, 41 52 37N 020 35 37E ”Triple Point” – SKOPJE FIR, TIRANA",
+            "replacement": "P2 – Intersection of SKOPJE FIR, 41 52 37N 020 35 37E “Triple Point” – SKOPJE FIR, TIRANA"
+        },
+        {
+            "needle": "1.1. ”AIP” vagy Aeronautical Information Publication (Légiforgalmi Tájékoztató Kiadvány) jelenti az összes",
+            "replacement": "1.1. “AIP” vagy Aeronautical Information Publication (Légiforgalmi Tájékoztató Kiadvány) jelenti az összes"
+        },
+        {
+            "needle": "1.2. ”ANS” vagy Air Navigation Services (Léginavigációs Szolgálatok) jelen Megállapodás céljaira magában",
+            "replacement": "1.2. “ANS” vagy Air Navigation Services (Léginavigációs Szolgálatok) jelen Megállapodás céljaira magában"
+        },
+        {
+            "needle": "1.3. ”ANSP” vagy Air Navigation Service Provider (Léginavigációs Szolgáltató) jelenti az általános légiforgalom",
+            "replacement": "1.3. “ANSP” vagy Air Navigation Service Provider (Léginavigációs Szolgáltató) jelenti az általános légiforgalom"
+        },
+        {
+            "needle": "1.4. ”A megfelelő NATO CAOC” jelentése az illetékes NATO Egyesített Légi Műveleti Központ Combined Air",
+            "replacement": "1.4. “A megfelelő NATO CAOC” jelentése az illetékes NATO Egyesített Légi Műveleti Központ Combined Air"
+        },
+        {
+            "needle": "1.5. ”Megbízatás” jelenti a jelen Megállapodás alapján végrehajtott előkészítő tevékenység és a szolgálatok",
+            "replacement": "1.5. “Megbízatás” jelenti a jelen Megállapodás alapján végrehajtott előkészítő tevékenység és a szolgálatok"
+        },
+        {
+            "needle": "1.6. ”ATM” jelentése: ATS, Légtérgazdálkodás és Légiforgalmi Áramlásszervezés (Airspace Management és Air",
+            "replacement": "1.6. “ATM” jelentése: ATS, Légtérgazdálkodás és Légiforgalmi Áramlásszervezés (Airspace Management és Air"
+        },
+        {
+            "needle": "1.7. ”ATS” jelenti a Körzeti Irányító Szolgálatot, a Repüléstájékoztató szolgálatot és a riasztószolgálatot.",
+            "replacement": "1.7. “ATS” jelenti a Körzeti Irányító Szolgálatot, a Repüléstájékoztató szolgálatot és a riasztószolgálatot."
+        },
+        {
+            "needle": "1.8. A ”Kijelölt Légtér” jelentése a 3. cikkben meghatározott jelentés.",
+            "replacement": "1.8. A “Kijelölt Légtér” jelentése a 3. cikkben meghatározott jelentés."
+        },
+        {
+            "needle": "1.9. ”FIR” jelentése a Repüléstájékoztató Körzet (Flight Information Region - FIR), meghatározott kiterjedésű",
+            "replacement": "1.9. “FIR” jelentése a Repüléstájékoztató Körzet (Flight Information Region - FIR), meghatározott kiterjedésű"
+        },
+        {
+            "needle": "1.10. ”GAT” vagy General Air Traffic (Általános Légiforgalom) jelenti az ICAO szabályainak és rendelkezéseink",
+            "replacement": "1.10. “GAT” vagy General Air Traffic (Általános Légiforgalom) jelenti az ICAO szabályainak és rendelkezéseink"
+        },
+        {
+            "needle": "1.11. ”ICAO Class C Airspace” (ICAO C osztályú légtér) jelenti, hogy légijármű üzemeltetés végezhető a Műszer",
+            "replacement": "1.11. “ICAO Class C Airspace” (ICAO C osztályú légtér) jelenti, hogy légijármű üzemeltetés végezhető a Műszer"
+        },
+        {
+            "needle": "1.12. ”NSA” jelentése a Nemzeti Felügyeleti Hatóság (National Supervisory Authority). Jelen Megállapodás",
+            "replacement": "1.12. “NSA” jelentése a Nemzeti Felügyeleti Hatóság (National Supervisory Authority). Jelen Megállapodás"
+        },
+        {
+            "needle": "1.13. ”OAT” vagy Műveleti Légiforgalom (Operational Air Traffic) jelenti a GAT vonatkozásában meghatározott",
+            "replacement": "1.13. “OAT” vagy Műveleti Légiforgalom (Operational Air Traffic) jelenti a GAT vonatkozásában meghatározott"
+        },
+        {
+            "needle": "1.14. ”Eseményvizsgálat” a balesetek és repülőesemények megelőzése céljából az eseményvizsgálatokat végző",
+            "replacement": "1.14. “Eseményvizsgálat” a balesetek és repülőesemények megelőzése céljából az eseményvizsgálatokat végző"
+        },
+        {
+            "needle": "1.15. ”SPINS” jelenti a megfelelő NATO testületek által közzétett Speciális Utasításokat (Special Instructions),",
+            "replacement": "1.15. “SPINS” jelenti a megfelelő NATO testületek által közzétett Speciális Utasításokat (Special Instructions),"
+        },
+        {
+            "needle": "1.16. ”Állami repülések” (State flights) azok a műveleti repülések, amelyeket kormányzati, katonai, vámügyi és",
+            "replacement": "1.16. “Állami repülések” (State flights) azok a műveleti repülések, amelyeket kormányzati, katonai, vámügyi és"
+        },
+        {
+            "needle": "1.17. ”TRA” jelentése Időszakosan Korlátozott Légtér (Temporary Restricted Area), amely a kijelölt légtérben egy",
+            "replacement": "1.17. “TRA” jelentése Időszakosan Korlátozott Légtér (Temporary Restricted Area), amely a kijelölt légtérben egy"
+        },
+        {
+            "needle": "1.18. ”SIA” jelenti az Eseményvizsgálatokat Végző Hatóságot (Safety Investigation Authority). Jelen Megállapodás",
+            "replacement": "1.18. “SIA” jelenti az Eseményvizsgálatokat Végző Hatóságot (Safety Investigation Authority). Jelen Megállapodás"
+        },
+        {
+            "needle": "1.19. ”UAV/RPA” jelentése pilóta nélküli légijármű / távvezérelt légijármű (Unmanned Aerial Vehicle/Remotely",
+            "replacement": "1.19. “UAV/RPA” jelentése pilóta nélküli légijármű / távvezérelt légijármű (Unmanned Aerial Vehicle/Remotely"
+        },
+        {
+            "needle": "P2 – SKOPJE FIR, TIRANA FIR & 41 52 37N 020 35 37E „Hármas pont“ – SKOPJE FIR, TIRANA",
+            "replacement": "P2 – SKOPJE FIR, TIRANA FIR & 41 52 37N 020 35 37E „Hármas pont” – SKOPJE FIR, TIRANA"
+        },
+        {
+            "needle": "1 A „Közigazgatási határvonal” a Nemzetközi Biztonsági Erő ( „KFOR“) és a Jugoszláv Szövetségi Köztársaság, illetve a Szerb Köztársaság kormányai",
+            "replacement": "1 A „Közigazgatási határvonal” a Nemzetközi Biztonsági Erő ( „KFOR”) és a Jugoszláv Szövetségi Köztársaság, illetve a Szerb Köztársaság kormányai"
+        },
+        {
+            "needle": "„Költségalap“) hoz létre, amely tartalmazza a léginavigációs szolgálatokkal kapcsolatban felmerülő összes",
+            "replacement": "„Költségalap”) hoz létre, amely tartalmazza a léginavigációs szolgálatokkal kapcsolatban felmerülő összes"
+        },
+        {
+            "needle": "megkezdését megelőzően – az ANSP-nek külön dokumentumot ( „Alapelvek“) kell kiadnia, amelyben",
+            "replacement": "megkezdését megelőzően – az ANSP-nek külön dokumentumot ( „Alapelvek”) kell kiadnia, amelyben"
+        }
+    ],
+    "2013. évi CCXXXI. törvény": [
+        {
+            "needle": "a már csökkentett összeget tartalmazza” szöveg lép.”",
+            "replacement": "a már csökkentett összeget tartalmazza” szöveg lép."
+        }
+    ],
+    "2013. évi CCXXXVI. törvény": [
+        {
+            "needle": "által alkalmazott módszerről,”",
+            "replacement": "által alkalmazott módszerről,"
+        },
+        {
+            "needle": "183/A. § (1) Az MNB a 33. § (1) bekezdésének megfelelően – a (2), a (3) vagy a (4) bekezdésben foglalt eltéréssel –",
+            "replacement": "„183/A. § (1) Az MNB a 33. § (1) bekezdésének megfelelően – a (2), a (3) vagy a (4) bekezdésben foglalt eltéréssel –"
+        }
+    ],
+    "2013. évi CLII. törvény": [
+        {
+            "needle": "”I have the honour to refer to paragraph 2 of Article 7 of the Agreement between Japan and Hungary on Social",
+            "replacement": "“I have the honour to refer to paragraph 2 of Article 7 of the Agreement between Japan and Hungary on Social"
+        },
+        {
+            "needle": "”I have the honour to refer to the Agreement between Japan and Hungary on Social Security which was signed",
+            "replacement": "“I have the honour to refer to the Agreement between Japan and Hungary on Social Security which was signed"
+        }
+    ],
+    "2013. évi CLXIII. törvény": [
+        {
+            "needle": "(hereinafter referred to as „Hungarian tax“);",
+            "replacement": "(hereinafter referred to as „Hungarian tax”);"
+        },
+        {
+            "needle": "(hereinafter referred to as „Swiss tax“).",
+            "replacement": "(hereinafter referred to as „Swiss tax”)."
+        },
+        {
+            "needle": "a) (i) the term „Hungary“ means the territory of Hungary as defined by its laws in accordance with",
+            "replacement": "a) (i) the term „Hungary” means the territory of Hungary as defined by its laws in accordance with"
+        },
+        {
+            "needle": "(ii) the term „Switzerland“ means the territory of the Swiss Confederation as defined by its laws in",
+            "replacement": "(ii) the term „Switzerland” means the territory of the Swiss Confederation as defined by its laws in"
+        },
+        {
+            "needle": "b) the term „person“ includes an individual, a company and any other body of persons;",
+            "replacement": "b) the term „person” includes an individual, a company and any other body of persons;"
+        },
+        {
+            "needle": "c) the term „company“ means any body corporate or any entity which is treated as a body corporate for tax",
+            "replacement": "c) the term „company” means any body corporate or any entity which is treated as a body corporate for tax"
+        },
+        {
+            "needle": "d) the terms „enterprise of a Contracting State“ and „enterprise of the other Contracting State“ mean",
+            "replacement": "d) the terms „enterprise of a Contracting State” and „enterprise of the other Contracting State” mean"
+        },
+        {
+            "needle": "e) the term „international traffic“ means any transport by a ship or aircraft operated by an enterprise that has",
+            "replacement": "e) the term „international traffic” means any transport by a ship or aircraft operated by an enterprise that has"
+        },
+        {
+            "needle": "f) the term „competent authority“ means:",
+            "replacement": "f) the term „competent authority” means:"
+        },
+        {
+            "needle": "g) the term „national“ in relation to a Contracting State means:",
+            "replacement": "g) the term „national” in relation to a Contracting State means:"
+        },
+        {
+            "needle": "1. For the purposes of this Convention, the term „resident of a Contracting State“ means any person who, under",
+            "replacement": "1. For the purposes of this Convention, the term „resident of a Contracting State” means any person who, under"
+        },
+        {
+            "needle": "1. For the purposes of this Convention, the term „permanent establishment“ means a fixed place of business through",
+            "replacement": "1. For the purposes of this Convention, the term „permanent establishment” means a fixed place of business through"
+        },
+        {
+            "needle": "2. The term „permanent establishment“ includes especially:",
+            "replacement": "2. The term „permanent establishment” includes especially:"
+        },
+        {
+            "needle": "4. Notwithstanding the preceding provisions of this Article, the term „permanent establishment“ shall be deemed not",
+            "replacement": "4. Notwithstanding the preceding provisions of this Article, the term „permanent establishment” shall be deemed not"
+        },
+        {
+            "needle": "2. The term „immovable property“ shall have the meaning which it has under the law of the Contracting State in which",
+            "replacement": "2. The term „immovable property” shall have the meaning which it has under the law of the Contracting State in which"
+        },
+        {
+            "needle": "5. The term „dividends“ as used in this Article means income from shares, „jouissance“ shares or „jouissance“ rights,",
+            "replacement": "5. The term „dividends” as used in this Article means income from shares, „jouissance” shares or „jouissance” rights,"
+        },
+        {
+            "needle": "2. The term „interest“ as used in this Article means income from debt-claims of every kind, whether or not secured by",
+            "replacement": "2. The term „interest” as used in this Article means income from debt-claims of every kind, whether or not secured by"
+        },
+        {
+            "needle": "2. The term „royalties“ as used in this Article means payments of any kind received as a consideration for the use of,",
+            "replacement": "2. The term „royalties” as used in this Article means payments of any kind received as a consideration for the use of,"
+        },
+        {
+            "needle": "2. The term „professional services“ includes especially independent scientific, literary, artistic, educational or teaching",
+            "replacement": "2. The term „professional services” includes especially independent scientific, literary, artistic, educational or teaching"
+        },
+        {
+            "needle": "It is understood that the term „pensions“ as used in Article 18 does not only cover periodic payments, but also",
+            "replacement": "It is understood that the term „pensions” as used in Article 18 does not only cover periodic payments, but also"
+        },
+        {
+            "needle": "In case of Switzerland, the term „pensions“ also includes payments from individual recognized pension schemes",
+            "replacement": "In case of Switzerland, the term „pensions” also includes payments from individual recognized pension schemes"
+        }
+    ],
+    "2013. évi CLXXXVI. törvény": [
+        {
+            "needle": "o) 85. § (4) és (5) bekezdésében a tagállamának” szövegrész helyébe a „tagállam”,",
+            "replacement": "o) 85. § (4) és (5) bekezdésében a „tagállamának” szövegrész helyébe a „tagállam”,"
+        },
+        {
+            "needle": "p) 85. § (7) bekezdésében a tagállamával” szövegrész helyébe a „tagállammal”",
+            "replacement": "p) 85. § (7) bekezdésében a „tagállamával” szövegrész helyébe a „tagállammal”"
+        }
+    ],
+    "2013. évi CXCVIII. törvény": [
+        {
+            "needle": "b) 54. § (1) bekezdésében az „– a kérelem írásban történő visszavonásától eltérő okból –” szövegrész.”",
+            "replacement": "b) 54. § (1) bekezdésében az „– a kérelem írásban történő visszavonásától eltérő okból –” szövegrész."
+        }
+    ],
+    "2013. évi CXLIII. törvény": [
+        {
+            "needle": "a) 3. § (6) bekezdésében a „Pénzügyi Szervezetek Állami Felügyelete (a továbbiakban: Felügyelet) szövegrész",
+            "replacement": "a) 3. § (6) bekezdésében a „Pénzügyi Szervezetek Állami Felügyelete (a továbbiakban: Felügyelet)” szövegrész"
+        }
+    ],
+    "2013. évi CXXV. törvény": [
+        {
+            "needle": "ajánlatot vagy nyújthatnak be részvételi jelentkezést.’’",
+            "replacement": "ajánlatot vagy nyújthatnak be részvételi jelentkezést.”"
+        }
+    ],
+    "2013. évi LII. törvény": [
+        {
+            "needle": "(3) E törvény 2013. július 2-án hatályát veszti.”",
+            "replacement": "(3) E törvény 2013. július 2-án hatályát veszti."
+        }
+    ],
+    "2013. évi LXXII. törvény": [
+        {
+            "needle": "szöveg lép.”",
+            "replacement": "szöveg lép."
+        }
+    ],
+    "2013. évi LXXXVII. törvény": [
+        {
+            "needle": "évi LXXXVII. törvénnyel megállapított rendelkezéseit 2014. január 1-jétől kell alkalmazni.",
+            "replacement": "évi LXXXVII. törvénnyel megállapított rendelkezéseit 2014. január 1-jétől kell alkalmazni.”"
+        }
+    ],
+    "2013. évi VII. törvény": [
+        {
+            "needle": "„KORLÁTOZOTT TERJESZTÉSŰ!“ DIFFUSION RESTREINTE",
+            "replacement": "„KORLÁTOZOTT TERJESZTÉSŰ!” DIFFUSION RESTREINTE"
+        }
+    ],
+    "2013. évi XLI. törvény": [
+        {
+            "needle": "Foglalkoztatási Alap negyedévente megtéríti az Egészségbiztosítási Alap részére.”",
+            "replacement": "Foglalkoztatási Alap negyedévente megtéríti az Egészségbiztosítási Alap részére."
+        },
+        {
+            "needle": "b) 39. § (2) bekezdésében az „s)–v) pontja szövegrész helyébe az „s)–w) pontja” szöveg,",
+            "replacement": "b) 39. § (2) bekezdésében az „s)–v) pontja” szövegrész helyébe az „s)–w) pontja” szöveg,"
+        }
+    ],
+    "2013. évi XX. törvény": [
+        {
+            "needle": ",,(4) A 3. § (4) bekezdése szerinti esetben az OBH elnöke a kinevezésre vonatkozó javaslatának felterjesztése előtt",
+            "replacement": "„(4) A 3. § (4) bekezdése szerinti esetben az OBH elnöke a kinevezésre vonatkozó javaslatának felterjesztése előtt"
+        }
+    ],
+    "2013. évi XXI. törvény": [
+        {
+            "needle": "helyébe a „miniszter” szöveg lép.”",
+            "replacement": "helyébe a „miniszter” szöveg lép."
         }
     ],
     "2015. évi CIV. törvény": [
