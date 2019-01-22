@@ -31,8 +31,8 @@ any_expression =
 
 compound_reference::CompoundReference = (act_reference:act_reference reference:[reference]) | reference:reference;
 
-ref_with_subpoint = (alphabetic_subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference);
-ref_with_point =  (point:alphabetic_point_reference | subpoint:numeric_point_reference) [>ref_with_subpoint];
+ref_with_subpoint = (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference);
+ref_with_point =  (point:alphabetic_point_reference | point:numeric_point_reference) [>ref_with_subpoint];
 ref_with_paragraph = paragraph:paragraph_reference [>ref_with_point];
 
 ref_with_article_with_paragraph = article:article_reference >ref_with_paragraph;
