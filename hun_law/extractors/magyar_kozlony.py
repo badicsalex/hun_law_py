@@ -87,6 +87,8 @@ def MagyarKozlonySectionExtractor(kozlony):
     # Don't parse the last page, as that's just a note from the editor and publisher
     # TODO: assert for this
     for page in kozlony.pages[:-1]:
+        if not page.lines:
+            continue
         for section_type in SECTION_TYPES:
             # This is not something like 'page.lines[0] in SECTION_TYPES' to allow for more
             # complex conditions, like regex section types later.
