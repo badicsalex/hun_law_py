@@ -117,6 +117,15 @@ CASES = [
         None, None, None
     ),
     (
+        # Note that there is no "." after 25.
+        # This caused a weird exception with a broken grammar in the past
+        # TODO: Do we want to parse this?
+        "A 2006. évi X. törvény 25 §-a.",
+        "  [                  ]        ",
+        [],
+        ["2006. évi X. törvény"]
+    ),
+    (
         # TODO: Fix "this article" parsing. I just can't be bothered TBH.
         "E § (2) bekezdés d) pontjában foglaltaktól eltérni tilos.",
         "    <                       >                            ",
