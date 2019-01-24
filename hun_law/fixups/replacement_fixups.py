@@ -767,6 +767,12 @@ replacement_fixups = {
             "replacement": "megkezdését megelőzően – az ANSP-nek külön dokumentumot ( „Alapelvek”) kell kiadnia, amelyben"
         }
     ],
+    "2013. évi CCXVIII. törvény": [
+        {
+            "needle": "eb) alpontjában, valamint f) pont fb) és fc) alpontjában”, a „valamint e) pont ec) és ed) alpontjában szövegrész",
+            "replacement": "eb) alpontjában, valamint f) pont fb) és fc) alpontjában”, a „valamint e) pont ec) és ed) alpontjában” szövegrész"
+        }
+    ],
     "2013. évi CCXXXI. törvény": [
         {
             "needle": "a már csökkentett összeget tartalmazza” szöveg lép.”",
