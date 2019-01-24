@@ -1275,6 +1275,112 @@ replacement_fixups = {
             "replacement": "„28. § Felhatalmazást kap a Kormány, hogy e törvény alapján"
         }
     ],
+    "2015. évi XI. törvény": [
+        {
+            "needle": "rendelkezései alapján nem él keresettel, az általános szabályok szerint pert indíthat a személyiségi jog védelme iránt.",
+            "replacement": "rendelkezései alapján nem él keresettel, az általános szabályok szerint pert indíthat a személyiségi jog védelme iránt.”"
+        }
+    ],
+    "2015. évi XLI. törvény": [
+        {
+            "needle": "referred to as the ”Contracting Parties”),",
+            "replacement": "referred to as the “Contracting Parties”),"
+        },
+        {
+            "needle": "Investment Bank (hereinafter the ”Agreement”), and Articles 29 and 30 of the Charter of the International",
+            "replacement": "Investment Bank (hereinafter the “Agreement”), and Articles 29 and 30 of the Charter of the International"
+        },
+        {
+            "needle": "Investment Bank (hereinafter the ”Charter”), have agreed to amend the Agreement and the Charter as follows:",
+            "replacement": "Investment Bank (hereinafter the “Charter”), have agreed to amend the Agreement and the Charter as follows:"
+        },
+        {
+            "needle": "Agreement Establishing the International Investment Bank (hereinafter the ”Restated Agreement”), together",
+            "replacement": "Agreement Establishing the International Investment Bank (hereinafter the “Restated Agreement”), together"
+        },
+        {
+            "needle": "Protocol and the Restated Agreement (hereinafter the ”Depositary”).",
+            "replacement": "Protocol and the Restated Agreement (hereinafter the “Depositary”)."
+        },
+        {
+            "needle": "Contracting Party has provided the Depositary with its instruments (hereinafter the ”Instrument”) of ratification,",
+            "replacement": "Contracting Party has provided the Depositary with its instruments (hereinafter the “Instrument”) of ratification,"
+        },
+        {
+            "needle": "The International Investment Bank (hereinafter the ”Bank”) is established.",
+            "replacement": "The International Investment Bank (hereinafter the “Bank”) is established."
+        },
+        {
+            "needle": "3. Clause 1 of this Article, excluding sub-clauses ”a” and ”d”, shall not apply to relationships between a member",
+            "replacement": "3. Clause 1 of this Article, excluding sub-clauses “a” and “d”, shall not apply to relationships between a member"
+        },
+        {
+            "needle": "The members of the International Investment Bank (hereinafter the ”Bank”) are the contracting parties to the",
+            "replacement": "The members of the International Investment Bank (hereinafter the “Bank”) are the contracting parties to the"
+        },
+        {
+            "needle": "Agreement Establishing the Bank (hereinafter the ”Agreement”).",
+            "replacement": "Agreement Establishing the Bank (hereinafter the “Agreement”)."
+        },
+        {
+            "needle": "The Bank’s full name in Russian shall be ”МЕЖДУНАРОДНЫЙ ИНВЕСТИЦИОННЫЙ БАНК”;",
+            "replacement": "The Bank’s full name in Russian shall be “МЕЖДУНАРОДНЫЙ ИНВЕСТИЦИОННЫЙ БАНК”;"
+        },
+        {
+            "needle": "The Bank’s full name in English shall be ”INTERNATIONAL INVESTMENT BANK”;",
+            "replacement": "The Bank’s full name in English shall be “INTERNATIONAL INVESTMENT BANK”;"
+        },
+        {
+            "needle": "The Bank’s abbreviated name in Russian shall be ”МИБ”;",
+            "replacement": "The Bank’s abbreviated name in Russian shall be “МИБ”;"
+        },
+        {
+            "needle": "The Bank’s abbreviated name in English shall be ”IIB”.",
+            "replacement": "The Bank’s abbreviated name in English shall be “IIB”."
+        },
+        {
+            "needle": "(hereinafter a ”Withdrawing Member”) no less than six months before the proposed withdrawal date. The Bank",
+            "replacement": "(hereinafter a “Withdrawing Member”) no less than six months before the proposed withdrawal date. The Bank"
+        }
+    ],
+    "2015. évi XX. törvény": [
+        {
+            "needle": "6) the terms “air service”, ”international air service”, ”airline” and “stop for non-traffic purposes” have the meanings",
+            "replacement": "6) the terms “air service”, “international air service”, “airline” and “stop for non-traffic purposes” have the meanings"
+        }
+    ],
+    "2015. évi XXIV. törvény": [
+        {
+            "needle": "Владата на Унгарија и Владата на Република Македонија (во натамошниот текст наречени „Страни“),",
+            "replacement": "Владата на Унгарија и Владата на Република Македонија (во натамошниот текст наречени „Страни”),"
+        },
+        {
+            "needle": "б) „Нарушување на безбедноста“ е чин или пропуст којшто е спротивен на оваа спогодба или на националните",
+            "replacement": "б) „Нарушување на безбедноста” е чин или пропуст којшто е спротивен на оваа спогодба или на националните"
+        },
+        {
+            "needle": "в) „Потребно е да знае“ е принцип според којшто пристап до одредена класифицирана информација може да",
+            "replacement": "в) „Потребно е да знае” е принцип според којшто пристап до одредена класифицирана информација може да"
+        },
+        {
+            "needle": "д) „Контрактор“ е физичко или правно лице коешто поседува правна способност да склучува класифицирани",
+            "replacement": "д) „Контрактор” е физичко или правно лице коешто поседува правна способност да склучува класифицирани"
+        },
+        {
+            "needle": "ȝ) „Национален безбедносен орган“ е органот на соодносната страна којшто е одговорен за заштитата на",
+            "replacement": "ȝ) „Национален безбедносен орган” е органот на соодносната страна којшто е одговорен за заштитата на"
+        },
+        {
+            "needle": "лица според принципот „потребно е да знае“ и коишто се соодветно овластени за тоа во согласност со",
+            "replacement": "лица според принципот „потребно е да знае” и коишто се соодветно овластени за тоа во согласност со"
+        }
+    ],
+    "2015. évi XXVII. törvény": [
+        {
+            "needle": "szóló Megállapodás által meghatározott MLF hadműveleti elgondolás és hadműveleti képességei által",
+            "replacement": "szóló Megállapodás” által meghatározott MLF hadműveleti elgondolás és hadműveleti képességei által"
+        }
+    ],
     "2016. évi CLXXIX. törvény": [
         {
             "needle": "tizenöt nappal követő időpontra hívják össze.”",
