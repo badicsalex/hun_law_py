@@ -28,7 +28,7 @@ from hun_law.structure import Act, Article, Book, Part, Title, Chapter, Subtitle
 
 def parse_single_kozlony(year, issue):
     init_cache(os.path.join(os.path.join(os.path.dirname(__file__), '..'), 'cache'))
-    extracted = do_extraction([KozlonyToDownload(year, issue)])
+    extracted = do_extraction([KozlonyToDownload(year, issue)], (Act, ))
     return extracted
 
 def test_end_to_end_2010_181():

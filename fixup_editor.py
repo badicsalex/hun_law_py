@@ -146,6 +146,4 @@ extracted = do_extraction(
 )
 
 for e in extracted:
-    if not isinstance(e, MagyarKozlonyLawRawText):
-        continue
     detect_errors_and_try_fix(e)
