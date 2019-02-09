@@ -211,8 +211,16 @@ class GrammaticalAnalysisError(Exception):
 
 class GrammaticalAnalyzer:
     def __init__(self):
-        self.parser = ActGrammarParser(semantics=model.ActGrammarModelBuilderSemantics(), parseinfo=True)
+        self.parser = ActGrammarParser(
+            semantics=model.ActGrammarModelBuilderSemantics(),
+            parseinfo=True
+        )
 #        self.parser._use_parseinfo = True
 
-    def analyze(self, s, debug=False):
-        return GrammaticalAnalysisResult(s, self.parser.parse(s, trace=debug, colorize=debug))
+    def analyze_simple(self, s, debug=False):
+        parse_result = self.parser.parse(
+            s,
+            rule_name='start_simple_parsing',
+            trace=debug, colorize=debug,
+        )
+        return GrammaticalAnalysisResult(s, parse_result)

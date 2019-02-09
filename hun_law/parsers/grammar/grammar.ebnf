@@ -18,9 +18,12 @@
 @@namechars :: 'éáőúöüóíűÉÁŐÚÖÜÓÍŰ'
 @@grammar :: ActGrammar
 
-start = {any_expression}+ $;
+# ============ STARTING TOKENS ============
+start_simple_parsing = {any_simple_expression}+ $;
 
-any_expression =
+# ============ STRUCTURE PARSING ============
+
+any_simple_expression =
     | quote
     | compound_reference
     | abbreviation
@@ -95,13 +98,15 @@ numeric_subpoint_single = id:numeric_subpoint_id ".";
 numeric_subpoint_id = id:number ;
 numeric_subpoint_suffix = /alpont[a-zéáőúöüóíű]+/ | "alpont" ;
 
-list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
-az = /az?/;
-
 abbreviation::Abbreviation = s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]+\.? ?(tv\.|vhr\.)/ | s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]+\./ ;
 
 quote = "„" /[^„”]*/ { quote /[^„”]*/ }* "”" ;
 
+list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
+
+# ============ SIMPLE TOKENS ============
+
+az = /az?/;
 number_with_dot = number "." ;
 roman_with_dot = roman "." ;
 number = /[0-9]+/ ;

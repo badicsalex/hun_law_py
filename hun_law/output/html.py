@@ -86,7 +86,7 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
     end_offset = len(intro) + len(text)
     text = intro + text + wrap_up
     try:
-        analysis_result = grammatical_analyzer.analyze(text)
+        analysis_result = grammatical_analyzer.analyze_simple(text)
     except GrammaticalAnalysisError as e:
         print("Error during parsing {}: {}".format(current_ref, e))
         return

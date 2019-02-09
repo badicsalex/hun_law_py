@@ -457,7 +457,7 @@ def analyzer():
 
 @pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
 def test_parse_results_are_correct(analyzer, s, positions, refs, act_refs):
-    parsed = analyzer.analyze(s)
+    parsed = analyzer.analyze_simple(s)
     if refs is None:
         return
     parsed.indented_print()
@@ -528,7 +528,7 @@ ABBREVIATION_CASES = (
 
 @pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)
 def test_new_abbreviations(analyzer, s, abbrevs):
-    parsed = analyzer.analyze(s)
+    parsed = analyzer.analyze_simple(s)
     parsed.indented_print()
     new_abbrevs = list(parsed.get_new_abbreviations())
     assert new_abbrevs == abbrevs
