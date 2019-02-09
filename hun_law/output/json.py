@@ -31,8 +31,12 @@ def serialize_sae_to_json_compatible(sae):
                 "_wrap_up": sae.wrap_up,
             }
             if len(sae.children) > 1:
-                for c in sae.children:
-                    result[c.identifier] = serialize_sae_to_json_compatible(c)
+                if sae.children_type == QuotedBlock:
+                    result["blocks"] = [serialize_sae_to_json_compatible(c) for c in sae.children]
+                else:
+                    for c in sae.children:
+                        assert c.identifier is not None
+                        result[c.identifier] = serialize_sae_to_json_compatible(c)
             else:
                 result['content'] = serialize_sae_to_json_compatible(sae.children[0])
             return result
@@ -70,4 +74,10 @@ def serialize_act_to_json_compatible(act):
 
 
 def serialize_act_to_json_file(act, f):
-    return json.dump(serialize_act_to_json_compatible(act), f)
+    return json.dump(
+        serialize_act_to_json_compatible(act),
+        f,
+        indent='  ',
+        ensure_ascii=False,
+        sort_keys=True
+    )

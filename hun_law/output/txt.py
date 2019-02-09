@@ -17,83 +17,83 @@
 from hun_law.structure import StructuralElement, SubArticleElement, QuotedBlock, Article, Act
 from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
 
-all_console_printers = []
+all_txt_writers = []
 
 
-def console_printer(printed_type):
-    def console_printer_decorator(fn):
-        global all_console_printers
-        all_console_printers.append((printed_type, fn))
+def txt_writer(printed_type):
+    def txt_writer_decorator(fn):
+        global all_txt_writers
+        all_txt_writers.append((printed_type, fn))
         return fn
-    return console_printer_decorator
+    return txt_writer_decorator
 
 
-@console_printer(StructuralElement)
-def print_structural_element_to_console(element, indent):
+@txt_writer(StructuralElement)
+def write_structural_element_as_txt(output_file, element, indent):
     name = "{} {}".format(element.__class__.__name__, element.identifier)
-    indented_line_wrapped_print(name, indent)
+    indented_line_wrapped_print(name, indent, file=output_file)
     indent = indent + " " * 5
     if element.title:
-        indented_line_wrapped_print(element.title)
+        indented_line_wrapped_print(element.title, file=output_file)
 
 
-@console_printer(SubArticleElement)
-def print_sub_article_element_to_console(element, indent=''):
+@txt_writer(SubArticleElement)
+def write_sub_article_element_as_txt(output_file, element, indent=''):
     if element.identifier:
         indent = indent + "{:<5}".format(element.header_prefix(element.identifier))
     else:
         indent = indent + " " * 5
     if element.text:
-        indented_line_wrapped_print(element.text, indent)
+        indented_line_wrapped_print(element.text, indent, file=output_file)
     else:
         if element.intro:
-            indented_line_wrapped_print(element.intro, indent)
+            indented_line_wrapped_print(element.intro, indent, file=output_file)
             indent = " " * len(indent)
         for c in element.children:
-            print_to_console(c, indent)
+            write_txt(output_file, c, indent)
             indent = " " * len(indent)
         if element.wrap_up:
-            indented_line_wrapped_print(element.wrap_up, indent)
+            indented_line_wrapped_print(element.wrap_up, indent, file=output_file)
 
 
-@console_printer(QuotedBlock)
-def print_quoted_block_to_console(element, indent=''):
-    print(indent + '„')
+@txt_writer(QuotedBlock)
+def write_quoted_block_as_txt(output_file, element, indent=''):
+    print(indent + '„', file=output_file)
     indent = " " * len(indent)
     base_indent_of_quote = min(l.indent for l in element.lines if l != EMPTY_LINE)
     for l in element.lines:
         indent_of_quote = ' ' * int((l.indent - base_indent_of_quote)*0.2)
-        print(indent + ' ' * 5 + indent_of_quote + l.content)
-    print(indent + '”')
+        print(indent + ' ' * 5 + indent_of_quote + l.content, file=output_file)
+    print(indent + '”', file=output_file)
 
 
-@console_printer(Article)
-def print_article_to_console(element, indent=''):
+@txt_writer(Article)
+def write_article_as_txt(output_file, element, indent=''):
     indent = indent + "{:<10}".format(element.identifier + ". §")
     if element.title:
-        indented_line_wrapped_print("     [{}]".format(element.title), indent)
+        indented_line_wrapped_print("     [{}]".format(element.title), indent, file=output_file)
         indent = " " * len(indent)
 
     for c in element.children:
-        print_to_console(c, indent)
+        write_txt(output_file, c, indent)
         indent = " " * len(indent)
 
 
-@console_printer(Act)
-def print_act_to_console(element, indent=''):
-    print("==== Structured text of {} - {} =====\n".format(element.identifier, element.subject))
-    indented_line_wrapped_print(element.preamble)
+@txt_writer(Act)
+def write_act_as_txt(output_file, element, indent=''):
+    print("==== {} - {} =====\n".format(element.identifier, element.subject), file=output_file)
+    indented_line_wrapped_print(element.preamble, file=output_file)
     for c in element.children:
-        print_to_console(c, indent)
+        write_txt(output_file, c, indent)
         indent = " " * len(indent)
-        print()
+        print(file=output_file)
 
 
-def print_to_console(element, indent=''):
-    global all_console_printers
-    for printable_type, printer in all_console_printers:
+def write_txt(output_file, element, indent=''):
+    global all_txt_writers
+    for printable_type, printer in all_txt_writers:
         if isinstance(element, printable_type):
-            printer(element, indent)
+            printer(output_file, element, indent)
             break
     else:
-        print("Unkown object type: {}\n".format(type(element)))
+        print("Unkown object type: {}\n".format(type(element)), file=output_file)

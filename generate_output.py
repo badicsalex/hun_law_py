@@ -17,16 +17,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
-import os
 
-from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
-from hun_law.extractors.all import do_extraction
-from hun_law.output.console import print_to_console
-from hun_law.cache import init_cache
+from hun_law.cli import GenerateCommand
 
-init_cache(os.path.join(os.path.dirname(__file__), 'cache'))
-
-extracted = do_extraction([KozlonyToDownload(sys.argv[1], sys.argv[2])])
-
-for e in extracted:
-    print_to_console(e)
+GenerateCommand().run(sys.argv[1:])

@@ -246,9 +246,12 @@ def is_uppercase_hun(s):
     return True
 
 
-def indented_line_wrapped_print(s, indent_string="", width=120):
+def indented_line_wrapped_print(s, indent_string="", width=120, file=None):
     for l in textwrap.wrap(s, width-len(indent_string)):
-        print(indent_string + l)
+        if file is not None:
+            print(indent_string + l, file=file)
+        else:
+            print(indent_string + l)
         indent_string = " "*len(indent_string)
 
 

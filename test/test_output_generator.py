@@ -17,26 +17,15 @@
 
 import json
 import os
+from html.parser import HTMLParser
 
-from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
-from hun_law.extractors.all import do_extraction
-from hun_law.cache import init_cache
-from hun_law.output.json import serialize_act_to_json_compatible
-from hun_law.structure import Act
+from hun_law.cli import GenerateCommand
 
 
-def parse_single_kozlony(year, issue):
-    init_cache(os.path.join(os.path.join(os.path.dirname(__file__), '..'), 'cache'))
-    extracted = do_extraction([KozlonyToDownload(year, issue)])
-    return extracted
-
-
-def test_html_output_ptk():
-    acts = {a.identifier: a for a in parse_single_kozlony(2013, 185) if isinstance(a, Act)}
-    assert len(acts) == 11, "Issue 2013/185 of Magyar Kozlony contains 11 separate Acts"
-
-    body = serialize_act_to_json_compatible(acts["2013. évi CLXXV. törvény"])
-    assert json.loads(json.dumps(body)) == body, "The output is json serializable"
+def test_json_output(tmpdir):
+    generator = GenerateCommand()
+    generator.run(["json", "2013/185", "--output-dir", str(tmpdir)])
+    body = json.load(tmpdir.join("2013. évi CLXXV. törvény.json").open())
 
     assert body["id"] == "2013. évi CLXXV. törvény"
     assert body["subject"] == "a gondnokoltak és az előzetes jognyilatkozatok nyilvántartásáról"
@@ -58,3 +47,40 @@ def test_html_output_ptk():
     assert body["content"][36]['type'] == "Article"
     assert body["content"][36]['id'] == "31"
     assert body["content"][36]['content'] == "Hatályát veszti a gondnokoltak nyilvántartásáról szóló 2010. évi XVIII. törvény."
+
+
+class AFindingHTMLParser(HTMLParser):
+    def reset_count(self):
+        self.a_tag_count = 0
+
+    def handle_starttag(self, tag, attributes):
+        if tag == 'a':
+            self.a_tag_count = self.a_tag_count + 1
+
+
+def test_html_output_ptk(tmpdir):
+
+    # Just simply test if html output works.
+    generator = GenerateCommand()
+    generator.run(["html", "2013/31", "--output-dir", str(tmpdir)])
+
+    parser = AFindingHTMLParser()
+    parser.reset_count()
+    parser.feed(tmpdir.join("2013. évi V. törvény.html").read())
+    assert parser.a_tag_count > 50
+
+
+def test_html_output_2018_123(tmpdir):
+    # Just simply test if html output works on modern MK issues
+    generator = GenerateCommand()
+    generator.run(["html", "2018/123", "--output-dir", str(tmpdir)])
+    acts = [
+        "2018. évi LV. törvény.html",
+        "2018. évi LIV. törvény.html",
+        "2018. évi LIII. törvény.html",
+        "2018. évi LII. törvény.html",
+        "2018. évi LI. törvény.html",
+        "2018. évi L. törvény.html",
+    ]
+    for act in acts:
+        assert tmpdir.join(act).check(file=1)

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 import re
+import sys
 import xml.etree.ElementTree as ET
 
 from hun_law.structure import SubArticleElement, QuotedBlock, Article, Subtitle, Reference
@@ -64,7 +65,7 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
     global grammatical_analyzer
 
     container.text = text
-    if len(text)>10000:
+    if len(text) > 10000:
         return
 
     interesting_substrings = (")", "§", "törvén")
@@ -88,7 +89,7 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
     try:
         analysis_result = grammatical_analyzer.analyze_simple(text)
     except GrammaticalAnalysisError as e:
-        print("Error during parsing {}: {}".format(current_ref, e))
+        print("Error during parsing {}: {}".format(current_ref, e), file=sys.stderr)
         return
 
     for k, v in analysis_result.get_new_abbreviations():
@@ -217,3 +218,24 @@ def generate_html_body_for_act(act, indent=True):
     if indent:
         indent_etree_element_in_place(body)
     return body
+
+
+def generate_head_section_for_act(title_text):
+    head = ET.Element('head')
+    title = ET.SubElement(head, 'title')
+    title.text = title_text
+    ET.SubElement(head, 'meta', {'http-equiv': "Content-Type", 'content': "text/html; charset=utf-8"})
+    ET.SubElement(head, 'link', {'rel': "stylesheet", 'href': 'style.css'})
+    return head
+
+
+def generate_html_for_act(act, output_file):
+    html = ET.Element('html')
+    html.append(generate_head_section_for_act(act.identifier))
+
+    body = ET.SubElement(html, 'body')
+    body.text = "\n"
+    body.append(generate_html_body_for_act(act))
+    document = ET.ElementTree(html)
+    output_file.write('<!DOCTYPE html>\n')
+    document.write(output_file, encoding="unicode", method="html", xml_declaration=True)
