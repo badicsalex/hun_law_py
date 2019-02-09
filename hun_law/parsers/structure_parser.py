@@ -618,12 +618,14 @@ class ActParser:
     @classmethod
     def parse(cls, identifier, subject, lines):
         try:
-            return cls.parse_text(identifier, subject, lines)
+            preamble, elements = cls.parse_text(lines)
         except Exception as e:
             raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
 
+        return Act(identifier, subject, preamble, elements)
+
     @classmethod
-    def parse_text(cls, identifier, subject, lines):
+    def parse_text(cls, lines):
         current_lines = []
         article_header_indent = None
         preamble = None
@@ -641,8 +643,8 @@ class ActParser:
             current_lines.append(line)
         preamble, new_elements = cls.parse_text_block(current_lines, preamble, last_structural_element_parser)
         elements.extend(new_elements)
+        return preamble, elements
 
-        return Act(identifier, subject, preamble, elements)
 
     @classmethod
     def parse_text_block(cls, lines, preamble, last_structural_element_parser):
