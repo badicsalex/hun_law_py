@@ -109,7 +109,7 @@ def generate_html_nodes_for_sub_article_element(e, parent_ref, semantic_data):
             intro_element = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
             # TODO: We don't currently parse structural amendments properly
             # They have a two-part intro, which we unfortunately merge, which looks bad.
-            matches = re.match(r"^(.*): ?(\([^\)]*\)|\[[^\]]*\])$", e.intro)
+            matches = re.match(r"^(.*:) ?(\([^\)]*\)|\[[^\]]*\])$", e.intro)
             if matches is not None:
                 generate_text_with_ref_links(intro_element, matches.group(1), current_ref, semantic_data)
                 ET.SubElement(intro_element, 'br').tail = matches.group(2)
