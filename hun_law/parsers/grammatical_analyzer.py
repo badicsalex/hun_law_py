@@ -23,7 +23,7 @@ import tatsu.model
 from .grammar import model
 from .grammar.parser import ActGrammarParser
 
-from hun_law.structure import Reference, ActIdAbbreviation
+from hun_law.structure import Reference, ActIdAbbreviation, InTextSemanticData
 
 
 def iterate_depth_first(node, filter_class=None):
@@ -77,11 +77,11 @@ class ReferenceCollector:
                         start = start_override
                         start_override = None
                     ref_args[arg_pos] = level_val
-                    yield Reference(*ref_args), start, end
+                    yield InTextSemanticData(start, end, Reference(*ref_args))
                 ref_args[arg_pos] = level_vals[-1][0]
             if start_override is None:
                 start_override = level_vals[-1][1]
-        yield Reference(*ref_args), start_override, end_override
+        yield InTextSemanticData(start_override, end_override, Reference(*ref_args))
 
 
 class AbbreviationNotFoundError(Exception):
@@ -94,6 +94,10 @@ class GrammaticalAnalysisResult:
         self.tree = tree
 
     def get_references(self, abbreviations):
+        yield from self.get_act_references(abbreviations)
+        yield from self.get_element_references(abbreviations)
+
+    def get_element_references(self, abbreviations):
         refs_to_parse = []
         refs_found = set()
         # Collect references where we might have Act Id
@@ -115,7 +119,6 @@ class GrammaticalAnalysisResult:
                 continue
             refs_to_parse.append((None, ref))
 
-        result = []
         for act_id, ref in refs_to_parse:
             reference_collector = ReferenceCollector()
             if act_id is not None:
@@ -123,9 +126,7 @@ class GrammaticalAnalysisResult:
 
             self.fill_reference_collector(ref, reference_collector)
             full_start_pos, full_end_pos = self.get_subtree_start_and_end_pos(ref)
-            collected_refs = [list(r) for r in reference_collector.iter(full_start_pos, full_end_pos)]
-            result.extend(collected_refs)
-        return result
+            yield from reference_collector.iter(full_start_pos, full_end_pos)
 
     @classmethod
     def fill_reference_collector(cls, parsed_ref, reference_collector):
@@ -151,7 +152,7 @@ class GrammaticalAnalysisResult:
                 start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.act_id)
 
             try:
-                yield self.get_act_id_from_parse_result(act_ref, abbreviations), start_pos, end_pos
+                yield InTextSemanticData(start_pos, end_pos, Reference(act=self.get_act_id_from_parse_result(act_ref, abbreviations)))
             except AbbreviationNotFoundError:
                 pass
 
@@ -160,21 +161,25 @@ class GrammaticalAnalysisResult:
         if act_ref.act_id is not None:
             return "{}. évi {}. törvény".format(act_ref.act_id.year, act_ref.act_id.number)
         if act_ref.abbreviation is not None:
+            abbreviations_map = {a.abbreviation: a for a in abbreviations}
             abbrev = act_ref.abbreviation.s
-            if abbrev not in abbreviations:
+            if abbrev not in abbreviations_map:
                 raise AbbreviationNotFoundError()
-            return abbreviations[abbrev]
+            return abbreviations_map[abbrev].act
         raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
     @classmethod
     def get_subtree_start_and_end_pos(cls, subtree):
-        return subtree.parseinfo.pos, subtree.parseinfo.endpos-1
+        return subtree.parseinfo.pos, subtree.parseinfo.endpos
 
     def get_new_abbreviations(self):
         for act_ref in iterate_depth_first(self.tree, model.ActReference):
             if act_ref.from_now_on is None:
                 continue
-            yield str(act_ref.from_now_on.abbreviation.s), self.get_act_id_from_parse_result(act_ref, {})
+            yield ActIdAbbreviation(
+                str(act_ref.from_now_on.abbreviation.s),
+                self.get_act_id_from_parse_result(act_ref, [])
+            )
 
     @classmethod
     def _indented_print(cls, node=None, indent=''):

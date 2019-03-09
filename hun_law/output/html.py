@@ -92,16 +92,12 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
         print("Error during parsing {}: {}".format(current_ref, e), file=sys.stderr)
         return
 
-    for k, v in analysis_result.get_new_abbreviations():
-        abbreviations[k] = v
+    abbreviations.extend(analysis_result.get_new_abbreviations())
 
     links_to_create = []
-    for ref, start, end in analysis_result.get_references(abbreviations):
-        absolute_ref = ref.relative_to(current_ref)
-        links_to_create.append((start, end, get_href_for_ref(absolute_ref)))
-
-    for ref, start, end in analysis_result.get_act_references(abbreviations):
-        links_to_create.append((start, end, ref + ".html"))
+    for itsd in analysis_result.get_references(abbreviations):
+        absolute_ref = itsd.data.relative_to(current_ref)
+        links_to_create.append((itsd.start_pos, itsd.end_pos, get_href_for_ref(absolute_ref)))
 
     links_to_create.sort()
     last_a_tag = None
@@ -113,8 +109,8 @@ def generate_text_with_ref_links(container, text, current_ref, abbreviations):
         else:
             last_a_tag.tail = text[offset:start]
         last_a_tag = ET.SubElement(container, 'a', {'href': href})
-        last_a_tag.text = text[start:end+1]
-        offset = end + 1
+        last_a_tag.text = text[start:end]
+        offset = end
 
     if last_a_tag is None:
         container.text = text[offset:end_offset]
@@ -207,7 +203,7 @@ def generate_html_body_for_act(act, indent=True):
         preamble = ET.SubElement(body, 'div', {'class': 'preamble'})
         preamble.text = act.preamble
     body_elements = []
-    abbreviations = {}
+    abbreviations = []
     for c in act.children:
         if isinstance(c, Article):
             elements_to_add = generate_html_node_for_article(c, abbreviations)

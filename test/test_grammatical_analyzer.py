@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
-from hun_law.structure import Reference
+from hun_law.structure import Reference, ActIdAbbreviation
 
 
 import pytest
@@ -26,10 +26,10 @@ def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
     return Reference(act, article, paragraph, point, subpoint)
 
 
-ABBREVIATIONS = {
-    "Flt.": "1991. évi IV. törvény",
-    "Víziközmű tv.": "2011. évi CCIX. törvény",
-}
+ABBREVIATIONS = (
+    ActIdAbbreviation("Flt.", "1991. évi IV. törvény"),
+    ActIdAbbreviation("Víziközmű tv.", "2011. évi CCIX. törvény"),
+)
 
 CASES = [
     (
@@ -464,14 +464,16 @@ def test_parse_results_are_correct(analyzer, s, positions, refs, act_refs):
     parsed_refs = []
     parsed_act_refs = []
     parsed_pos_string = [" "] * len(s)
-    for ref, start, stop in parsed.get_references(ABBREVIATIONS):
-        parsed_pos_string[start] = '<'
-        parsed_pos_string[stop] = '>'
-        parsed_refs.append(ref)
-    for act_ref, start, stop in parsed.get_act_references(ABBREVIATIONS):
-        parsed_pos_string[start] = '['
-        parsed_pos_string[stop] = ']'
-        parsed_act_refs.append(act_ref)
+    for itsd in parsed.get_element_references(ABBREVIATIONS):
+        parsed_pos_string[itsd.start_pos] = '<'
+        parsed_pos_string[itsd.end_pos - 1] = '>'
+        parsed_refs.append(itsd.data)
+
+    for itsd in parsed.get_act_references(ABBREVIATIONS):
+        parsed_pos_string[itsd.start_pos] = '['
+        parsed_pos_string[itsd.end_pos - 1] = ']'
+        parsed_act_refs.append(itsd.data.act)
+
     parsed_pos_string = "".join(parsed_pos_string)
     assert refs == parsed_refs
     assert act_refs == parsed_act_refs
@@ -482,38 +484,38 @@ def test_parse_results_are_correct(analyzer, s, positions, refs, act_refs):
 ABBREVIATION_CASES = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        [('Hktv.', '2012. évi CCXIX. törvény')]
+        [ActIdAbbreviation('Hktv.', '2012. évi CCXIX. törvény')]
     ),
     (
         "A pénzügyi tranzakciós illetékről szóló 2012. évi CXVI. törvény (a továbbiakban: Pti. törvény) 7. § (1) bekezdése helyébe a következő rendelkezés lép:",
-        [('Pti.', '2012. évi CXVI. törvény')]
+        [ActIdAbbreviation('Pti.', '2012. évi CXVI. törvény')]
     ),
     (
         "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
-        [("Víziközmű tv.", "2011. évi CCIX. törvény")],
+        [ActIdAbbreviation("Víziközmű tv.", "2011. évi CCIX. törvény")],
     ),
     (
         "Az európai részvénytársaságról szóló 2004. évi XLV. törvény (a továbbiakban: Eurt.tv.) 2. §-a helyébe a következő rendelkezés lép:",
-        [("Eurt.tv.", "2004. évi XLV. törvény")],
+        [ActIdAbbreviation("Eurt.tv.", "2004. évi XLV. törvény")],
     ),
     (
         "E törvény rendelkezéseit a Polgári Törvénykönyvről szóló 2013. évi V. törvénnyel (a továbbiakban: Ptk.) együtt kell alkalmazni.",
-        [("Ptk.", "2013. évi V. törvény")],
+        [ActIdAbbreviation("Ptk.", "2013. évi V. törvény")],
     ),
     (
         # Abbreviation used in the text itself
         "Nem kell módosítani, ha a szövetkezetekről szóló 2006. évi X. törvény (a továbbiakban: Sztv.) rendelkezéseire utal "
         "Amennyiben azonban az alapszabály egyéb okból módosul, a szövetkezet köteles az Sztv.-re utalást is módosítani.",
-        [("Sztv.", "2006. évi X. törvény")],
+        [ActIdAbbreviation("Sztv.", "2006. évi X. törvény")],
     ),
     (
         # No colon
         "A fogyasztóvédelmi hatósága fogyasztóvédelemrõl szóló 1997. évi CLV. törvény (a továbbiakban Fgytv.) szabályai szerint jár el.",
-        [("Fgytv.", "1997. évi CLV. törvény")],
+        [ActIdAbbreviation("Fgytv.", "1997. évi CLV. törvény")],
     ),
     (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
-        [("Szabs. tv.", "2012. évi I. törvény")]
+        [ActIdAbbreviation("Szabs. tv.", "2012. évi I. törvény")]
     ),
     (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",

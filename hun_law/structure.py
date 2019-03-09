@@ -423,3 +423,9 @@ class Reference(ReferenceBase):
                     val = val[0]
                 result = "{}_{}{}".format(result, id_key, val)
         return result
+
+
+ActIdAbbreviation = namedtuple('ActIdAbbreviation', ('abbreviation', 'act'))
+
+# Start and end pos are python range, i.e. end_pos is after the last character
+InTextSemanticData = namedtuple('SemanticData', ('start_pos', 'end_pos', 'data'))
