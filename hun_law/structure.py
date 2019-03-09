@@ -1,4 +1,4 @@
-# Copyright 2018 Alex Badics <admin@stickman.hu>
+# Copyright 2018-2019 Alex Badics <admin@stickman.hu>
 #
 # This file is part of Hun-Law.
 #
@@ -429,3 +429,20 @@ ActIdAbbreviation = namedtuple('ActIdAbbreviation', ('abbreviation', 'act'))
 
 # Start and end pos are python range, i.e. end_pos is after the last character
 InTextSemanticData = namedtuple('SemanticData', ('start_pos', 'end_pos', 'data'))
+
+
+class ActSemanticData:
+    def __init__(self, data):
+        for k, v in data.items():
+            assert isinstance(k, Reference)
+            assert k.is_relative()
+            for itsd in v:
+                assert isinstance(itsd, InTextSemanticData)
+        self.__data = {k: tuple(v) for k, v in data.items()}
+
+    def iter_semantic_data_items(self):
+        return self.__data.items()
+
+    def get_all_semantic_data_for_reference(self, reference):
+        assert reference.is_relative()
+        return self.__data.get(reference, ())
