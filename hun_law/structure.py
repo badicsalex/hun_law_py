@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
+from collections import namedtuple
 
 from hun_law.utils import int_to_text_hun, int_to_text_roman
 
@@ -379,46 +380,17 @@ class Act:
         return self.__articles_map[str(article_id)]
 
 
-class Reference:
-    def __init__(self, act=None, article=None, paragraph=None, point=None, subpoint=None):
-        self.__act = act
-        self.__article = article
-        self.__paragraph = paragraph
-        self.__point = point
-        self.__subpoint = subpoint
+ReferenceBase = namedtuple(
+    'ReferenceBase',
+    ('act', 'article', 'paragraph', 'point', 'subpoint'),
+)
 
-    @property
-    def act(self):
-        return self.__act
 
-    @property
-    def article(self):
-        return self.__article
-
-    @property
-    def paragraph(self):
-        return self.__paragraph
-
-    @property
-    def point(self):
-        return self.__point
-
-    @property
-    def subpoint(self):
-        return self.__subpoint
-
-    def __repr__(self):
-        return "<Reference act:{!r}, article:{!r}, paragraph:{!r}, point:{!r}, subpoint:{!r}>".format(
-            self.act, self.article, self.paragraph, self.point, self.subpoint
-        )
-
-    def __eq__(self, other):
-        return (
-            self.__act == other.act and
-            self.__article == other.article and
-            self.__paragraph == other.paragraph and
-            self.__point == other.point and
-            self.__subpoint == other.subpoint
+class Reference(ReferenceBase):
+    def __new__(cls, act=None, article=None, paragraph=None, point=None, subpoint=None):
+        # TODO: check if parameters are None, tuples or strings
+        return super().__new__(
+            cls, act, article, paragraph, point, subpoint
         )
 
     def is_relative(self):
