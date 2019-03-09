@@ -32,7 +32,7 @@ any_simple_expression =
     | /./ # Anything else
     ;
 
-compound_reference::CompoundReference = (act_reference:act_reference [reference:reference]) | reference:reference;
+compound_reference::CompoundReference = (act_reference:act_reference {references+:reference [list_separator [az]]}*) | references+:reference;
 
 ref_with_subpoint = (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference);
 ref_with_point =  (point:alphabetic_point_reference | point:numeric_point_reference) [>ref_with_subpoint];

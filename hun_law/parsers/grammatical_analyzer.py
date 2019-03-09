@@ -102,7 +102,7 @@ class GrammaticalAnalysisResult:
         refs_found = set()
         # Collect references where we might have Act Id
         for ref_container in iterate_depth_first(self.tree, model.CompoundReference):
-            if ref_container.reference is None:
+            if not ref_container.references:
                 continue
             act_id = None
             if ref_container.act_reference is not None:
@@ -110,8 +110,9 @@ class GrammaticalAnalysisResult:
                     act_id = self.get_act_id_from_parse_result(ref_container.act_reference, abbreviations)
                 except AbbreviationNotFoundError:
                     pass
-            refs_to_parse.append((act_id, ref_container.reference))
-            refs_found.add(ref_container.reference)
+            for reference in ref_container.references:
+                refs_to_parse.append((act_id, reference))
+                refs_found.add(reference)
 
         # Collect all other refs scattered elsewhere
         for ref in iterate_depth_first(self.tree, model.Reference):

@@ -392,6 +392,15 @@ CASES = [
         [],
     ),
     (
+        "Hatályát veszti az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése.",
+        "                                                   [                     ] <       >    <                 > ",
+        [
+            ref("1997. évi CXLI. törvény", "16/A"),
+            ref("1997. évi CXLI. törvény", "91", "2"),
+        ],
+        ["1997. évi CXLI. törvény"],
+    ),
+    (
         "Az 1–30. §, a 31. § (1) és (3)−(5) bekezdése, a 32–34. §, a 35. § (1) és (3)–(5) bekezdése, a 36. §, a 37. § "
         "(1) és (3)–(5) bekezdése, a 38. §, a 39. § (1) és (3)–(5) bekezdése, a 40–59. §, a 60. § (1) bekezdése, a 61. § (1), (2) "
         "és (7) bekezdése, 62–66. §, a 67. § (5) bekezdés a)–d) és g) pontja, a 68. § (1)–(3), (10) és (12)–(15) bekezdése, "
