@@ -23,7 +23,7 @@ import tatsu.model
 from .grammar import model
 from .grammar.parser import ActGrammarParser
 
-from hun_law.structure import Reference
+from hun_law.structure import Reference, ActIdAbbreviation
 
 
 def iterate_depth_first(node, filter_class=None):
@@ -62,10 +62,9 @@ class ReferenceCollector:
         else:
             ref_list.append((ref_data, start_pos, end_pos))
 
-    def iter(self):
+    def iter(self, start_override, end_override):
         ref_args = [self.act, None, None, None, None]
         levels = ("articles", "paragraphs", "points", "subpoints")
-        start_override = None
         last_end = 0
         for arg_pos, level in enumerate(levels, start=1):
             level_vals = getattr(self, level)
@@ -82,8 +81,7 @@ class ReferenceCollector:
                 ref_args[arg_pos] = level_vals[-1][0]
             if start_override is None:
                 start_override = level_vals[-1][1]
-            last_end = max(last_end, level_vals[-1][2])
-        yield Reference(*ref_args), start_override, last_end
+        yield Reference(*ref_args), start_override, end_override
 
 
 class AbbreviationNotFoundError(Exception):
@@ -124,12 +122,9 @@ class GrammaticalAnalysisResult:
                 reference_collector.act = act_id
 
             self.fill_reference_collector(ref, reference_collector)
-            collected_refs = [list(r) for r in reference_collector.iter()]
-            if collected_refs:
-                full_start_pos, full_end_pos = self.get_subtree_start_and_end_pos(ref)
-                collected_refs[0][1] = full_start_pos
-                collected_refs[-1][2] = full_end_pos
-                result.extend(collected_refs)
+            full_start_pos, full_end_pos = self.get_subtree_start_and_end_pos(ref)
+            collected_refs = [list(r) for r in reference_collector.iter(full_start_pos, full_end_pos)]
+            result.extend(collected_refs)
         return result
 
     @classmethod
