@@ -22,15 +22,13 @@ from .grammatical_analyzer import GrammaticalAnalyzer
 class ActSemanticDataParser:
     INTERESTING_SUBSTRINGS = (")", "§", "törvén")
 
-    def __init__(self):
-        self.grammatical_analyzer = GrammaticalAnalyzer()
-
-    def parse(self, act):
+    @classmethod
+    def parse(cls, act):
         result = {}
         abbreviations = []
         for article in act.articles:
             for paragraph in article.paragraphs:
-                parse_result = self.parse_sub_article_element(
+                parse_result = cls.parse_sub_article_element(
                     paragraph,
                     "",
                     "",
@@ -41,10 +39,11 @@ class ActSemanticDataParser:
                     result[reference] = itsd
         return ActSemanticData(result)
 
-    def parse_sub_article_element(self, sub_article_element, prefix, postfix, parent_ref, abbreviations):
+    @classmethod
+    def parse_sub_article_element(cls, sub_article_element, prefix, postfix, parent_ref, abbreviations):
         current_ref = sub_article_element.relative_reference.relative_to(parent_ref)
         if sub_article_element.text is not None:
-            parse_result = self.parse_text(sub_article_element.text, prefix, postfix, current_ref, abbreviations)
+            parse_result = cls.parse_text(sub_article_element.text, prefix, postfix, current_ref, abbreviations)
             if parse_result:
                 yield current_ref, parse_result
         else:
@@ -53,7 +52,7 @@ class ActSemanticDataParser:
                 # Articles, which never have intros.
                 assert prefix == ''
                 text = sub_article_element.intro
-                parse_result = self.parse_text(text, '', '', current_ref, abbreviations)
+                parse_result = cls.parse_text(text, '', '', current_ref, abbreviations)
                 if parse_result:
                     yield current_ref, parse_result
             else:
@@ -66,7 +65,7 @@ class ActSemanticDataParser:
                 #
                 # In this case, we hope that the string "From now on" can be parsed without
                 # the second part of the sentence.
-                parse_result = self.parse_text(sub_article_element.intro, prefix, '', current_ref, abbreviations)
+                parse_result = cls.parse_text(sub_article_element.intro, prefix, '', current_ref, abbreviations)
                 if parse_result:
                     yield current_ref, parse_result
 
@@ -79,7 +78,7 @@ class ActSemanticDataParser:
                     children_postfix = " " + sub_article_element.wrap_up + children_postfix
 
                 for child in sub_article_element.children:
-                    yield from self.parse_sub_article_element(
+                    yield from cls.parse_sub_article_element(
                         child,
                         children_prefix,
                         children_postfix,
@@ -87,14 +86,15 @@ class ActSemanticDataParser:
                         abbreviations
                     )
 
-    def parse_text(self, middle, prefix, postfix, current_ref, abbreviations):
+    @classmethod
+    def parse_text(cls, middle, prefix, postfix, current_ref, abbreviations):
         text = prefix + middle + postfix
         if len(text) > 10000:
             return
-        if not any(s in text for s in self.INTERESTING_SUBSTRINGS):
+        if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
             return
 
-        analysis_result = self.grammatical_analyzer.analyze_simple(text)
+        analysis_result = GrammaticalAnalyzer().analyze_simple(text)
         abbreviations.extend(analysis_result.get_new_abbreviations())
 
         result = []

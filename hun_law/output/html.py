@@ -169,7 +169,7 @@ def generate_html_body_for_act(act, indent=True):
         preamble = ET.SubElement(body, 'div', {'class': 'preamble'})
         preamble.text = act.preamble
     body_elements = []
-    semantic_data = ActSemanticDataParser().parse(act)
+    semantic_data = ActSemanticDataParser.parse(act)
     for c in act.children:
         if isinstance(c, Article):
             elements_to_add = generate_html_node_for_article(c, semantic_data)

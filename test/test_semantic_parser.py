@@ -31,11 +31,6 @@ def ref(article=None, paragraph=None, point=None, subpoint=None):
     return Reference(None, article, paragraph, point, subpoint)
 
 
-@pytest.fixture(scope="module")
-def parser():
-    return ActSemanticDataParser()
-
-
 CASES_WITHOUT_POSITIONS = [
     (
         """
@@ -132,14 +127,14 @@ def quick_parse_structure(act_text):
 
 
 @pytest.mark.parametrize("act_text,itsds", CASES_WITHOUT_POSITIONS)
-def test_parse_results_without_position(parser, act_text, itsds):
+def test_parse_results_without_position(act_text, itsds):
     act = quick_parse_structure(act_text)
-    semantic_data = parser.parse(act)
+    semantic_data = ActSemanticDataParser.parse(act)
     extracted_itsds = {k: tuple(vv.data for vv in v) for k, v in semantic_data.iter_semantic_data_items()}
     assert extracted_itsds == itsds
 
 
-def test_parse_positions_are_okay(parser):
+def test_parse_positions_are_okay():
     act = quick_parse_structure(
         """
         1. §    A tesztelésről szóló 2345. évi I. törvény
@@ -151,7 +146,7 @@ def test_parse_positions_are_okay(parser):
                 jól van feldolgozva.
         """
     )
-    semantic_data = parser.parse(act)
+    semantic_data = ActSemanticDataParser.parse(act)
     parsed_data = dict(semantic_data.iter_semantic_data_items())
     print(parsed_data)
     correct_data = {
