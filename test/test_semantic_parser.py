@@ -16,9 +16,9 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 from hun_law.utils import IndentedLine
-from hun_law.structure import Reference, InTextSemanticData
+from hun_law.structure import Reference, OutgoingReference
 from hun_law.parsers.structure_parser import ActParser
-from hun_law.parsers.semantic_parser import ActSemanticDataParser
+from hun_law.parsers.semantic_parser import SemanticActParser
 
 import pytest
 
@@ -40,21 +40,15 @@ CASES_WITHOUT_POSITIONS = [
                                 rendelet 83/A. §-a,
                            c)   az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése.
         """,
-        {
-            ref("17", None, "a"): (
-                absref("1959. évi IV. törvény"),
-                absref("1959. évi IV. törvény", "261", "4"),
-            ),
+        (
+            (ref("17", None, "a"), absref("1959. évi IV. törvény")),
+            (ref("17", None, "a"), absref("1959. évi IV. törvény", "261", "4")),
             # TODO: Act-like decree ref in b)
-            ref("17", None, "b"): (
-                ref("83/A"),
-            ),
-            ref("17", None, "c"): (
-                absref("1997. évi CXLI. törvény"),
-                absref("1997. évi CXLI. törvény", "16/A"),
-                absref("1997. évi CXLI. törvény", "91", "2"),
-            ),
-        },
+            (ref("17", None, "b"), ref("83/A")),
+            (ref("17", None, "c"), absref("1997. évi CXLI. törvény")),
+            (ref("17", None, "c"), absref("1997. évi CXLI. törvény", "16/A")),
+            (ref("17", None, "c"), absref("1997. évi CXLI. törvény", "91", "2")),
+        ),
     ),
     (
         """
@@ -71,43 +65,38 @@ CASES_WITHOUT_POSITIONS = [
                     c) 17/A. § (1) és (3) bekezdése;
                 4. a Katv. 2. § 21. pontja;
         """,
-        {
-            ref("40", "1"): (
-                absref("2012. évi CXLVII. törvény"),
-                absref("2012. évi CXLVII. törvény", "2", None, ("19", "20")),
-            ),
-            ref("41", None, "1"): (
-                absref("1990. évi XCIII. törvény"),
-                absref("1990. évi XCIII. törvény", "17", "1", "c"),
-            ),
-            ref("41", None, "2"): (
-                absref("2000. évi C. törvény"),
-            ),
-            ref("41", None, "2", "a"): (
-                absref("2000. évi C. törvény", "79", "4"),
-            ),
-            ref("41", None, "2", "b"): (
-                absref("2000. évi C. törvény", "103", "2", "c"),
-            ),
-            ref("41", None, "3"): (
-                absref("2004. évi CXXIII. törvény"),
-            ),
-            ref("41", None, "3", "a"): (
-                absref("2004. évi CXXIII. törvény", ("8/A", "8/B")),
-            ),
-            ref("41", None, "3", "b"): (
-                absref("2004. évi CXXIII. törvény", ("16/A", "16/B")),
-            ),
-            ref("41", None, "3", "c"): (
-                absref("2004. évi CXXIII. törvény", "17/A", "1"),
-                absref("2004. évi CXXIII. törvény", "17/A", "3"),
-            ),
-            ref("41", None, "4"): (
-                absref("2012. évi CXLVII. törvény"),
-                absref("2012. évi CXLVII. törvény", "2", None, "21"),
-            ),
-        },
+        (
+            (ref("40", "1"), absref("2012. évi CXLVII. törvény")),
+            (ref("40", "1"), absref("2012. évi CXLVII. törvény", "2", None, ("19", "20"))),
+            (ref("41", None, "1"), absref("1990. évi XCIII. törvény")),
+            (ref("41", None, "1"), absref("1990. évi XCIII. törvény", "17", "1", "c")),
+            (ref("41", None, "2"), absref("2000. évi C. törvény")),
+            (ref("41", None, "2", "a"), absref("2000. évi C. törvény", "79", "4")),
+            (ref("41", None, "2", "b"), absref("2000. évi C. törvény", "103", "2", "c")),
+            (ref("41", None, "3"), absref("2004. évi CXXIII. törvény")),
+            (ref("41", None, "3", "a"), absref("2004. évi CXXIII. törvény", ("8/A", "8/B"))),
+            (ref("41", None, "3", "b"), absref("2004. évi CXXIII. törvény", ("16/A", "16/B"))),
+            (ref("41", None, "3", "c"), absref("2004. évi CXXIII. törvény", "17/A", "1")),
+            (ref("41", None, "3", "c"), absref("2004. évi CXXIII. törvény", "17/A", "3")),
+            (ref("41", None, "4"), absref("2012. évi CXLVII. törvény")),
+            (ref("41", None, "4"), absref("2012. évi CXLVII. törvény", "2", None, "21")),
+        ),
+    ),
+    (
+        """
+        1. §        A relatív referenciák, mint az a) pont működnek cikkre.
 
+        2. §    (1) A relatív referenciák, mint a (2) bekezdés 1. pontja, vagy simáncsak a) pont is mennek.
+                (2) Van második bekezdés, a pontjai
+                    1. első pont
+                    2. második pont, ami referál a 12/A. § (1)–(5) bekezdéseire.
+        """,
+        (
+            (ref("1"), ref("1", None, "a")),
+            (ref("2", "1"), ref("2", "2", "1")),
+            (ref("2", "1"), ref("2", "1", "a")),
+            (ref("2", "2", "2"), ref("12/A", ("1", "5"))),
+        )
     ),
 ]
 
@@ -123,18 +112,18 @@ def quick_parse_structure(act_text):
             skip_spaces = False
             parts.append(IndentedLine.Part(indent * 5, char))
         lines.append(IndentedLine.from_parts(parts))
-    return ActParser.parse("2345 évi 1. törvény", "About testing", lines)
+    act = ActParser.parse("2345 évi 1. törvény", "About testing", lines)
+    return SemanticActParser.parse(act)
 
 
-@pytest.mark.parametrize("act_text,itsds", CASES_WITHOUT_POSITIONS)
-def test_parse_results_without_position(act_text, itsds):
+@pytest.mark.parametrize("act_text,references", CASES_WITHOUT_POSITIONS)
+def test_outgoing_references_without_position(act_text, references):
     act = quick_parse_structure(act_text)
-    semantic_data = ActSemanticDataParser.parse(act)
-    extracted_itsds = {k: tuple(vv.data for vv in v) for k, v in semantic_data.iter_semantic_data_items()}
-    assert extracted_itsds == itsds
+    outgoing_references = tuple(act.iter_all_outgoing_references())
+    assert outgoing_references == references
 
 
-def test_parse_positions_are_okay():
+def test_outgoing_ref_positions_are_okay():
     act = quick_parse_structure(
         """
         1. §    A tesztelésről szóló 2345. évi I. törvény
@@ -146,15 +135,20 @@ def test_parse_positions_are_okay():
                 jól van feldolgozva.
         """
     )
-    semantic_data = ActSemanticDataParser.parse(act)
-    parsed_data = dict(semantic_data.iter_semantic_data_items())
-    print(parsed_data)
-    correct_data = {
-        ref("1"): (InTextSemanticData(21, 41, Reference("2345. évi I. törvény")), ),
-        ref("1", None, "a"): (InTextSemanticData(0, 4, Reference("2345. évi I. törvény", "8")), ),
-        ref("1", None, "a", "aa"): (InTextSemanticData(0, 13, Reference("2345. évi I. törvény", "8", "5")), ),
-        ref("1", None, "a", "ab"): (InTextSemanticData(0, 22, Reference("2345. évi I. törvény", "8", "6", "a")), ),
-        ref("1", None, "b"): (InTextSemanticData(0, 7, Reference("2345. évi I. törvény", "10")),),
-        ref("1", None, "c"): (InTextSemanticData(22, 36, Reference(None, "1", None, "c")),),
-    }
-    assert parsed_data == correct_data
+    assert act.article("1").paragraph().outgoing_references == \
+        (OutgoingReference(21, 41, Reference("2345. évi I. törvény")), )
+
+    assert act.article("1").paragraph().point("a").outgoing_references == \
+        (OutgoingReference(0, 4, Reference("2345. évi I. törvény", "8")), )
+
+    assert act.article("1").paragraph().point("a").subpoint("aa").outgoing_references == \
+        (OutgoingReference(0, 13, Reference("2345. évi I. törvény", "8", "5")), )
+
+    assert act.article("1").paragraph().point("a").subpoint("ab").outgoing_references == \
+        (OutgoingReference(0, 22, Reference("2345. évi I. törvény", "8", "6", "a")), )
+
+    assert act.article("1").paragraph().point("b").outgoing_references == \
+        (OutgoingReference(0, 7, Reference("2345. évi I. törvény", "10")),)
+
+    assert act.article("1").paragraph().point("c").outgoing_references == \
+        (OutgoingReference(22, 36, Reference(None, "1", None, "c")),)

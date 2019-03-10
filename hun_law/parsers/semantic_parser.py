@@ -15,79 +15,82 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from hun_law.structure import Reference, ActSemanticData, QuotedBlock, InTextSemanticData
+from hun_law.structure import QuotedBlock, Act, Article, OutgoingReference
 from .grammatical_analyzer import GrammaticalAnalyzer
 
 
-class ActSemanticDataParser:
+class SemanticActParser:
     INTERESTING_SUBSTRINGS = (")", "§", "törvén")
 
     @classmethod
     def parse(cls, act):
-        result = {}
         abbreviations = []
-        for article in act.articles:
-            for paragraph in article.paragraphs:
-                parse_result = cls.parse_sub_article_element(
-                    paragraph,
-                    "",
-                    "",
-                    Reference(article=article.identifier),
-                    abbreviations
-                )
-                for reference, itsd in parse_result:
-                    result[reference] = itsd
-        return ActSemanticData(result)
+        new_children = tuple(cls.parse_act_child(child, abbreviations) for child in act.children)
+        return Act(act.identifier, act.subject, act.preamble, new_children)
 
     @classmethod
-    def parse_sub_article_element(cls, sub_article_element, prefix, postfix, parent_ref, abbreviations):
-        current_ref = sub_article_element.relative_reference.relative_to(parent_ref)
-        if sub_article_element.text is not None:
-            parse_result = cls.parse_text(sub_article_element.text, prefix, postfix, current_ref, abbreviations)
-            if parse_result:
-                yield current_ref, parse_result
+    def parse_act_child(cls, child, abbreviations):
+        if isinstance(child, Article):
+            return cls.parse_article(child, abbreviations)
+        return child
+
+    @classmethod
+    def parse_article(cls, article, abbreviations):
+        new_article_children = tuple(
+            cls.parse_element(paragraph, "", "", abbreviations) for paragraph in article.children
+        )
+        return Article(article.identifier, article.title, new_article_children)
+
+    @classmethod
+    def parse_element(cls, element, prefix, postfix, abbreviations):
+        if element.text is not None:
+            parse_result = cls.parse_text(element.text, prefix, postfix, abbreviations)
+            return cls.enhanced_element(element, parse_result)
         else:
-            if sub_article_element.children_type == QuotedBlock:
+            if element.children_type == QuotedBlock:
                 # QuotedBlocks can only appear within Paragraphs, which are always children of
                 # Articles, which never have intros.
                 assert prefix == ''
-                text = sub_article_element.intro
-                parse_result = cls.parse_text(text, '', '', current_ref, abbreviations)
-                if parse_result:
-                    yield current_ref, parse_result
+                text = element.intro
+                parse_result = cls.parse_text(text, '', '', abbreviations)
+                return cls.enhanced_element(element, parse_result)
             else:
-                # TODO: Not using the children and postfix here is a huge hack. This code is reached for
-                # Points and SubPoints, so most of the time these are partial sentences,
-                # e.g
-                # From now on
-                #     a) things will change
-                #     b) everything will be better.
-                #
-                # In this case, we hope that the string "From now on" can be parsed without
-                # the second part of the sentence.
-                parse_result = cls.parse_text(sub_article_element.intro, prefix, '', current_ref, abbreviations)
-                if parse_result:
-                    yield current_ref, parse_result
-
-                children_prefix = prefix
-                if sub_article_element.intro is not None:
-                    children_prefix = children_prefix + sub_article_element.intro + " "
-
-                children_postfix = postfix
-                if sub_article_element.wrap_up is not None:
-                    children_postfix = " " + sub_article_element.wrap_up + children_postfix
-
-                for child in sub_article_element.children:
-                    yield from cls.parse_sub_article_element(
-                        child,
-                        children_prefix,
-                        children_postfix,
-                        current_ref,
-                        abbreviations
-                    )
+                return cls.parse_element_with_children(element, prefix, postfix, abbreviations)
 
     @classmethod
-    def parse_text(cls, middle, prefix, postfix, current_ref, abbreviations):
+    def parse_element_with_children(cls, element, prefix, postfix, abbreviations):
+        # TODO: Not using the children and postfix here is a huge hack. This code is reached for
+        # Points and SubPoints, so most of the time these are partial sentences,
+        # e.g
+        # From now on
+        #     a) things will change
+        #     b) everything will be better.
+        #
+        # In this case, we hope that the string "From now on" can be parsed without
+        # the second part of the sentence.
+        parse_result = cls.parse_text(element.intro, prefix, '', abbreviations)
+
+        children_prefix = prefix
+        if element.intro is not None:
+            children_prefix = children_prefix + element.intro + " "
+
+        children_postfix = postfix
+        if element.wrap_up is not None:
+            children_postfix = " " + element.wrap_up + children_postfix
+
+        new_children = tuple(
+            cls.parse_element(
+                child,
+                children_prefix,
+                children_postfix,
+                abbreviations
+            ) for child in element.children
+        )
+
+        return cls.enhanced_element(element, parse_result, new_children)
+
+    @classmethod
+    def parse_text(cls, middle, prefix, postfix, abbreviations):
         text = prefix + middle + postfix
         if len(text) > 10000:
             return
@@ -98,21 +101,32 @@ class ActSemanticDataParser:
         abbreviations.extend(analysis_result.get_new_abbreviations())
 
         result = []
-        for itsd in analysis_result.get_references(abbreviations):
+        for outgoing_reference in analysis_result.get_references(abbreviations):
             # The end of the parsed reference is inside the target string
             # Checking for the end and not the beginning is important, because
             # we also want partial references to work here.
-            if itsd.end_pos > len(prefix) and itsd.end_pos <= len(text) - len(postfix):
-                if itsd.data.is_relative():
-                    absolute_ref = itsd.data.relative_to(current_ref)
-                else:
-                    absolute_ref = itsd.data
+            if outgoing_reference.end_pos > len(prefix) and outgoing_reference.end_pos <= len(text) - len(postfix):
                 result.append(
-                    InTextSemanticData(
-                        max(itsd.start_pos - len(prefix), 0),
-                        itsd.end_pos - len(prefix),
-                        absolute_ref
+                    OutgoingReference(
+                        max(outgoing_reference.start_pos - len(prefix), 0),
+                        outgoing_reference.end_pos - len(prefix),
+                        outgoing_reference.reference
                     )
                 )
         result.sort()
         return tuple(result)
+
+    @classmethod
+    def enhanced_element(cls, element, new_semantic_data, new_children=None):
+        if not new_semantic_data and new_children is None:
+            return element
+        # TODO: right now all semantic data are outgoing refs
+        outgoing_references = new_semantic_data
+        return element.__class__(
+            element.identifier,
+            element.text,
+            element.intro,
+            element.children if new_children is None else new_children,
+            element.wrap_up,
+            outgoing_references
+        )

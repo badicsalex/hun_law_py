@@ -19,7 +19,6 @@ import sys
 import xml.etree.ElementTree as ET
 
 from hun_law.structure import SubArticleElement, QuotedBlock, Article, Subtitle, Reference
-from hun_law.parsers.semantic_parser import ActSemanticDataParser
 from hun_law.utils import EMPTY_LINE, is_uppercase_hun
 
 
@@ -58,11 +57,11 @@ def get_href_for_ref(ref):
     return result
 
 
-def generate_text_with_ref_links(container, text, current_ref, semantic_data):
+def generate_text_with_ref_links(container, text, current_ref, outgoing_references):
     links_to_create = []
-    for itsd in semantic_data.get_all_semantic_data_for_reference(current_ref):
-        absolute_ref = itsd.data.relative_to(current_ref)
-        links_to_create.append((itsd.start_pos, itsd.end_pos, get_href_for_ref(absolute_ref)))
+    for outgoing_ref in outgoing_references:
+        absolute_ref = outgoing_ref.reference.relative_to(current_ref)
+        links_to_create.append((outgoing_ref.start_pos, outgoing_ref.end_pos, get_href_for_ref(absolute_ref)))
 
     links_to_create.sort()
     last_a_tag = None
@@ -84,17 +83,17 @@ def generate_text_with_ref_links(container, text, current_ref, semantic_data):
         last_a_tag.tail = text[prev_start:]
 
 
-def generate_html_nodes_for_children(element, parent_ref, semantic_data):
+def generate_html_nodes_for_children(element, parent_ref):
     for child in element.children:
         if isinstance(child, SubArticleElement):
-            yield from generate_html_nodes_for_sub_article_element(child, parent_ref, semantic_data)
+            yield from generate_html_nodes_for_sub_article_element(child, parent_ref)
         elif isinstance(child, QuotedBlock):
             yield from generate_html_nodes_for_quoted_block(child, element)
         else:
             raise TypeError("Unknown child type {}".format(child.__class__))
 
 
-def generate_html_nodes_for_sub_article_element(e, parent_ref, semantic_data):
+def generate_html_nodes_for_sub_article_element(e, parent_ref):
     current_ref = e.relative_reference.relative_to(parent_ref)
     element_type_as_text = e.__class__.__name__.lower()
     id_element = ET.Element('div', {"id": current_ref.relative_id_string, 'class': '{}_id'.format(element_type_as_text)})
@@ -102,7 +101,7 @@ def generate_html_nodes_for_sub_article_element(e, parent_ref, semantic_data):
     yield id_element
     if e.text:
         container = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
-        generate_text_with_ref_links(container, e.text, current_ref, semantic_data)
+        generate_text_with_ref_links(container, e.text, current_ref, e.outgoing_references)
         yield container
     else:
         if e.intro:
@@ -111,13 +110,13 @@ def generate_html_nodes_for_sub_article_element(e, parent_ref, semantic_data):
             # They have a two-part intro, which we unfortunately merge, which looks bad.
             matches = re.match(r"^(.*:) ?(\([^\)]*\)|\[[^\]]*\])$", e.intro)
             if matches is not None:
-                generate_text_with_ref_links(intro_element, matches.group(1), current_ref, semantic_data)
+                generate_text_with_ref_links(intro_element, matches.group(1), current_ref, e.outgoing_references)
                 ET.SubElement(intro_element, 'br').tail = matches.group(2)
             else:
-                generate_text_with_ref_links(intro_element, e.intro, current_ref, semantic_data)
+                generate_text_with_ref_links(intro_element, e.intro, current_ref, e.outgoing_references)
             yield intro_element
 
-        yield from generate_html_nodes_for_children(e, current_ref, semantic_data)
+        yield from generate_html_nodes_for_children(e, current_ref)
 
         if e.wrap_up:
             wrap_up_element = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
@@ -144,7 +143,7 @@ def generate_html_nodes_for_quoted_block(element, parent):
     yield container
 
 
-def generate_html_node_for_article(article, semantic_data):
+def generate_html_node_for_article(article):
     current_ref = article.relative_reference
     id_element = ET.Element('div', {"id": current_ref.relative_id_string, 'class': 'article_id'})
     id_element.text = '{}. §'.format(article.identifier)
@@ -155,7 +154,7 @@ def generate_html_node_for_article(article, semantic_data):
         title_element.text = '[{}]'.format(article.title)
         yield title_element
 
-    yield from generate_html_nodes_for_children(article, current_ref, semantic_data)
+    yield from generate_html_nodes_for_children(article, current_ref)
 
     yield ET.Element('div', {'class': 'space_after_article'})
 
@@ -169,10 +168,9 @@ def generate_html_body_for_act(act, indent=True):
         preamble = ET.SubElement(body, 'div', {'class': 'preamble'})
         preamble.text = act.preamble
     body_elements = []
-    semantic_data = ActSemanticDataParser.parse(act)
     for c in act.children:
         if isinstance(c, Article):
-            elements_to_add = generate_html_node_for_article(c, semantic_data)
+            elements_to_add = generate_html_node_for_article(c)
         else:
             elements_to_add = generate_html_node_for_structural_element(c)
         for element_to_add in elements_to_add:

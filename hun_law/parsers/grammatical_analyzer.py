@@ -1,4 +1,4 @@
-# Copyright 2018 Alex Badics <admin@stickman.hu>
+# Copyright 2018-2019 Alex Badics <admin@stickman.hu>
 #
 # This file is part of Hun-Law.
 #
@@ -23,7 +23,7 @@ import tatsu.model
 from .grammar import model
 from .grammar.parser import ActGrammarParser
 
-from hun_law.structure import Reference, ActIdAbbreviation, InTextSemanticData
+from hun_law.structure import Reference, ActIdAbbreviation, OutgoingReference
 
 
 def iterate_depth_first(node, filter_class=None):
@@ -77,11 +77,11 @@ class ReferenceCollector:
                         start = start_override
                         start_override = None
                     ref_args[arg_pos] = level_val
-                    yield InTextSemanticData(start, end, Reference(*ref_args))
+                    yield OutgoingReference(start, end, Reference(*ref_args))
                 ref_args[arg_pos] = level_vals[-1][0]
             if start_override is None:
                 start_override = level_vals[-1][1]
-        yield InTextSemanticData(start_override, end_override, Reference(*ref_args))
+        yield OutgoingReference(start_override, end_override, Reference(*ref_args))
 
 
 class AbbreviationNotFoundError(Exception):
@@ -153,7 +153,7 @@ class GrammaticalAnalysisResult:
                 start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.act_id)
 
             try:
-                yield InTextSemanticData(start_pos, end_pos, Reference(act=self.get_act_id_from_parse_result(act_ref, abbreviations)))
+                yield OutgoingReference(start_pos, end_pos, Reference(act=self.get_act_id_from_parse_result(act_ref, abbreviations)))
             except AbbreviationNotFoundError:
                 pass
 

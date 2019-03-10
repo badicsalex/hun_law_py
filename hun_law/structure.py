@@ -154,6 +154,10 @@ class Subtitle(StructuralElement):
 STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
 
 
+# Start and end pos are python range, i.e. end_pos is after the last character
+OutgoingReference = namedtuple('OutgoingReference', ('start_pos', 'end_pos', 'reference'))
+
+
 class QuotedBlock:
     def __init__(self, lines):
         self.__lines = tuple(lines)
@@ -170,7 +174,7 @@ class QuotedBlock:
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE = ()
 
-    def __init__(self, identifier, text, intro, children, wrap_up):
+    def __init__(self, identifier, text, intro, children, wrap_up, outgoing_references=None):
         self.__identifier = str(identifier) if identifier is not None else None
         if text is not None:
             if intro is not None or wrap_up is not None or children is not None:
@@ -197,6 +201,10 @@ class SubArticleElement(ABC):
                         .format(type(c), self.__children_type)
                     )
             self.__children_map = {c.identifier: c for c in children}
+        if outgoing_references:
+            self.__outgoing_references = tuple(outgoing_references)
+        else:
+            self.__outgoing_references = ()
 
     @property
     def identifier(self):
@@ -226,6 +234,10 @@ class SubArticleElement(ABC):
     @property
     def wrap_up(self):
         return self.__wrap_up
+
+    @property
+    def outgoing_references(self):
+        return self.__outgoing_references
 
     @classmethod
     @abstractmethod
@@ -379,6 +391,24 @@ class Act:
     def article(self, article_id):
         return self.__articles_map[str(article_id)]
 
+    def iter_all_outgoing_references(self):
+        for article in self.articles:
+            for paragraph in article.paragraphs:
+                yield from self.__iter_all_outgoing_references_recursive(
+                    paragraph,
+                    Reference(article=article.identifier, paragraph=paragraph.identifier)
+                )
+
+    @classmethod
+    def __iter_all_outgoing_references_recursive(cls, element, parent_ref):
+        if not isinstance(element, SubArticleElement):
+            return
+        current_ref = element.relative_reference.relative_to(parent_ref)
+        for outgoing_ref in element.outgoing_references:
+            yield current_ref, outgoing_ref.reference.relative_to(parent_ref)
+        if element.children:
+            for child in element.children:
+                yield from cls.__iter_all_outgoing_references_recursive(child, current_ref)
 
 ReferenceBase = namedtuple(
     'ReferenceBase',
@@ -426,23 +456,3 @@ class Reference(ReferenceBase):
 
 
 ActIdAbbreviation = namedtuple('ActIdAbbreviation', ('abbreviation', 'act'))
-
-# Start and end pos are python range, i.e. end_pos is after the last character
-InTextSemanticData = namedtuple('SemanticData', ('start_pos', 'end_pos', 'data'))
-
-
-class ActSemanticData:
-    def __init__(self, data):
-        for k, v in data.items():
-            assert isinstance(k, Reference)
-            assert k.is_relative()
-            for itsd in v:
-                assert isinstance(itsd, InTextSemanticData)
-        self.__data = {k: tuple(v) for k, v in data.items()}
-
-    def iter_semantic_data_items(self):
-        return self.__data.items()
-
-    def get_all_semantic_data_for_reference(self, reference):
-        assert reference.is_relative()
-        return self.__data.get(reference, ())

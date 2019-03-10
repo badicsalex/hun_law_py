@@ -1,4 +1,4 @@
-# Copyright 2018 Alex Badics <admin@stickman.hu>
+# Copyright 2018-2019 Alex Badics <admin@stickman.hu>
 #
 # This file is part of Hun-Law.
 #
@@ -468,15 +468,15 @@ def test_parse_results_are_correct(s, positions, refs, act_refs):
     parsed_refs = []
     parsed_act_refs = []
     parsed_pos_string = [" "] * len(s)
-    for itsd in parsed.get_element_references(ABBREVIATIONS):
-        parsed_pos_string[itsd.start_pos] = '<'
-        parsed_pos_string[itsd.end_pos - 1] = '>'
-        parsed_refs.append(itsd.data)
+    for reference in parsed.get_element_references(ABBREVIATIONS):
+        parsed_pos_string[reference.start_pos] = '<'
+        parsed_pos_string[reference.end_pos - 1] = '>'
+        parsed_refs.append(reference.reference)
 
-    for itsd in parsed.get_act_references(ABBREVIATIONS):
-        parsed_pos_string[itsd.start_pos] = '['
-        parsed_pos_string[itsd.end_pos - 1] = ']'
-        parsed_act_refs.append(itsd.data.act)
+    for reference in parsed.get_act_references(ABBREVIATIONS):
+        parsed_pos_string[reference.start_pos] = '['
+        parsed_pos_string[reference.end_pos - 1] = ']'
+        parsed_act_refs.append(reference.reference.act)
 
     parsed_pos_string = "".join(parsed_pos_string)
     assert refs == parsed_refs
