@@ -190,11 +190,14 @@ class GrammaticalAnalysisResult:
     def get_block_amendment_metadata(self, abbreviations):
         if not isinstance(self.tree, model.BlockAmendment):
             return None
-        block_amendment = self.tree
-        act_id = self.get_act_id_from_parse_result(block_amendment.act_reference, abbreviations)
-        amended_references = tuple(self.convert_single_reference(act_id, block_amendment.amendment_position))
+        amendment_position = self.tree.amendment_position
+        act_id = self.get_act_id_from_parse_result(amendment_position.act_reference, abbreviations)
+
+        assert len(amendment_position.references) == 1
+        amended_references = tuple(self.convert_single_reference(act_id, amendment_position.references[0]))
         # TODO: support "(1) and (2)" style of reference ranges
         assert len(amended_references) == 1
+
         return BlockAmendmentMetadata(
             amended_references[0].reference
         )

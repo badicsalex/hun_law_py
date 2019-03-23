@@ -459,9 +459,10 @@ CASES = [
 ]
 
 
+@pytest.mark.parametrize("analysis_type", GrammaticalAnalysisType)
 @pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
-def test_parse_results_are_correct(s, positions, refs, act_refs):
-    parsed = GrammaticalAnalyzer().analyze(s, GrammaticalAnalysisType.SIMPLE)
+def test_parse_results_are_correct(s, positions, refs, act_refs, analysis_type):
+    parsed = GrammaticalAnalyzer().analyze(s, analysis_type)
     if refs is None:
         return
     parsed.indented_print()

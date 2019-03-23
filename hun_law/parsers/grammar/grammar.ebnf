@@ -108,7 +108,7 @@ list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
 # ============ BLOCK AMENDMENT PARSING ============
 
 block_amendment::BlockAmendment
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference amendment_position:reference "helyébe a következő rendelkezés lép:";
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* amendment_position:compound_reference "helyébe a következő rendelkezés lép:";
 
 
 # ============ SIMPLE TOKENS ============
