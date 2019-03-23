@@ -19,11 +19,12 @@ import os
 import collections
 import tatsu
 import tatsu.model
+from enum import Enum
 
 from .grammar import model
 from .grammar.parser import ActGrammarParser
 
-from hun_law.structure import Reference, ActIdAbbreviation, OutgoingReference
+from hun_law.structure import Reference, ActIdAbbreviation, OutgoingReference, BlockAmendmentMetadata
 
 
 def iterate_depth_first(node, filter_class=None):
@@ -120,14 +121,18 @@ class GrammaticalAnalysisResult:
                 continue
             refs_to_parse.append((None, ref))
 
-        for act_id, ref in refs_to_parse:
-            reference_collector = ReferenceCollector()
-            if act_id is not None:
-                reference_collector.act = act_id
+        for act_id, parsed_ref in refs_to_parse:
+            yield from self.convert_single_reference(act_id, parsed_ref)
 
-            self.fill_reference_collector(ref, reference_collector)
-            full_start_pos, full_end_pos = self.get_subtree_start_and_end_pos(ref)
-            yield from reference_collector.iter(full_start_pos, full_end_pos)
+    @classmethod
+    def convert_single_reference(cls, act_id, parsed_ref):
+        reference_collector = ReferenceCollector()
+        if act_id is not None:
+            reference_collector.act = act_id
+
+        cls.fill_reference_collector(parsed_ref, reference_collector)
+        full_start_pos, full_end_pos = cls.get_subtree_start_and_end_pos(parsed_ref)
+        yield from reference_collector.iter(full_start_pos, full_end_pos)
 
     @classmethod
     def fill_reference_collector(cls, parsed_ref, reference_collector):
@@ -182,6 +187,18 @@ class GrammaticalAnalysisResult:
                 self.get_act_id_from_parse_result(act_ref, [])
             )
 
+    def get_block_amendment_metadata(self, abbreviations):
+        if not isinstance(self.tree, model.BlockAmendment):
+            return None
+        block_amendment = self.tree
+        act_id = self.get_act_id_from_parse_result(block_amendment.act_reference, abbreviations)
+        amended_references = tuple(self.convert_single_reference(act_id, block_amendment.amendment_position))
+        # TODO: support "(1) and (2)" style of reference ranges
+        assert len(amended_references) == 1
+        return BlockAmendmentMetadata(
+            amended_references[0].reference
+        )
+
     @classmethod
     def _indented_print(cls, node=None, indent=''):
         if isinstance(node, tatsu.model.Node):
@@ -210,18 +227,25 @@ class GrammaticalAnalysisError(Exception):
     pass
 
 
+GrammaticalAnalysisType = Enum('GrammaticalAnalysisType', ('SIMPLE', 'TRY_BLOCK_AMENDMENT'))
+
+
 class GrammaticalAnalyzer:
+    TYPE_TO_RULE_NAME = {
+        GrammaticalAnalysisType.SIMPLE: 'start_simple_parsing',
+        GrammaticalAnalysisType.TRY_BLOCK_AMENDMENT: 'start_block_amendment_parsing',
+    }
+
     def __init__(self):
         self.parser = ActGrammarParser(
             semantics=model.ActGrammarModelBuilderSemantics(),
             parseinfo=True
         )
-#        self.parser._use_parseinfo = True
 
-    def analyze_simple(self, s, debug=False):
+    def analyze(self, s, analysis_type, *, debug=False):
         parse_result = self.parser.parse(
             s,
-            rule_name='start_simple_parsing',
+            rule_name=self.TYPE_TO_RULE_NAME[analysis_type],
             trace=debug, colorize=debug,
         )
         return GrammaticalAnalysisResult(s, parse_result)

@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 from hun_law.structure import QuotedBlock, Act, Article, OutgoingReference
-from .grammatical_analyzer import GrammaticalAnalyzer
+from .grammatical_analyzer import GrammaticalAnalyzer, GrammaticalAnalysisType
 
 
 class SemanticActParser:
@@ -97,7 +97,7 @@ class SemanticActParser:
         if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
             return
 
-        analysis_result = GrammaticalAnalyzer().analyze_simple(text)
+        analysis_result = GrammaticalAnalyzer().analyze(text, GrammaticalAnalysisType.SIMPLE)
         abbreviations.extend(analysis_result.get_new_abbreviations())
 
         result = []

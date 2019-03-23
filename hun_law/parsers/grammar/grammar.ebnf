@@ -20,6 +20,7 @@
 
 # ============ STARTING TOKENS ============
 start_simple_parsing = {any_simple_expression}+ $;
+start_block_amendment_parsing = (block_amendment |  {any_simple_expression}+) $;
 
 # ============ STRUCTURE PARSING ============
 
@@ -103,6 +104,12 @@ abbreviation::Abbreviation = s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]
 quote = "„" /[^„”]*/ { quote /[^„”]*/ }* "”" ;
 
 list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
+
+# ============ BLOCK AMENDMENT PARSING ============
+
+block_amendment::BlockAmendment
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference amendment_position:reference "helyébe a következő rendelkezés lép:";
+
 
 # ============ SIMPLE TOKENS ============
 

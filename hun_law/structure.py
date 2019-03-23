@@ -456,3 +456,5 @@ class Reference(ReferenceBase):
 
 
 ActIdAbbreviation = namedtuple('ActIdAbbreviation', ('abbreviation', 'act'))
+
+BlockAmendmentMetadata = namedtuple('BlockAmendmentMetadata', ('amended_reference', ))
