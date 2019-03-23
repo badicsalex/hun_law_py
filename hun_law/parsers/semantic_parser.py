@@ -15,11 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections import namedtuple
+
 from hun_law.structure import QuotedBlock, Act, Article, OutgoingReference
 from .grammatical_analyzer import GrammaticalAnalyzer, GrammaticalAnalysisType
 
 
 class SemanticActParser:
+    ParseResult = namedtuple("ParseResult", ("outgoing_references", ))
+    EMPTY_PARSE_RESULT = ParseResult(None)
+
     INTERESTING_SUBSTRINGS = (")", "§", "törvén")
 
     @classmethod
@@ -44,16 +49,16 @@ class SemanticActParser:
     @classmethod
     def parse_element(cls, element, prefix, postfix, abbreviations):
         if element.text is not None:
-            parse_result = cls.parse_text(element.text, prefix, postfix, abbreviations)
-            return cls.enhanced_element(element, parse_result)
+            parse_result = cls.parse_text(element.text, prefix, postfix, GrammaticalAnalysisType.SIMPLE, abbreviations)
+            return cls.enhanced_element(element, outgoing_references=parse_result.outgoing_references)
         else:
             if element.children_type == QuotedBlock:
                 # QuotedBlocks can only appear within Paragraphs, which are always children of
                 # Articles, which never have intros.
                 assert prefix == ''
                 text = element.intro
-                parse_result = cls.parse_text(text, '', '', abbreviations)
-                return cls.enhanced_element(element, parse_result)
+                parse_result = cls.parse_text(text, '', '', GrammaticalAnalysisType.SIMPLE, abbreviations)
+                return cls.enhanced_element(element, outgoing_references=parse_result.outgoing_references)
             else:
                 return cls.parse_element_with_children(element, prefix, postfix, abbreviations)
 
@@ -68,7 +73,7 @@ class SemanticActParser:
         #
         # In this case, we hope that the string "From now on" can be parsed without
         # the second part of the sentence.
-        parse_result = cls.parse_text(element.intro, prefix, '', abbreviations)
+        parse_result = cls.parse_text(element.intro, prefix, '', GrammaticalAnalysisType.SIMPLE, abbreviations)
 
         children_prefix = prefix
         if element.intro is not None:
@@ -87,29 +92,38 @@ class SemanticActParser:
             ) for child in element.children
         )
 
-        return cls.enhanced_element(element, parse_result, new_children)
+        return cls.enhanced_element(element, outgoing_references=parse_result.outgoing_references, new_children=new_children)
 
     @classmethod
-    def parse_text(cls, middle, prefix, postfix, abbreviations):
+    def parse_text(cls, middle, prefix, postfix, analysis_type, abbreviations):
         text = prefix + middle + postfix
         if len(text) > 10000:
-            return
+            return cls.EMPTY_PARSE_RESULT
         if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
-            return
+            return cls.EMPTY_PARSE_RESULT
 
-        analysis_result = GrammaticalAnalyzer().analyze(text, GrammaticalAnalysisType.SIMPLE)
+        analysis_result = GrammaticalAnalyzer().analyze(text, analysis_type)
         abbreviations.extend(analysis_result.get_new_abbreviations())
 
+        return cls.ParseResult(
+            cls.convert_parsed_references(
+                analysis_result.get_references(abbreviations),
+                len(prefix), len(text) - len(postfix)
+            ),
+        )
+
+    @classmethod
+    def convert_parsed_references(cls, parsed_references, prefixlen, textlen):
         result = []
-        for outgoing_reference in analysis_result.get_references(abbreviations):
+        for outgoing_reference in parsed_references:
             # The end of the parsed reference is inside the target string
             # Checking for the end and not the beginning is important, because
             # we also want partial references to work here.
-            if outgoing_reference.end_pos > len(prefix) and outgoing_reference.end_pos <= len(text) - len(postfix):
+            if outgoing_reference.end_pos > prefixlen and outgoing_reference.end_pos <= textlen:
                 result.append(
                     OutgoingReference(
-                        max(outgoing_reference.start_pos - len(prefix), 0),
-                        outgoing_reference.end_pos - len(prefix),
+                        max(outgoing_reference.start_pos - prefixlen, 0),
+                        outgoing_reference.end_pos - prefixlen,
                         outgoing_reference.reference
                     )
                 )
@@ -117,11 +131,7 @@ class SemanticActParser:
         return tuple(result)
 
     @classmethod
-    def enhanced_element(cls, element, new_semantic_data, new_children=None):
-        if not new_semantic_data and new_children is None:
-            return element
-        # TODO: right now all semantic data are outgoing refs
-        outgoing_references = new_semantic_data
+    def enhanced_element(cls, element, *, outgoing_references=None, new_children=None):
         return element.__class__(
             element.identifier,
             element.text,
