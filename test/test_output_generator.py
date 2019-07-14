@@ -27,26 +27,26 @@ def test_json_output(tmpdir):
     generator.run(["json", "2013/185", "--output-dir", str(tmpdir)])
     body = json.load(tmpdir.join("2013. évi CLXXV. törvény.json").open())
 
-    assert body["id"] == "2013. évi CLXXV. törvény"
+    assert body["identifier"] == "2013. évi CLXXV. törvény"
     assert body["subject"] == "a gondnokoltak és az előzetes jognyilatkozatok nyilvántartásáról"
     assert body["preamble"] == ""
 
-    assert body["content"][0]['type'] == "Subtitle"
-    assert body["content"][0]['title'] == "A törvény hatálya"
+    assert body["children"][0]['__type__'] == "Subtitle"
+    assert body["children"][0]['title'] == "A törvény hatálya"
 
-    assert body["content"][4]['type'] == "Article"
-    assert body["content"][4]['id'] == "3"
-    assert body["content"][4]['content']['1']['a']['_intro'] == "a gondnokolt"
-    assert body["content"][4]['content']['1']['a']['ad'] == "anyjának születési családi és utónevét,"
+    assert body["children"][4]['__type__'] == "Article"
+    assert body["children"][4]['identifier'] == "3"
+    assert body["children"][4]['children'][0]['identifier'] == '1'
+    assert body["children"][4]['children'][0]['children'][0]['identifier'] == 'a'
+    assert body["children"][4]['children'][0]['children'][0]['intro'] == "a gondnokolt"
 
-    assert body["content"][34]['type'] == "Article"
-    assert body["content"][34]['id'] == "29"
-    assert body["content"][34]['content']['_intro'] == "Az illetékekről szóló 1990. évi XCIII. törvény 43. §-a következő (9) bekezdéssel egészül ki:"
-    assert body["content"][34]['content']['content'] == "(9) Az előzetes jognyilatkozatok nyilvántartásba való bejegyzésének illetéke 15 000 forint."
+    assert body["children"][34]['__type__'] == "Article"
+    assert body["children"][34]['identifier'] == "29"
+    assert body["children"][34]['children'][0]['intro'] == "Az illetékekről szóló 1990. évi XCIII. törvény 43. §-a következő (9) bekezdéssel egészül ki:"
 
-    assert body["content"][36]['type'] == "Article"
-    assert body["content"][36]['id'] == "31"
-    assert body["content"][36]['content'] == "Hatályát veszti a gondnokoltak nyilvántartásáról szóló 2010. évi XVIII. törvény."
+    assert body["children"][36]['__type__'] == "Article"
+    assert body["children"][36]['identifier'] == "31"
+    assert body["children"][36]['children'][0]['text'] == "Hatályát veszti a gondnokoltak nyilvántartásáról szóló 2010. évi XVIII. törvény."
 
 
 class AFindingHTMLParser(HTMLParser):

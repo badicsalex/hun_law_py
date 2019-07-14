@@ -93,7 +93,7 @@ class GenerateCommand:
 
     @classmethod
     def output_json(cls, act, output_file):
-        # TODO: Semantic data
+        act = SemanticActParser.parse(act)
         serialize_act_to_json_file(act, output_file)
 
     @classmethod
