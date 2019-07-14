@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from hun_law.utils import IndentedLine
+from hun_law.utils import IndentedLine, IndentedLinePart
 from hun_law.structure import Reference, OutgoingReference
 from hun_law.parsers.structure_parser import ActParser
 from hun_law.parsers.semantic_parser import SemanticActParser
@@ -140,8 +140,8 @@ def quick_parse_structure(act_text):
             if char == ' ' and skip_spaces:
                 continue
             skip_spaces = False
-            parts.append(IndentedLine.Part(indent * 5, char))
-        lines.append(IndentedLine.from_parts(parts))
+            parts.append(IndentedLinePart(indent * 5, char))
+        lines.append(IndentedLine(parts))
     act = ActParser.parse("2345 évi 1. törvény", "About testing", lines)
     return SemanticActParser.parse(act)
 

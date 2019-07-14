@@ -25,7 +25,7 @@ from pdfminer.pdfdevice import PDFTextDevice
 from pdfminer.utils import isnumber
 from pdfminer.pdffont import PDFUnicodeNotDefined
 
-from hun_law.utils import IndentedLine, EMPTY_LINE, chr_latin2
+from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2
 from hun_law.cache import CacheObject
 
 from . import Extractor
@@ -195,12 +195,12 @@ def extract_lines(potb):
                 box = textboxes_as_dicts[y][x]
                 if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
                     if parts and parts[-1].content[-1] != ' ':
-                        parts.append(IndentedLine.Part(threshold_to_space, ' '))
-                parts.append(IndentedLine.Part(box.x, box.content))
+                        parts.append(IndentedLinePart(threshold_to_space, ' '))
+                parts.append(IndentedLinePart(box.x, box.content))
                 threshold_to_space = x + box.width + box.width_of_space * 0.5
                 current_right_side = x + box.width
 
-            processed_page.add_line(IndentedLine.from_parts(parts))
+            processed_page.add_line(IndentedLine(parts))
 
         result.add_page(processed_page)
     return result

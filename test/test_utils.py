@@ -18,29 +18,26 @@ import json
 import pytest
 import gzip
 
-from hun_law.utils import IndentedLine, EMPTY_LINE
+from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE
 from hun_law.cache import CacheObject, init_cache
 from .data.example_content import compression_test_parts
 
 
 def test_indented_line_construction():
-    with pytest.raises(Exception):
-        line = IndentedLine()
-
-    assert IndentedLine.get_empty_instance() == IndentedLine.get_empty_instance()
-    assert IndentedLine.get_empty_instance() == EMPTY_LINE
-    assert IndentedLine.from_parts([]) == EMPTY_LINE
+    assert IndentedLine() == IndentedLine()
+    assert IndentedLine() == EMPTY_LINE
+    assert IndentedLine([]) == EMPTY_LINE
 
 
 def test_indented_line_slice():
     parts = [
-        IndentedLine.Part(5, 'a'),
-        IndentedLine.Part(10, 'b'),
-        IndentedLine.Part(15, 'cde'),
-        IndentedLine.Part(20, ' '),
-        IndentedLine.Part(25, 'f')
+        IndentedLinePart(5, 'a'),
+        IndentedLinePart(10, 'b'),
+        IndentedLinePart(15, 'cde'),
+        IndentedLinePart(20, ' '),
+        IndentedLinePart(25, 'f')
     ]
-    line = IndentedLine.from_parts(parts)
+    line = IndentedLine(parts)
     assert line.content == 'abcde f'
     assert line.indent == 5
 
@@ -83,13 +80,13 @@ def test_indented_line_slice():
 
 def test_indented_line_serialization():
     parts = [
-        IndentedLine.Part(5, 'a'),
-        IndentedLine.Part(10, 'b'),
-        IndentedLine.Part(15, 'cde'),
-        IndentedLine.Part(20, ' '),
-        IndentedLine.Part(25, 'f')
+        IndentedLinePart(5, 'a'),
+        IndentedLinePart(10, 'b'),
+        IndentedLinePart(15, 'cde'),
+        IndentedLinePart(20, ' '),
+        IndentedLinePart(25, 'f')
     ]
-    line = IndentedLine.from_parts(parts)
+    line = IndentedLine(parts)
     serialized_form = line.to_serializable_form()
     # test transformability to json
     json_string = json.dumps(serialized_form)
@@ -107,7 +104,7 @@ def test_indented_line_serialization():
 
 
 def test_indented_line_serialization_compactness(tmpdir):
-    line = IndentedLine.from_parts(IndentedLine.Part(x, c) for x, c in compression_test_parts)
+    line = IndentedLine(IndentedLinePart(x, c) for x, c in compression_test_parts)
 
     # This is a test for an older scheme, where X coordinates were not stored exactly,
     # to save on digits in the JSON. It is not really relevant right now, but might
@@ -131,17 +128,17 @@ def test_indented_line_serialization_compactness(tmpdir):
 
 def test_indented_line_concat():
     parts1 = [
-        IndentedLine.Part(5, 'a'),
-        IndentedLine.Part(10, 'b'),
-        IndentedLine.Part(15, 'cde'),
+        IndentedLinePart(5, 'a'),
+        IndentedLinePart(10, 'b'),
+        IndentedLinePart(15, 'cde'),
     ]
     parts2 = [
-        IndentedLine.Part(20, ' '),
-        IndentedLine.Part(25, 'f'),
+        IndentedLinePart(20, ' '),
+        IndentedLinePart(25, 'f'),
     ]
 
-    line1 = IndentedLine.from_parts(parts1)
-    line2 = IndentedLine.from_parts(parts2)
+    line1 = IndentedLine(parts1)
+    line2 = IndentedLine(parts2)
     line = IndentedLine.from_multiple(line1, line2)
 
     assert line.content == 'abcde f'

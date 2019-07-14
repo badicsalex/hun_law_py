@@ -20,7 +20,7 @@
 # well-formed enough to be parsed by the parser out-of-the-box
 import re
 
-from hun_law.utils import IndentedLine, EMPTY_LINE
+from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE
 all_fixups = {}
 
 
@@ -115,16 +115,16 @@ def replace_line_content(needle, replacement, *, needle_prev_lines=None):
                 replacement_indent = l.slice(common_prefix_len).indent
                 if common_postfix_len != 0:
                     common_postfix = l.slice(-common_postfix_len)
-                    replacement_part = IndentedLine.from_parts([
-                        IndentedLine.Part(
+                    replacement_part = IndentedLine([
+                        IndentedLinePart(
                             replacement_indent,
                             replacement[common_prefix_len: -common_postfix_len]
                         )
                     ])
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part, common_postfix)
                 else:
-                    replacement_part = IndentedLine.from_parts([
-                        IndentedLine.Part(
+                    replacement_part = IndentedLine([
+                        IndentedLinePart(
                             replacement_indent,
                             replacement[common_prefix_len:]
                         )
@@ -170,9 +170,9 @@ def ptke_article_header_fixer(body):
             article_header = line.slice(article_match.start(1), article_match.end(1))
             article_rest = line.slice(article_match.end(1))
             # TODO: Will not be sliceable
-            fixed_title_string = IndentedLine.from_parts(
+            fixed_title_string = IndentedLine(
                 [
-                    IndentedLine.Part(
+                    IndentedLinePart(
                         prev_line.indent, "[{}]".format(title_match.group(1))
                     )
                 ]
