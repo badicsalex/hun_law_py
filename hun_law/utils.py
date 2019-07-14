@@ -23,7 +23,7 @@ from string import ascii_uppercase
 
 @attr.s(slots=True, frozen=True)
 class IndentedLinePart:
-    x = attr.ib(converter=float)
+    dx = attr.ib(converter=float)
     content = attr.ib(converter=str)
 
 
@@ -47,24 +47,14 @@ class IndentedLine:
     def _indent_default(self):
         if not self._parts:
             return 0
-        return self._parts[0].x
+        return self._parts[0].dx
 
     def to_serializable_form(self):
-        prev_x = 0
-        result = []
-        for part in self._parts:
-            result.append((part.x - prev_x, part.content))
-            prev_x = part.x
-        return tuple(result)
+        return tuple((p.x, p.content) for p in self._parts)
 
     @classmethod
     def from_serializable_form(cls, serializable_form):
-        parts = []
-        curr_x = 0
-        for x, content in serializable_form:
-            curr_x += x
-            parts.append(IndentedLinePart(curr_x, content))
-        return cls(parts)
+        return cls(IndentedLinePart(x, c) for x,c in serializable_form)
 
     def slice(self, start, end=None):
         if start < 0:
@@ -80,9 +70,11 @@ class IndentedLine:
         if end <= start:
             return EMPTY_LINE
 
+        skipped_x = 0
         skipped_len = 0
         skipped_parts_index = 0
         while skipped_len < start and skipped_parts_index < len(self._parts):
+            skipped_x += self._parts[skipped_parts_index].dx
             skipped_len += len(self._parts[skipped_parts_index].content)
             skipped_parts_index += 1
         if skipped_parts_index >= len(self._parts):
@@ -99,13 +91,26 @@ class IndentedLine:
         if included_len != end-start:
             raise ValueError("Couldn't slice precisely at requested index (multi-char part in the way)")
 
-        return IndentedLine(self._parts[skipped_parts_index:included_parts_index])
+        first_part = self._parts[skipped_parts_index]
+        if skipped_x:
+            first_part = attr.evolve(first_part, dx=first_part.dx + skipped_x)
+
+        return IndentedLine((first_part,) + self._parts[skipped_parts_index+1:included_parts_index])
 
     @classmethod
     def from_multiple(cls, *others):
         parts = []
+        x = 0
         for o in others:
-            parts.extend(o._parts)
+            first = True
+            for p in o._parts:
+                if first:
+                    parts.append(IndentedLinePart(p.dx - x, p.content))
+                    x = p.dx
+                    first = False
+                else:
+                    parts.append(p)
+                    x += p.dx
         return IndentedLine(parts)
 
 

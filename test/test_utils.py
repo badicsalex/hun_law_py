@@ -32,10 +32,10 @@ def test_indented_line_construction():
 def test_indented_line_slice():
     parts = [
         IndentedLinePart(5, 'a'),
-        IndentedLinePart(10, 'b'),
-        IndentedLinePart(15, 'cde'),
-        IndentedLinePart(20, ' '),
-        IndentedLinePart(25, 'f')
+        IndentedLinePart(5, 'b'),
+        IndentedLinePart(5, 'cde'),
+        IndentedLinePart(5, ' '),
+        IndentedLinePart(5, 'f')
     ]
     line = IndentedLine(parts)
     assert line.content == 'abcde f'
@@ -81,10 +81,10 @@ def test_indented_line_slice():
 def test_indented_line_serialization():
     parts = [
         IndentedLinePart(5, 'a'),
-        IndentedLinePart(10, 'b'),
-        IndentedLinePart(15, 'cde'),
-        IndentedLinePart(20, ' '),
-        IndentedLinePart(25, 'f')
+        IndentedLinePart(5, 'b'),
+        IndentedLinePart(5, 'cde'),
+        IndentedLinePart(5, ' '),
+        IndentedLinePart(5, 'f')
     ]
     line = IndentedLine(parts)
     serialized_form = line.to_serializable_form()
@@ -104,7 +104,13 @@ def test_indented_line_serialization():
 
 
 def test_indented_line_serialization_compactness(tmpdir):
-    line = IndentedLine(IndentedLinePart(x, c) for x, c in compression_test_parts)
+    prev_x = 0
+    parts = []
+    for x, c in compression_test_parts:
+        parts.append(IndentedLinePart(x-prev_x, c))
+        prev_x = x
+
+    line = IndentedLine(parts)
 
     # This is a test for an older scheme, where X coordinates were not stored exactly,
     # to save on digits in the JSON. It is not really relevant right now, but might
@@ -129,12 +135,12 @@ def test_indented_line_serialization_compactness(tmpdir):
 def test_indented_line_concat():
     parts1 = [
         IndentedLinePart(5, 'a'),
-        IndentedLinePart(10, 'b'),
-        IndentedLinePart(15, 'cde'),
+        IndentedLinePart(5, 'b'),
+        IndentedLinePart(5, 'cde'),
     ]
     parts2 = [
         IndentedLinePart(20, ' '),
-        IndentedLinePart(25, 'f'),
+        IndentedLinePart(5, 'f'),
     ]
 
     line1 = IndentedLine(parts1)

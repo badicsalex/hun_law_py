@@ -136,11 +136,11 @@ def quick_parse_structure(act_text):
     for l in act_text.split('\n'):
         parts = []
         skip_spaces = True
-        for indent, char in enumerate(l):
+        for char in l:
             if char == ' ' and skip_spaces:
                 continue
             skip_spaces = False
-            parts.append(IndentedLinePart(indent * 5, char))
+            parts.append(IndentedLinePart(5, char))
         lines.append(IndentedLine(parts))
     act = ActParser.parse("2345 évi 1. törvény", "About testing", lines)
     return SemanticActParser.parse(act)

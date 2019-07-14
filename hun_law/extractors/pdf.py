@@ -191,12 +191,15 @@ def extract_lines(potb):
 
             parts = []
             threshold_to_space = None
+            prev_x = 0
             for x in sorted(textboxes_as_dicts[y]):
                 box = textboxes_as_dicts[y][x]
                 if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
                     if parts and parts[-1].content[-1] != ' ':
-                        parts.append(IndentedLinePart(threshold_to_space, ' '))
-                parts.append(IndentedLinePart(box.x, box.content))
+                        parts.append(IndentedLinePart(threshold_to_space - prev_x, ' '))
+                        prev_x = threshold_to_space
+                parts.append(IndentedLinePart(box.x - prev_x, box.content))
+                prev_x = box.x
                 threshold_to_space = x + box.width + box.width_of_space * 0.5
                 current_right_side = x + box.width
 
@@ -208,7 +211,7 @@ def extract_lines(potb):
 
 @Extractor(PDFFileDescriptor)
 def CachedPdfParser(f):
-    cache_object = CacheObject(f.cache_id + ".parsed.gz")
+    cache_object = CacheObject(f.cache_id + ".parsed_v2.gz")
     if cache_object.exists():
         result = PdfOfLines()
         result.load_from_cache(cache_object)
