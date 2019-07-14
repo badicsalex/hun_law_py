@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+import attr
 from abc import ABC, abstractmethod
-from collections import namedtuple
 
 from hun_law.utils import int_to_text_hun, int_to_text_roman
 
@@ -74,25 +74,18 @@ from hun_law.utils import int_to_text_hun, int_to_text_roman
 # All classes are immutable by design
 
 
+@attr.s(slots=True, frozen=True)
 class StructuralElement(ABC):
-    def __init__(self, identifier, title):
-        self.__identifier = str(identifier)
-        self.__title = str(title)
-
-    @property
-    def identifier(self):
-        return self.__identifier
+    identifier = attr.ib(converter=str)
+    title = attr.ib(converter=str)
 
     @property
     @abstractmethod
     def formatted_identifier(self):
         pass
 
-    @property
-    def title(self):
-        return self.__title
 
-
+@attr.s(slots=True, frozen=True)
 class Book(StructuralElement):
     # 38. §, Könyv
     # Example:
@@ -102,6 +95,7 @@ class Book(StructuralElement):
         return "{} KÖNYV".format(int_to_text_hun(int(self.identifier)).upper())
 
 
+@attr.s(slots=True, frozen=True)
 class Part(StructuralElement):
     # 39. § Rész
     # Example:
@@ -117,6 +111,7 @@ class Part(StructuralElement):
         return "{} RÉSZ".format(int_to_text_hun(int(self.identifier)).upper())
 
 
+@attr.s(slots=True, frozen=True)
 class Title(StructuralElement):
     # "CÍM"
     # Nonconformant structural type, present only in PTK
@@ -128,6 +123,7 @@ class Title(StructuralElement):
         return "{}. CÍM".format(int_to_text_roman(int(self.identifier)).upper())
 
 
+@attr.s(slots=True, frozen=True)
 class Chapter(StructuralElement):
     # 40. §,  fejezet
     # Example:
@@ -140,6 +136,7 @@ class Chapter(StructuralElement):
         return "{}. FEJEZET".format(int_to_text_roman(int(self.identifier)).upper())
 
 
+@attr.s(slots=True, frozen=True)
 class Subtitle(StructuralElement):
     # 41. §, Alcím
     # Guaranteed to be uppercase
@@ -154,90 +151,70 @@ class Subtitle(StructuralElement):
 STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
 
 
-# Start and end pos are python range, i.e. end_pos is after the last character
-OutgoingReference = namedtuple('OutgoingReference', ('start_pos', 'end_pos', 'reference'))
+@attr.s(slots=True, frozen=True)
+class OutgoingReference:
+    # Start and end pos are python range, i.e. end_pos is after the last character
+    start_pos = attr.ib(converter=int)
+    end_pos = attr.ib(converter=int)
+    reference = attr.ib()
 
 
+@attr.s(slots=True, frozen=True)
 class QuotedBlock:
-    def __init__(self, lines):
-        self.__lines = tuple(lines)
+    lines = attr.ib(converter=tuple)
 
-    @property
-    def lines(self):
-        return self.__lines
-
-    @property
-    def identifier(self):
-        return None
+    identifier = attr.ib(default=None, init=False)
 
 
+@attr.s(slots=True, frozen=True)
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE = ()
 
-    def __init__(self, identifier, text, intro, children, wrap_up, outgoing_references=None):
-        self.__identifier = str(identifier) if identifier is not None else None
+    identifier = attr.ib(converter=attr.converters.optional(str))
+    text = attr.ib(converter=attr.converters.optional(str))
+    intro = attr.ib(converter=attr.converters.optional(str))
+    children = attr.ib(converter=attr.converters.optional(tuple))
+    wrap_up = attr.ib(converter=attr.converters.optional(str))
+    outgoing_references = attr.ib(default=None, converter=attr.converters.default_if_none(factory=tuple))
+
+    children_type = attr.ib(init=False)
+    children_map = attr.ib(init=False)
+
+    @children_type.default
+    def _children_type_default(self):
+        if self.children is None:
+            return None
+        return type(self.children[0])
+
+    @children_map.default
+    def _children_map_default(self):
+        if self.children is None:
+            return None
+        return {c.identifier: c for c in self.children}
+
+    @text.validator
+    def _content_validator_if_text(self, attribute, text):
         if text is not None:
-            if intro is not None or wrap_up is not None or children is not None:
+            if self.intro is not None or self.wrap_up is not None or self.children is not None:
                 raise ValueError("SAE can contain either text or intro/wrap-up/children")
-            self.__children = None
-            self.__children_type = None
-            self.__text = str(text)
-            self.__intro = None
-            self.__wrap_up = None
-        else:
-            if text is not None:
-                raise ValueError("SAE can contain either text or intro/wrap-up/children")
-            self.__text = None
-            self.__intro = str(intro) if intro is not None else None
-            self.__wrap_up = str(wrap_up) if wrap_up is not None else None
-            self.__children = tuple(children)
-            self.__children_type = type(children[0])
-            if self.__children_type not in self.ALLOWED_CHILDREN_TYPE:
-                raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.__children_type))
-            for c in children:
-                if type(c) != self.__children_type:
-                    raise TypeError(
-                        "All children  has to be of the  same type ({} is not {})"
-                        .format(type(c), self.__children_type)
-                    )
-            self.__children_map = {c.identifier: c for c in children}
-        if outgoing_references:
-            self.__outgoing_references = tuple(outgoing_references)
-        else:
-            self.__outgoing_references = ()
 
-    @property
-    def identifier(self):
-        return self.__identifier
-
-    @property
-    def text(self):
-        return self.__text
-
-    @property
-    def intro(self):
-        return self.__intro
-
-    @property
-    def children(self):
-        return self.__children
+    @children.validator
+    def _content_validator_if_children(self, attribute, children):
+        if self.children_type is None:
+            return
+        if self.children_type not in self.ALLOWED_CHILDREN_TYPE:
+            raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.children_type))
+        for c in children:
+            if type(c) != self.children_type:
+                raise TypeError(
+                    "All children  has to be of the  same type ({} is not {})"
+                    .format(type(c), self.children_type)
+                )
 
     def child(self, child_id):
-        if self.__children is None:
+        if self.children is None:
             raise KeyError("There are no children of this element")
-        return self.__children_map[str(child_id)]
-
-    @property
-    def children_type(self):
-        return self.__children_type
-
-    @property
-    def wrap_up(self):
-        return self.__wrap_up
-
-    @property
-    def outgoing_references(self):
-        return self.__outgoing_references
+        return self.children_map[str(child_id)]
 
     @classmethod
     @abstractmethod
@@ -250,6 +227,7 @@ class SubArticleElement(ABC):
         pass
 
 
+@attr.s(slots=True, frozen=True)
 class AlphabeticSubpoint(SubArticleElement):
     @classmethod
     def header_prefix(cls, identifier):
@@ -260,6 +238,7 @@ class AlphabeticSubpoint(SubArticleElement):
         return Reference(subpoint=self.identifier)
 
 
+@attr.s(slots=True, frozen=True)
 class NumericPoint(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
 
@@ -275,6 +254,7 @@ class NumericPoint(SubArticleElement):
         return Reference(point=self.identifier)
 
 
+@attr.s(slots=True, frozen=True)
 class AlphabeticPoint(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
 
@@ -290,6 +270,7 @@ class AlphabeticPoint(SubArticleElement):
         return Reference(point=self.identifier)
 
 
+@attr.s(slots=True, frozen=True)
 class Paragraph(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock)
 
@@ -316,10 +297,16 @@ class Paragraph(SubArticleElement):
         return Reference(paragraph=self.identifier)
 
 
+@attr.s(slots=True, frozen=True)
 class Article:
-    def __init__(self, identifier, title, children):
-        self.__identifier = str(identifier)
-        self.__title = str(title) if title is not None else None
+    identifier = attr.ib(converter=str)
+    title = attr.ib(converter=attr.converters.optional(str))
+    children = attr.ib(converter=tuple)
+
+    paragraph_map = attr.ib(init=False)
+
+    @children.validator
+    def _children_validator(self, attribute, children):
         for c in children:
             if not isinstance(c, Paragraph):
                 # Always wrap everything in Pragraphs, pls.
@@ -328,20 +315,9 @@ class Article:
                 if len(children) != 1:
                     raise ValueError("Unnamed paragraphs cannot have siblings.")
 
-        self.__children = tuple(children)
-        self.__paragraph_map = {p.identifier: p for p in children}
-
-    @property
-    def identifier(self):
-        return self.__identifier
-
-    @property
-    def title(self):
-        return self.__title
-
-    @property
-    def children(self):
-        return self.__children
+    @paragraph_map.default
+    def _paragraph_map_default(self):
+        return {c.identifier: c for c in self.children}
 
     @property
     def paragraphs(self):
@@ -350,46 +326,36 @@ class Article:
 
     def paragraph(self, paragraph_id=None):
         if paragraph_id is not None:
-            return self.__paragraph_map[str(paragraph_id)]
+            return self.paragraph_map[str(paragraph_id)]
         else:
-            return self.__paragraph_map[None]
+            return self.paragraph_map[None]
 
     @property
     def relative_reference(self):
         return Reference(article=self.identifier)
 
 
+@attr.s(slots=True, frozen=True)
 class Act:
-    def __init__(self, identifier, subject, preamble, children):
-        self.__identifier = str(identifier)
-        self.__subject = str(subject)
-        self.__preamble = str(preamble)
-        self.__children = tuple(children)
-        self.__articles = tuple(c for c in children if isinstance(c, Article))
-        self.__articles_map = {c.identifier: c for c in self.__articles}
+    identifier = attr.ib(converter=str)
+    subject = attr.ib(converter=str)
+    preamble = attr.ib(converter=str)
+    children = attr.ib(converter=tuple)
 
-    @property
-    def identifier(self):
-        return self.__identifier
+    articles = attr.ib(init=False)
+    articles_map = attr.ib(init=False)
 
-    @property
-    def subject(self):
-        return self.__subject
+    @articles.default
+    def _articles_default(self):
+        return tuple(c for c in self.children if isinstance(c, Article))
 
-    @property
-    def preamble(self):
-        return self.__preamble
-
-    @property
-    def children(self):
-        return self.__children
-
-    @property
-    def articles(self):
-        return self.__articles
+    @articles_map.default
+    def _articles_map_default(self):
+        return {c.identifier: c for c in self.articles}
 
     def article(self, article_id):
-        return self.__articles_map[str(article_id)]
+        assert self.articles_map[str(article_id)].identifier == str(article_id)
+        return self.articles_map[str(article_id)]
 
     def iter_all_outgoing_references(self):
         for article in self.articles:
@@ -410,18 +376,14 @@ class Act:
             for child in element.children:
                 yield from cls.__iter_all_outgoing_references_recursive(child, current_ref)
 
-ReferenceBase = namedtuple(
-    'ReferenceBase',
-    ('act', 'article', 'paragraph', 'point', 'subpoint'),
-)
 
-
-class Reference(ReferenceBase):
-    def __new__(cls, act=None, article=None, paragraph=None, point=None, subpoint=None):
-        # TODO: check if parameters are None, tuples or strings
-        return super().__new__(
-            cls, act, article, paragraph, point, subpoint
-        )
+@attr.s(slots=True, frozen=True)
+class Reference:
+    act = attr.ib(default=None)
+    article = attr.ib(default=None)
+    paragraph = attr.ib(default=None)
+    point = attr.ib(default=None)
+    subpoint = attr.ib(default=None)
 
     def is_relative(self):
         return self.act is None
@@ -455,6 +417,12 @@ class Reference(ReferenceBase):
         return result
 
 
-ActIdAbbreviation = namedtuple('ActIdAbbreviation', ('abbreviation', 'act'))
+@attr.s(slots=True, frozen=True)
+class ActIdAbbreviation:
+    abbreviation = attr.ib(converter=str)
+    act = attr.ib(converter=str)
 
-BlockAmendmentMetadata = namedtuple('BlockAmendmentMetadata', ('amended_reference', ))
+
+@attr.s(slots=True, frozen=True)
+class BlockAmendmentMetadata:
+    amended_reference = attr.ib(converter=str)

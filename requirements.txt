@@ -1,4 +1,5 @@
 # Runing the extractors
+attrs
 pdfminer.six
 chardet
 tatsu==4.3.0
