@@ -169,10 +169,10 @@ def extract_lines(potb):
 
         last_y_coord = None
         for y_coord in sorted(textboxes_as_dicts):
-            # TODO: instad of 0.1, use some real line height thing
-            # 0.1 is small enough not to trigger for the e.g. the 2 in "m2" (the unit).
+            # TODO: instad of 0.2, use some real line height thing
+            # 0.2 is small enough not to trigger for the e.g. the 2 in "m2" (the unit).
             # And this is okay for now
-            if last_y_coord is not None and abs(y_coord-last_y_coord)<0.1:
+            if last_y_coord is not None and abs(y_coord-last_y_coord)<0.2:
                 # TODO: let's hope there is no intersection between the previous line's
                 # X coordinates and the current one. There shouldn't be any though.
                 textboxes_as_dicts[last_y_coord].update(textboxes_as_dicts[y_coord])
