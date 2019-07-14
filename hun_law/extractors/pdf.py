@@ -19,13 +19,15 @@ import unicodedata
 
 from collections import namedtuple
 
+import attr
+
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfdevice import PDFTextDevice
 from pdfminer.utils import isnumber
 from pdfminer.pdffont import PDFUnicodeNotDefined
 
-from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2
+from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2, object_to_dict_recursive, dict_to_object_recursive
 from hun_law.cache import CacheObject
 
 from . import Extractor
@@ -103,38 +105,20 @@ class PDFMinerAdapter(PDFTextDevice):
     # TODO: parse graphical lines, so that footers can be detected more easily
 
 
+@attr.s(slots=True)
 class PageOfLines:
-    def __init__(self):
-        self.lines = []
+    lines = attr.ib(factory=list, converter=list)
 
     def add_line(self, line):
         self.lines.append(line)
 
 
+@attr.s(slots=True)
 class PdfOfLines:
-    def __init__(self):
-        self.pages = []
+    pages = attr.ib(factory=list, converter=list)
 
     def add_page(self, page):
         self.pages.append(page)
-
-    def save_to_cache(self, cache_object):
-        data_to_save = []
-        for page in self.pages:
-            page_to_save = []
-            for line in page.lines:
-                page_to_save.append(line.to_serializable_form())
-            data_to_save.append(page_to_save)
-        cache_object.write_json(data_to_save)
-
-    def load_from_cache(self, cache_object):
-        data_to_load = cache_object.read_json()
-        self.pages = []
-        for page_to_load in data_to_load:
-            page = PageOfLines()
-            for line in page_to_load:
-                page.add_line(IndentedLine.from_serializable_form(line))
-            self.add_page(page)
 
 
 def extract_textboxes(f):
@@ -211,13 +195,15 @@ def extract_lines(potb):
 
 @Extractor(PDFFileDescriptor)
 def CachedPdfParser(f):
-    cache_object = CacheObject(f.cache_id + ".parsed_v2.gz")
+    cache_object = CacheObject(f.cache_id + ".parsed_v3.gz")
     if cache_object.exists():
-        result = PdfOfLines()
-        result.load_from_cache(cache_object)
+        result = dict_to_object_recursive(
+            cache_object.read_json(),
+            (PdfOfLines, PageOfLines, IndentedLine, IndentedLinePart)
+        )
         yield result
     else:
         textboxes = extract_textboxes(f)
         result = extract_lines(textboxes)
-        result.save_to_cache(cache_object)
+        cache_object.write_json(object_to_dict_recursive(result))
         yield result

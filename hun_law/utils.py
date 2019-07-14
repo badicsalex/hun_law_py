@@ -49,13 +49,6 @@ class IndentedLine:
             return 0
         return self._parts[0].dx
 
-    def to_serializable_form(self):
-        return tuple((p.x, p.content) for p in self._parts)
-
-    @classmethod
-    def from_serializable_form(cls, serializable_form):
-        return cls(IndentedLinePart(x, c) for x,c in serializable_form)
-
     def slice(self, start, end=None):
         if start < 0:
             start = len(self.content) + start
