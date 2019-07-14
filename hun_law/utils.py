@@ -266,3 +266,38 @@ def iterate_with_quote_level(lines, *, throw_exceptions=True):
 
     if throw_exceptions and quote_level != 0:
         raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
+
+
+def object_to_dict_recursive(obj):
+    if isinstance(obj, (int, float, str, type(None))):
+        return obj
+    if isinstance(obj, (list, tuple)):
+        return list(object_to_dict_recursive(v) for v in obj)
+
+    dct = attr.asdict(
+        obj,
+        recurse=False,
+        filter=lambda a, v: a.init and v != a.default
+    )
+    for k,v in dct.items():
+        dct[k] = object_to_dict_recursive(v)
+    dct['__type__'] = obj.__class__.__name__
+    return dct
+
+
+def dict_to_object_recursive(dct, types_to_use, *, types_dict=None):
+    if types_dict is None:
+        types_dict = {cls.__name__: cls for cls in types_to_use}
+    if isinstance(dct, (int, float, str)):
+        return dct
+    if isinstance(dct, (list, tuple)):
+        return tuple(dict_to_object_recursive(v, types_to_use, types_dict=types_dict) for v in dct)
+    T = types_dict[dct['__type__']]
+    args_for_T = {}
+    for k,v  in dct.items():
+        if k == '__type__':
+            continue
+        if k[0] == '_':
+            k = k[1:]
+        args_for_T[k] = dict_to_object_recursive(v, types_to_use, types_dict=types_dict)
+    return T(**args_for_T)
