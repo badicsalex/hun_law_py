@@ -60,7 +60,7 @@ def get_href_for_ref(ref):
 def generate_text_with_ref_links(container, text, current_ref, outgoing_references):
     links_to_create = []
     for outgoing_ref in outgoing_references:
-        absolute_ref = outgoing_ref.reference.relative_to(current_ref)
+        absolute_ref = outgoing_ref.to_reference.relative_to(current_ref)
         links_to_create.append((outgoing_ref.start_pos, outgoing_ref.end_pos, get_href_for_ref(absolute_ref)))
 
     links_to_create.sort()
@@ -83,25 +83,26 @@ def generate_text_with_ref_links(container, text, current_ref, outgoing_referenc
         last_a_tag.tail = text[prev_start:]
 
 
-def generate_html_nodes_for_children(element, parent_ref):
+def generate_html_nodes_for_children(act, element, parent_ref):
     for child in element.children:
         if isinstance(child, SubArticleElement):
-            yield from generate_html_nodes_for_sub_article_element(child, parent_ref)
+            yield from generate_html_nodes_for_sub_article_element(act, child, parent_ref)
         elif isinstance(child, QuotedBlock):
             yield from generate_html_nodes_for_quoted_block(child, element)
         else:
             raise TypeError("Unknown child type {}".format(child.__class__))
 
 
-def generate_html_nodes_for_sub_article_element(e, parent_ref):
+def generate_html_nodes_for_sub_article_element(act, e, parent_ref):
     current_ref = e.relative_reference.relative_to(parent_ref)
     element_type_as_text = e.__class__.__name__.lower()
     id_element = ET.Element('div', {"id": current_ref.relative_id_string, 'class': '{}_id'.format(element_type_as_text)})
     id_element.text = e.header_prefix(e.identifier)
     yield id_element
+    outgoing_references = act.outgoing_references_from(current_ref)
     if e.text:
         container = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
-        generate_text_with_ref_links(container, e.text, current_ref, e.outgoing_references)
+        generate_text_with_ref_links(container, e.text, current_ref, outgoing_references)
         yield container
     else:
         if e.intro:
@@ -110,13 +111,13 @@ def generate_html_nodes_for_sub_article_element(e, parent_ref):
             # They have a two-part intro, which we unfortunately merge, which looks bad.
             matches = re.match(r"^(.*:) ?(\([^\)]*\)|\[[^\]]*\])$", e.intro)
             if matches is not None:
-                generate_text_with_ref_links(intro_element, matches.group(1), current_ref, e.outgoing_references)
+                generate_text_with_ref_links(intro_element, matches.group(1), current_ref, outgoing_references)
                 ET.SubElement(intro_element, 'br').tail = matches.group(2)
             else:
-                generate_text_with_ref_links(intro_element, e.intro, current_ref, e.outgoing_references)
+                generate_text_with_ref_links(intro_element, e.intro, current_ref, outgoing_references)
             yield intro_element
 
-        yield from generate_html_nodes_for_children(e, current_ref)
+        yield from generate_html_nodes_for_children(act, e, current_ref)
 
         if e.wrap_up:
             wrap_up_element = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
@@ -143,7 +144,7 @@ def generate_html_nodes_for_quoted_block(element, parent):
     yield container
 
 
-def generate_html_node_for_article(article):
+def generate_html_node_for_article(act, article):
     current_ref = article.relative_reference
     id_element = ET.Element('div', {"id": current_ref.relative_id_string, 'class': 'article_id'})
     id_element.text = '{}. §'.format(article.identifier)
@@ -154,7 +155,7 @@ def generate_html_node_for_article(article):
         title_element.text = '[{}]'.format(article.title)
         yield title_element
 
-    yield from generate_html_nodes_for_children(article, current_ref)
+    yield from generate_html_nodes_for_children(act, article, current_ref)
 
     yield ET.Element('div', {'class': 'space_after_article'})
 
@@ -170,7 +171,7 @@ def generate_html_body_for_act(act, indent=True):
     body_elements = []
     for c in act.children:
         if isinstance(c, Article):
-            elements_to_add = generate_html_node_for_article(c)
+            elements_to_add = generate_html_node_for_article(act, c)
         else:
             elements_to_add = generate_html_node_for_structural_element(c)
         for element_to_add in elements_to_add:

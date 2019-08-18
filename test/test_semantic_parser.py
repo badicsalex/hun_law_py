@@ -92,9 +92,9 @@ CASES_WITHOUT_POSITIONS = [
                     2. második pont, ami referál a 12/A. § (1)–(5) bekezdéseire.
         """,
         (
-            (ref("1"), ref("1", None, "a")),
-            (ref("2", "1"), ref("2", "2", "1")),
-            (ref("2", "1"), ref("2", "1", "a")),
+            (ref("1"), ref(point="a")),
+            (ref("2", "1"), ref(None, "2", "1")),
+            (ref("2", "1"), ref(point="a")),
             (ref("2", "2", "2"), ref("12/A", ("1", "5"))),
         )
     ),
@@ -130,6 +130,52 @@ CASES_WITHOUT_POSITIONS = [
     ),
 ]
 
+CASES_WITH_POSITIONS = [
+    (
+        """
+            1. §    A tesztelésről szóló 2345. évi I. törvény
+                    a) 8. §
+                        aa) (5) bekezdése,
+                        ab) (6) bekezdés a) pontja,
+                    b) 10. §-a, és
+                    c) egy totál másik dolog 1. § c) pontja, még utána ezzel szöveggel
+                    jól van feldolgozva.
+            """,
+        (
+            OutgoingReference(
+                ref("1"),
+                21, 41,
+                absref("2345. évi I. törvény")
+            ),
+            OutgoingReference(
+                ref("1", None, "a"),
+                0, 4,
+                absref("2345. évi I. törvény", "8")
+            ),
+            OutgoingReference(
+                ref("1", None, "a", "aa"),
+                0, 13,
+                absref("2345. évi I. törvény", "8", "5")
+            ),
+            OutgoingReference(
+                ref("1",  None, "a", "ab"),
+                0, 22,
+                absref("2345. évi I. törvény", "8", "6", "a")
+            ),
+            OutgoingReference(
+                ref("1", None, "b"),
+                0, 7,
+                absref("2345. évi I. törvény", "10")
+            ),
+            OutgoingReference(
+                ref("1", None, "c"),
+                22, 36,
+                ref("1", None, "c")
+            ),
+        )
+    ),
+]
+
 
 def quick_parse_structure(act_text):
     lines = []
@@ -149,36 +195,11 @@ def quick_parse_structure(act_text):
 @pytest.mark.parametrize("act_text,references", CASES_WITHOUT_POSITIONS)
 def test_outgoing_references_without_position(act_text, references):
     act = quick_parse_structure(act_text)
-    outgoing_references = tuple(act.iter_all_outgoing_references())
+    outgoing_references = tuple((r.from_reference, r.to_reference) for r in act.outgoing_references)
     assert outgoing_references == references
 
 
-def test_outgoing_ref_positions_are_okay():
-    act = quick_parse_structure(
-        """
-        1. §    A tesztelésről szóló 2345. évi I. törvény
-                a) 8. §
-                    aa) (5) bekezdése,
-                    ab) (6) bekezdés a) pontja,
-                b) 10. §-a, és
-                c) egy totál másik dolog 1. § c) pontja, még utána ezzel szöveggel
-                jól van feldolgozva.
-        """
-    )
-    assert act.article("1").paragraph().outgoing_references == \
-        (OutgoingReference(21, 41, Reference("2345. évi I. törvény")), )
-
-    assert act.article("1").paragraph().point("a").outgoing_references == \
-        (OutgoingReference(0, 4, Reference("2345. évi I. törvény", "8")), )
-
-    assert act.article("1").paragraph().point("a").subpoint("aa").outgoing_references == \
-        (OutgoingReference(0, 13, Reference("2345. évi I. törvény", "8", "5")), )
-
-    assert act.article("1").paragraph().point("a").subpoint("ab").outgoing_references == \
-        (OutgoingReference(0, 22, Reference("2345. évi I. törvény", "8", "6", "a")), )
-
-    assert act.article("1").paragraph().point("b").outgoing_references == \
-        (OutgoingReference(0, 7, Reference("2345. évi I. törvény", "10")),)
-
-    assert act.article("1").paragraph().point("c").outgoing_references == \
-        (OutgoingReference(22, 36, Reference(None, "1", None, "c")),)
+@pytest.mark.parametrize("act_text,outgoing_references", CASES_WITH_POSITIONS)
+def test_outgoing_ref_positions_are_okay(act_text, outgoing_references):
+    act = quick_parse_structure(act_text)
+    assert act.outgoing_references == outgoing_references

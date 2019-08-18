@@ -152,11 +152,20 @@ STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
 
 
 @attr.s(slots=True, frozen=True)
-class OutgoingReference:
+class InTextReference:
     # Start and end pos are python range, i.e. end_pos is after the last character
     start_pos = attr.ib(converter=int)
     end_pos = attr.ib(converter=int)
     reference = attr.ib()
+
+
+@attr.s(slots=True, frozen=True)
+class OutgoingReference:
+    from_reference = attr.ib()
+    # Start and end pos are python range, i.e. end_pos is after the last character
+    start_pos = attr.ib(converter=int)
+    end_pos = attr.ib(converter=int)
+    to_reference = attr.ib()
 
 
 @attr.s(slots=True, frozen=True)
@@ -175,7 +184,6 @@ class SubArticleElement(ABC):
     intro = attr.ib(converter=attr.converters.optional(str))
     children = attr.ib(converter=attr.converters.optional(tuple))
     wrap_up = attr.ib(converter=attr.converters.optional(str))
-    outgoing_references = attr.ib(default=None, converter=attr.converters.default_if_none(factory=tuple))
 
     children_type = attr.ib(init=False)
     children_map = attr.ib(init=False)
@@ -342,6 +350,9 @@ class Act:
     preamble = attr.ib(converter=str)
     children = attr.ib(converter=tuple)
 
+    act_id_abbreviations = attr.ib(converter=attr.converters.optional(tuple), default=None)
+    outgoing_references = attr.ib(converter=attr.converters.optional(tuple), default=None)
+
     articles = attr.ib(init=False)
     articles_map = attr.ib(init=False)
 
@@ -357,24 +368,8 @@ class Act:
         assert self.articles_map[str(article_id)].identifier == str(article_id)
         return self.articles_map[str(article_id)]
 
-    def iter_all_outgoing_references(self):
-        for article in self.articles:
-            for paragraph in article.paragraphs:
-                yield from self.__iter_all_outgoing_references_recursive(
-                    paragraph,
-                    Reference(article=article.identifier, paragraph=paragraph.identifier)
-                )
-
-    @classmethod
-    def __iter_all_outgoing_references_recursive(cls, element, parent_ref):
-        if not isinstance(element, SubArticleElement):
-            return
-        current_ref = element.relative_reference.relative_to(parent_ref)
-        for outgoing_ref in element.outgoing_references:
-            yield current_ref, outgoing_ref.reference.relative_to(parent_ref)
-        if element.children:
-            for child in element.children:
-                yield from cls.__iter_all_outgoing_references_recursive(child, current_ref)
+    def outgoing_references_from(self, reference):
+        return (r for r in self.outgoing_references if r.from_reference == reference)
 
 
 @attr.s(slots=True, frozen=True)
