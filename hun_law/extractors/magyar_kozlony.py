@@ -20,7 +20,6 @@ import re
 from collections import namedtuple
 
 from hun_law.utils import EMPTY_LINE
-from hun_law.parsers.structure_parser import ActParser
 from hun_law.fixups.common import do_all_fixups
 from hun_law.fixups import text_fixups
 from . import Extractor
@@ -195,10 +194,3 @@ def MagyarKozlonyLawExtractor(laws_section):
 
         raise ValueError("What state is this.")
     # TODO: assert for correct state
-
-
-@Extractor(MagyarKozlonyLawRawText)
-def MagyarKozlonyLawFixupper(raw):
-    # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
-    fixupped_body = do_all_fixups(raw.identifier, raw.body)
-    yield ActParser.parse(raw.identifier, raw.subject, fixupped_body)

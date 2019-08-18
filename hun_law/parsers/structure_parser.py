@@ -614,7 +614,7 @@ class ActParsingError(StructureParsingError):
     pass
 
 
-class ActParser:
+class ActStructureParser:
     @classmethod
     def parse(cls, identifier, subject, lines):
         try:

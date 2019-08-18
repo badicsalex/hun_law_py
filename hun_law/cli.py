@@ -27,7 +27,6 @@ from hun_law.output.txt import write_txt
 from hun_law.output.html import generate_html_for_act
 from hun_law.structure import Act
 from hun_law.cache import init_cache
-from hun_law.parsers.semantic_parser import SemanticActParser
 
 GENERATOR_DESCRIPTION = """
 Hun-Law output generator.
@@ -93,10 +92,8 @@ class GenerateCommand:
 
     @classmethod
     def output_json(cls, act, output_file):
-        act = SemanticActParser.parse(act)
         serialize_act_to_json_file(act, output_file)
 
     @classmethod
     def output_html(cls, act, output_file):
-        act = SemanticActParser.parse(act)
         generate_html_for_act(act, output_file)

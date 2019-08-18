@@ -29,7 +29,7 @@ class SemanticParseState:
     outgoing_references = attr.ib(factory=list)
 
 
-class SemanticActParser:
+class ActSemanticsParser:
     INTERESTING_SUBSTRINGS = (")", "§", "törvén")
 
     @classmethod

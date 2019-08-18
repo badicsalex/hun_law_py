@@ -17,8 +17,8 @@
 
 from hun_law.utils import IndentedLine, IndentedLinePart
 from hun_law.structure import Reference, OutgoingReference
-from hun_law.parsers.structure_parser import ActParser
-from hun_law.parsers.semantic_parser import SemanticActParser
+from hun_law.parsers.structure_parser import ActStructureParser
+from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 import pytest
 
@@ -188,8 +188,8 @@ def quick_parse_structure(act_text):
             skip_spaces = False
             parts.append(IndentedLinePart(5, char))
         lines.append(IndentedLine(parts))
-    act = ActParser.parse("2345 évi 1. törvény", "About testing", lines)
-    return SemanticActParser.parse(act)
+    act = ActStructureParser.parse("2345 évi 1. törvény", "About testing", lines)
+    return ActSemanticsParser.parse(act)
 
 
 @pytest.mark.parametrize("act_text,references", CASES_WITHOUT_POSITIONS)

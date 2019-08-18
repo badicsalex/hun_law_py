@@ -15,20 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from . import extractors_for_class
+from hun_law.parsers.structure_parser import ActStructureParser
+from hun_law.parsers.semantic_parser import ActSemanticsParser
+from hun_law.fixups.common import do_all_fixups
+from hun_law.fixups import text_fixups
+from . import Extractor
+from .magyar_kozlony import MagyarKozlonyLawRawText
 
-from . import file, kozlonyok_hu_downloader, magyar_kozlony, pdf, act
 
-
-def do_extraction(to_be_processed_objects, end_result_classes=()):
-    """Processes all objects, and returns the end result processed objects."""
-    global extractors_for_class
-    queue = list(to_be_processed_objects)  # simple copy, or listify if not list
-    while queue:
-        data = queue.pop()
-        if data.__class__ in end_result_classes:
-            yield data
-        else:
-            for extractor_fn in extractors_for_class[data.__class__]:
-                for extracted in extractor_fn(data):
-                    queue.append(extracted)
+@Extractor(MagyarKozlonyLawRawText)
+def MagyarKozlonyLawFixupper(raw):
+    # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
+    fixupped_body = do_all_fixups(raw.identifier, raw.body)
+    act = ActStructureParser.parse(raw.identifier, raw.subject, fixupped_body)
+    act = ActSemanticsParser.parse(act)
+    yield act

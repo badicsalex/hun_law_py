@@ -29,7 +29,7 @@ from tempfile import NamedTemporaryFile
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction
 from hun_law.extractors.magyar_kozlony import MagyarKozlonyLawRawText
-from hun_law.parsers.structure_parser import ActParser
+from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.cache import init_cache
 from hun_law.utils import iterate_with_quote_level
 
@@ -125,7 +125,7 @@ def detect_errors_and_try_fix(raw):
         print("Using {} fixups".format(len(hun_law.fixups.common.all_fixups.get(raw.identifier, []))))
         fixupped_body = hun_law.fixups.common.do_all_fixups(raw.identifier, raw.body)
         try:
-            ActParser.parse(raw.identifier, raw.subject, fixupped_body)
+            ActStructureParser.parse(raw.identifier, raw.subject, fixupped_body)
             print("Parsing successful")
             break
         except:
