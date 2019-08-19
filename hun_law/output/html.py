@@ -18,7 +18,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
-from hun_law.structure import SubArticleElement, QuotedBlock, Article, Subtitle, Reference
+from hun_law.structure import SubArticleElement, QuotedBlock, BlockAmendment, Article, Subtitle, Reference
 from hun_law.utils import EMPTY_LINE, is_uppercase_hun
 
 
@@ -85,7 +85,11 @@ def generate_text_with_ref_links(container, text, current_ref, outgoing_referenc
 
 def generate_html_nodes_for_children(act, element, parent_ref):
     for child in element.children:
-        if isinstance(child, SubArticleElement):
+        if isinstance(child, Article):
+            yield from generate_html_node_for_article(act, child, parent_ref)
+        elif isinstance(child, BlockAmendment):
+            yield from generate_html_nodes_for_block_amendment(act, child)
+        elif isinstance(child, SubArticleElement):
             yield from generate_html_nodes_for_sub_article_element(act, child, parent_ref)
         elif isinstance(child, QuotedBlock):
             yield from generate_html_nodes_for_quoted_block(child, element)
@@ -93,10 +97,41 @@ def generate_html_nodes_for_children(act, element, parent_ref):
             raise TypeError("Unknown child type {}".format(child.__class__))
 
 
+def generate_html_nodes_for_block_amendment(act, e):
+    # Quick hack to signify that IDs are not needed further on
+    current_ref = Reference("EXTERNAL")
+    if e.intro:
+        intro_element = ET.Element('div', {'class': 'blockamendment_text'})
+        intro_element.text = "(" + e.intro + ")"
+        yield intro_element
+
+    begin_quote = ET.Element('div', {'class': 'blockamendment_quote'})
+    begin_quote.text = '„'
+    yield begin_quote
+
+    container_element = ET.Element('div', {'class': 'blockamendment_container'})
+    for element in generate_html_nodes_for_children(act, e, current_ref):
+        container_element.append(element)
+    yield container_element
+
+    end_quote = ET.Element('div', {'class': 'blockamendment_quote'})
+    end_quote.text = '”'
+    yield end_quote
+
+    if e.wrap_up:
+        wrap_up_element = ET.Element('div', {'class': 'blockamendment_text'})
+        wrap_up_element.text = "(" + e.wrap_up + ")"
+        yield wrap_up_element
+
+
 def generate_html_nodes_for_sub_article_element(act, e, parent_ref):
     current_ref = e.relative_reference.relative_to(parent_ref)
+    id_string = current_ref.relative_id_string
+    # Quick hack so that we don't have duplicate ids within block amendments
+    if current_ref.act == "EXTERNAL":
+        id_string = ''
     element_type_as_text = e.__class__.__name__.lower()
-    id_element = ET.Element('div', {"id": current_ref.relative_id_string, 'class': '{}_id'.format(element_type_as_text)})
+    id_element = ET.Element('div', {"id": id_string, 'class': '{}_id'.format(element_type_as_text)})
     id_element.text = e.header_prefix(e.identifier)
     yield id_element
     outgoing_references = act.outgoing_references_from(current_ref)
@@ -107,14 +142,7 @@ def generate_html_nodes_for_sub_article_element(act, e, parent_ref):
     else:
         if e.intro:
             intro_element = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
-            # TODO: We don't currently parse structural amendments properly
-            # They have a two-part intro, which we unfortunately merge, which looks bad.
-            matches = re.match(r"^(.*:) ?(\([^\)]*\)|\[[^\]]*\])$", e.intro)
-            if matches is not None:
-                generate_text_with_ref_links(intro_element, matches.group(1), current_ref, outgoing_references)
-                ET.SubElement(intro_element, 'br').tail = matches.group(2)
-            else:
-                generate_text_with_ref_links(intro_element, e.intro, current_ref, outgoing_references)
+            generate_text_with_ref_links(intro_element, e.intro, current_ref, outgoing_references)
             yield intro_element
 
         yield from generate_html_nodes_for_children(act, e, current_ref)
@@ -144,9 +172,13 @@ def generate_html_nodes_for_quoted_block(element, parent):
     yield container
 
 
-def generate_html_node_for_article(act, article):
-    current_ref = article.relative_reference
-    id_element = ET.Element('div', {"id": current_ref.relative_id_string, 'class': 'article_id'})
+def generate_html_node_for_article(act, article, parent_ref):
+    current_ref = article.relative_reference.relative_to(parent_ref)
+    id_string = current_ref.relative_id_string
+    # Quick hack so that we don't have duplicate ids within block amendments
+    if current_ref.act == "EXTERNAL":
+        id_string = ''
+    id_element = ET.Element('div', {"id": id_string, 'class': 'article_id'})
     id_element.text = '{}. §'.format(article.identifier)
     yield id_element
 
@@ -171,7 +203,7 @@ def generate_html_body_for_act(act, indent=True):
     body_elements = []
     for c in act.children:
         if isinstance(c, Article):
-            elements_to_add = generate_html_node_for_article(act, c)
+            elements_to_add = generate_html_node_for_article(act, c, Reference())
         else:
             elements_to_add = generate_html_node_for_structural_element(c)
         for element_to_add in elements_to_add:

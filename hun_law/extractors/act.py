@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 from hun_law.parsers.structure_parser import ActStructureParser
-from hun_law.parsers.semantic_parser import ActSemanticsParser
+from hun_law.parsers.semantic_parser import ActSemanticsParser, ActBlockAmendmentParser
 from hun_law.fixups.common import do_all_fixups
 from hun_law.fixups import text_fixups
 from . import Extractor
@@ -28,5 +28,6 @@ def MagyarKozlonyLawFixupper(raw):
     # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
     fixupped_body = do_all_fixups(raw.identifier, raw.body)
     act = ActStructureParser.parse(raw.identifier, raw.subject, fixupped_body)
+    act = ActBlockAmendmentParser.parse(act)
     act = ActSemanticsParser.parse(act)
     yield act

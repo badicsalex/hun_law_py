@@ -16,9 +16,11 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import attr
+import re
 from collections import namedtuple
 
-from hun_law.structure import QuotedBlock, OutgoingReference
+from hun_law.structure import Article, QuotedBlock, BlockAmendment, OutgoingReference, BlockAmendmentMetadata
+from .structure_parser import BlockAmendmentStructureParser, SubArticleParsingError
 from .grammatical_analyzer import GrammaticalAnalyzer
 
 
@@ -48,7 +50,7 @@ class ActSemanticsParser:
 
     @classmethod
     def recursive_parse(cls, element, parent_reference, prefix, postfix, state):
-        if isinstance(element, QuotedBlock):
+        if type(element) in (QuotedBlock, BlockAmendment):
             return
         element_reference = element.relative_reference.relative_to(parent_reference)
         if element.text is not None:
@@ -70,7 +72,7 @@ class ActSemanticsParser:
         # the second part of the sentence.
         cls.parse_text(element.intro, prefix, '', element_reference, state)
 
-        # TODO: Parse the outro of "this element"
+        # TODO: Parse the wrap up of "this element"
 
         if element.intro is not None:
             prefix = prefix + element.intro + " "
@@ -132,3 +134,72 @@ class ActSemanticsParser:
             )
         result.sort()
         return result
+
+
+class ActBlockAmendmentParser:
+    @classmethod
+    def parse(cls, act):
+        new_children = []
+        for child in act.children:
+            if isinstance(child, Article):
+                child = cls.parse_article(child)
+            new_children.append(child)
+        return attr.evolve(act, children=new_children)
+
+    @classmethod
+    def parse_article(cls, article):
+        new_children = []
+        for paragraph in article.paragraphs:
+            new_children.append(cls.parse_paragraph(paragraph))
+        return attr.evolve(article, children=new_children)
+
+    @classmethod
+    def parse_paragraph(cls, paragraph):
+        if paragraph.children_type != QuotedBlock:
+            return paragraph
+
+        # TODO: We don't currently parse structural amendments properly in the
+        # structural step.
+        # Block amendements have a two-part intro, which we unfortunately merge:
+        #    Az Eurt.tv. 9. § (5) bekezdés c) pontja helyébe a következő rendelkezés lép:
+        #   (Nem minősül függetlennek az igazgatótanács tagja különösen akkor, ha)
+        #   „c) a társaság olyan részvényese, aki közvetve vagy közvetlenül a leadható szavazatok...
+        #
+        # Also, its sometimes bracketed with [] instead of ()
+
+        matches = re.match(r"^(.*:) ?(\([^\)]*\)|\[[^\]]*\])$", paragraph.intro)
+        context_intro = None
+        context_outro = None
+        if matches is None:
+            actual_intro = paragraph.intro
+        else:
+            actual_intro = matches.group(1)
+            context_intro = matches.group(2)[1:-1]
+            if paragraph.wrap_up is not None:
+                context_outro = paragraph.wrap_up[1:-1]
+
+        # TODO: Maybe cache?
+        analysis_result = GrammaticalAnalyzer().analyze(actual_intro).special_expression
+        if not isinstance(analysis_result, BlockAmendmentMetadata):
+            return paragraph
+
+        assert len(paragraph.children) == 1
+
+        first_reference = analysis_result.amended_references
+        if isinstance(first_reference, tuple):
+            # reference range
+            first_reference = first_reference[0]
+        first_reference = first_reference.first_in_range()
+
+        try:
+            block_amendment = BlockAmendmentStructureParser.parse(
+                first_reference,
+                context_intro, context_outro,
+                paragraph.quoted_block(0).lines
+            )
+        except SubArticleParsingError:
+            # TODO: There are many unhandled cases right now, but don't stop
+            # parsing just because this. Leave the whole thing as a QuotedLines
+            # for now
+            return paragraph
+        return attr.evolve(paragraph, intro=actual_intro, wrap_up="", children=(block_amendment,))

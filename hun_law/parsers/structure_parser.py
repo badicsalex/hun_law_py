@@ -23,7 +23,7 @@ from hun_law.utils import \
     IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, \
     is_uppercase_hun, iterate_with_quote_level, quote_level_diff
 from hun_law.structure import \
-    Act, Article, QuotedBlock, \
+    Act, Article, QuotedBlock, BlockAmendment,\
     Subtitle, Chapter, Title, Part, Book,\
     Paragraph, AlphabeticSubpoint, NumericPoint, AlphabeticPoint
 
@@ -574,10 +574,20 @@ class ArticleParser:
             raise ArticleParsingError(str(e), Article, identifier) from e
 
     @classmethod
-    def is_header(cls, line):
-        # TODO: check numbering of previous Article
+    def is_header(cls, line, extenally_determined_identifier=None):
         # TODO: check indentation
-        return cls.HEADER_RE.match(line.content)
+        if extenally_determined_identifier is None:
+            return cls.HEADER_RE.match(line.content)
+        else:
+            prefix1 = extenally_determined_identifier + '. §'
+            prefix2 = extenally_determined_identifier + '.§'
+            return line.content.startswith(prefix1) or line.content.startswith(prefix2)
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        # TODO: Handle book-prefixed identifiers
+        # TODO: Handle amended (number/character) type identifiers
+        return str(int(identifier) + 1)
 
     @classmethod
     def parse_body(cls, identifier, lines):
@@ -645,7 +655,6 @@ class ActStructureParser:
         elements.extend(new_elements)
         return preamble, elements
 
-
     @classmethod
     def parse_text_block(cls, lines, preamble, last_structural_element_parser):
         lines, elements_to_append = cls.parse_structural_elements(lines, last_structural_element_parser)
@@ -692,6 +701,53 @@ class ActStructureParser:
                 if last_se.is_line_header_of_next(lines[0]):
                     return se_type(last_se, lines)
         return None
+
+
+class BlockAmendmentStructureParser:
+    @classmethod
+    def parse(cls, expected_first_reference, context_intro, context_wrap_up, lines):
+        parser, expected_id = cls.get_parser_and_id(expected_first_reference)
+        children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
+        return BlockAmendment(
+            identifier=None,
+            text=None,
+            intro=context_intro,
+            children=children,
+            wrap_up=context_wrap_up
+        )
+
+    @classmethod
+    def do_parse_block_by_block(cls, parser, expected_id, lines):
+        current_lines = []
+        for quote_level, line in iterate_with_quote_level(lines):
+            if current_lines and quote_level == 0 and parser.is_header(line, expected_id):
+                yield parser.parse(current_lines, expected_id)
+                expected_id = parser.next_identifier(expected_id)
+                current_lines = []
+            current_lines.append(line)
+        yield parser.parse(current_lines, expected_id)
+
+    @classmethod
+    def get_parser_and_id(cls, expected_first_reference):
+        if expected_first_reference.subpoint is not None:
+            if not expected_first_reference.point.isdigit():
+                # TODO. Keep in mind the weird PrefixedAlphabeticSubpointParser thing.
+                raise SubArticleParsingError("Alphabetic-alphabetic subpoint amendments not supported currently", BlockAmendment)
+            return AlphabeticSubpointParser, expected_first_reference.subpoint
+
+        if expected_first_reference.point is not None:
+            if expected_first_reference.point.isdigit():
+                return NumericPointParser, expected_first_reference.point
+            else:
+                return AlphabeticPointParser, expected_first_reference.point
+
+        if expected_first_reference.paragraph is not None:
+            return ParagraphParser, expected_first_reference.paragraph
+
+        if expected_first_reference.article is not None:
+            return ArticleParser, expected_first_reference.article
+
+        raise ValueError("Empty 'expected reference' given to Block Amendment Parser'")
 
 
 def similar_indent(a, b):

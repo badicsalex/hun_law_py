@@ -279,8 +279,21 @@ class AlphabeticPoint(SubArticleElement):
 
 
 @attr.s(slots=True, frozen=True)
+class BlockAmendment(SubArticleElement):
+    ALLOWED_CHILDREN_TYPE = None  # Will be defined later in this file, since it uses classes defined later.
+
+    @classmethod
+    def header_prefix(cls, identifier):
+        raise TypeError("Block Amendments do not have header")
+
+    @property
+    def relative_reference(self):
+        raise TypeError("Block Amendments cannot be referred to.")
+
+
+@attr.s(slots=True, frozen=True)
 class Paragraph(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock)
+    ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock, BlockAmendment)
 
     @classmethod
     def header_prefix(cls, identifier):
@@ -299,6 +312,12 @@ class Paragraph(SubArticleElement):
         if self.children_type not in (QuotedBlock,):
             raise KeyError("There are no quoted blocks in this paragraph")
         return self.children[block_num]
+
+    def block_amendment(self):
+        if self.children_type not in (BlockAmendment,):
+            raise KeyError("Thee are no block amenddments in this paragraph")
+        assert len(self.children) == 1, "There should be exactly one block amendment per paragraph"
+        return self.children[0]
 
     @property
     def relative_reference(self):
@@ -341,6 +360,9 @@ class Article:
     @property
     def relative_reference(self):
         return Reference(article=self.identifier)
+
+
+BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint)
 
 
 @attr.s(slots=True, frozen=True)
@@ -409,6 +431,18 @@ class Reference:
                 if isinstance(val, tuple):
                     val = val[0]
                 result = "{}_{}{}".format(result, id_key, val)
+        return result
+
+    def first_in_range(self):
+        result = self
+        if isinstance(result.article, tuple):
+            result = attr.evolve(result, article=result.article[0])
+        if isinstance(result.paragraph, tuple):
+            result = attr.evolve(result, paragraph=result.paragraph[0])
+        if isinstance(result.point, tuple):
+            result = attr.evolve(result, point=result.point[0])
+        if isinstance(result.subpoint, tuple):
+            result = attr.evolve(result, subpoint=result.subpoint[0])
         return result
 
 

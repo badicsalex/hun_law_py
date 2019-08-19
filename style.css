@@ -47,7 +47,7 @@ blockquote {
     display: inline-grid;
     background: white;
     padding: 30px 80px 30px 80px;
-    text-align: left;
+    text-align: justify;
     box-shadow: 5px 5px 10px #888888;
     grid-template-columns: 70px 40px 30px 30px auto [end];
     grid-gap: 0px 0px;
@@ -115,6 +115,23 @@ blockquote {
 .paragraph_text {
     grid-column: 3 / end;
 }
+
+.blockamendment_quote {
+    grid-column: 3 / end;
+}
+.blockamendment_text {
+    grid-column: 3 / end;
+    font-style: italic;
+
+}
+.blockamendment_container {
+    display: inline-grid;
+    grid-column: 3 / end;
+    grid-template-columns: 70px 40px 30px 30px auto [end];
+    grid-gap: 0px 0px;
+    justify-items: stretch;
+}
+
 
 .numericpoint_id, .alphabeticpoint_id {
     grid-column: 3;
