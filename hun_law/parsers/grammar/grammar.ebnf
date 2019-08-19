@@ -100,7 +100,7 @@ numeric_subpoint_single = id:numeric_subpoint_id ".";
 numeric_subpoint_id = id:number ;
 numeric_subpoint_suffix = /alpont[a-zéáőúöüóíű]+/ | "alpont" ;
 
-abbreviation::Abbreviation = s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]+\.? ?(tv\.|vhr\.)/ | s:/[A-ZÉÁŐÚÖÜÓÍŰ\-][a-zéáőúöüóíű]+\./ ;
+abbreviation::Abbreviation = s:/[A-ZÉÁŐÚÖÜÓÍŰ][a-zéáőúöüóíű]+\.? ?(tv\.|vhr\.)/ | s:/[A-ZÉÁŐÚÖÜÓÍŰ][a-zéáőúöüóíű]+\./ ;
 
 quote = "„" /[^„”]*/ { quote /[^„”]*/ }* "”" ;
 
