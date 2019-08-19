@@ -92,31 +92,43 @@ class ActSemanticsParser:
 
         analysis_result = state.analyzer.analyze(text)
 
-        state.act_id_abbreviations.extend(analysis_result.get_new_abbreviations())
+        state.act_id_abbreviations.extend(analysis_result.act_id_abbreviations)
 
         state.outgoing_references.extend(cls.convert_parsed_references(
-            analysis_result.get_references(state.act_id_abbreviations),
+            analysis_result.all_references,
             element_reference,
-            len(prefix), len(text) - len(postfix)
+            len(prefix), len(text) - len(postfix),
+            state
         ))
         # TODO: parse block amendments, and return interesting results
         return None
 
     @classmethod
-    def convert_parsed_references(cls, parsed_references, element_reference, prefixlen, textlen):
+    def convert_parsed_references(cls, parsed_references, element_reference, prefixlen, textlen, state):
         result = []
+        abbreviations_map = {a.abbreviation: a.act for a in state.act_id_abbreviations}
         for in_text_reference in parsed_references:
             # The end of the parsed reference is inside the target string
             # Checking for the end and not the beginning is important, because
             # we also want partial references to work here.
-            if in_text_reference.end_pos > prefixlen and in_text_reference.end_pos <= textlen:
-                result.append(
-                    OutgoingReference(
-                        from_reference=element_reference,
-                        start_pos=max(in_text_reference.start_pos - prefixlen, 0),
-                        end_pos=(in_text_reference.end_pos - prefixlen),
-                        to_reference=in_text_reference.reference
-                    )
+            if in_text_reference.end_pos <= prefixlen or in_text_reference.end_pos > textlen:
+                continue
+
+            # Try to resolve abbreviations
+            # TODO: We have no way of determining whether the Act ID is an
+            # abbreviation or not right now.
+            to_reference = in_text_reference.reference
+            if to_reference.act is not None:
+                if to_reference.act in abbreviations_map:
+                    to_reference = attr.evolve(to_reference, act=abbreviations_map[to_reference.act])
+
+            result.append(
+                OutgoingReference(
+                    from_reference=element_reference,
+                    start_pos=max(in_text_reference.start_pos - prefixlen, 0),
+                    end_pos=(in_text_reference.end_pos - prefixlen),
+                    to_reference=to_reference
                 )
+            )
         result.sort()
         return result

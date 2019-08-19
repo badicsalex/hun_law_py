@@ -26,11 +26,6 @@ def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
     return Reference(act, article, paragraph, point, subpoint)
 
 
-ABBREVIATIONS = (
-    ActIdAbbreviation("Flt.", "1991. évi IV. törvény"),
-    ActIdAbbreviation("Víziközmű tv.", "2011. évi CCIX. törvény"),
-)
-
 CASES = [
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
@@ -174,21 +169,21 @@ CASES = [
     ),
     (
         "A Gyvt. 5. §-a a következő ny) ponttal egészül ki:",
-        "        <    >             <         >            ",
+        "  [   ] <    >             <         >            ",
         [
-            ref(None, "5"),
+            ref("Gyvt.", "5"),
             ref(point="ny")
         ],
-        [],
+        ["Gyvt."],
     ),
     (
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
-        "        <      >             <           >            ",
+        "   [  ] <      >             <           >            ",
         [
-            ref(None, "188"),
+            ref("Eht.", "188"),
             ref(point="31/a"),
         ],
-        [],
+        ["Eht."],
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
@@ -198,21 +193,21 @@ CASES = [
     ),
     (
         "Amely a Tbj. 4. § k) pont 2. alpontja alapján járulékalapot képez.",
-        "             <                      >                             ",
-        [ref(None, "4", None, "k", "2")],
-        []
+        "        [  ] <                      >                             ",
+        [ref("Tbj.", "4", None, "k", "2")],
+        ["Tbj."]
     ),
     (
         # Multiple sentences
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki. Az Eht. 188. §-a a következő 31/a. ponttal egészül ki.",
-        "        <      >             <           >                     <      >             <           >            ",
+        "   [  ] <      >             <           >                [  ] <      >             <           >            ",
         [
-            ref(None, "188"),
+            ref("Eht.", "188"),
             ref(point="31/a"),
-            ref(None, "188"),
+            ref("Eht.", "188"),
             ref(point="31/a"),
         ],
-        [],
+        ["Eht.", "Eht."],
     ),
     (
         "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
@@ -255,10 +250,10 @@ CASES = [
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
         "  [           ] <     >             <                 >            ",
         [
-            ref("2011. évi CCIX. törvény", "63"),
+            ref("Víziközmű tv.", "63"),
             ref(paragraph=("5", "7")),
         ],
-        ["2011. évi CCIX. törvény"]
+        ["Víziközmű tv."]
     ),
     (
         "Az európai részvénytársaságról szóló 2004. évi XLV. törvény (a továbbiakban: Eurt.tv.) 2. §-a helyébe a következő rendelkezés lép:",
@@ -284,40 +279,39 @@ CASES = [
     (
         # This will be a title reference later
         "A Ctv. I. Fejezete a következő 6–8. címmel egészül ki:",
-        "                                                      ",
+        "  [  ]                                                ",
         [],
-        [],
+        ["Ctv."],
     ),
     (
         # Appendix reference
         "A Ctv. 1–3. számú melléklete az 1. melléklet szerint módosul.",
-        "                                                             ",
+        "  [  ]                                                       ",
         [],
-        [],
+        ["Ctv."],
     ),
     (
         # Subtitle + article reference
         "A Cnytv. a következő 5/A. alcímmel, valamint 18. §-sal és 18/A. §-sal egészül ki:",
-        "                                             <       >    <         >            ",
+        "  [    ]                                     <       >    <         >            ",
         [
             ref(None, "18"),
             ref(None, "18/A"),
         ],
-        [],
+        ["Cnytv."],
     ),
     (
         # Test that quoted references are not parsed
         "Az Flt. 30. § (1) bekezdés a) pontjában az „a 25. § (1) bekezdésének c)–d) pontjában” szövegrész helyébe az „a 25. § (1) bekezdésének d) pontjában” szöveg lép.",
         "   [  ] <                             >                                                                                                                        ",
-        [ref("1991. évi IV. törvény", "30", '1', 'a'), ],
-        ["1991. évi IV. törvény", ],
+        [ref("Flt.", "30", '1', 'a'), ],
+        ["Flt.", ],
     ),
     (
-        # Ptk purposefully left out of ABBREVIATIONS to test missing abbreviations.
         "A Ptk. 3:222. § (1) bekezdése a következő szöveggel lép hatályba:",
-        "       <                    >                                    ",
-        [ref(None, "3:222", "1")],
-        [],
+        "  [  ] <                    >                                    ",
+        [ref("Ptk.", "3:222", "1")],
+        ["Ptk."],
     ),
     (
         "E törvény az Alaptörvény P) cikk (2) bekezdése alapján sarkalatosnak minősül.",
@@ -362,10 +356,10 @@ CASES = [
     (
         "A jogi személynek a Ptk. rendelkezéseit a (2) bekezdés szerinti döntéstől, ennek hiányában 2015. március 15-étől kell alkalmaznia"
         "(ezen alcím alkalmazásában a továbbiakban együtt: a Ptk. rendelkezéseivel összhangban álló továbbműködés időpontja).",
-        "                                          <          >                                                                           "
-        "                                                                                                                    ",
+        "                    [  ]                  <          >                                                                           "
+        "                                                    [  ]                                                            ",
         [ref(paragraph="2")],
-        [],
+        ["Ptk.", "Ptk."],
     ),
     (
         # Multiple sentences
@@ -382,14 +376,14 @@ CASES = [
     ),
     (
         "Hatályát veszti a Tv. 8/A. §–8/B. §-a, 16/A. §–16/B. §-a, és 17/A. § (1) és (3) bekezdése.",
-        "                      <             >  <               >     <         >    <           > ",
+        "                  [ ] <             >  <               >     <         >    <           > ",
         [
-            ref(None, ("8/A", "8/B")),
-            ref(None, ("16/A", "16/B")),
-            ref(None, "17/A", "1"),
-            ref(None, "17/A", "3"),
+            ref("Tv.", ("8/A", "8/B")),
+            ref("Tv.", ("16/A", "16/B")),
+            ref("Tv.", "17/A", "1"),
+            ref("Tv.", "17/A", "3"),
         ],
-        [],
+        ["Tv."],
     ),
     (
         "Hatályát veszti az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése.",
@@ -468,12 +462,12 @@ def test_parse_results_are_correct(s, positions, refs, act_refs):
     parsed_refs = []
     parsed_act_refs = []
     parsed_pos_string = [" "] * len(s)
-    for reference in parsed.get_element_references(ABBREVIATIONS):
+    for reference in parsed.element_references:
         parsed_pos_string[reference.start_pos] = '<'
         parsed_pos_string[reference.end_pos - 1] = '>'
         parsed_refs.append(reference.reference)
 
-    for reference in parsed.get_act_references(ABBREVIATIONS):
+    for reference in parsed.act_references:
         parsed_pos_string[reference.start_pos] = '['
         parsed_pos_string[reference.end_pos - 1] = ']'
         parsed_act_refs.append(reference.reference.act)
@@ -536,35 +530,31 @@ ABBREVIATION_CASES = (
 def test_new_abbreviations(s, abbrevs):
     parsed = GrammaticalAnalyzer().analyze(s)
     parsed.indented_print()
-    new_abbrevs = list(parsed.get_new_abbreviations())
+    new_abbrevs = list(parsed.act_id_abbreviations)
     assert new_abbrevs == abbrevs
 
-
-BLOCK_AMENDMENT_ABBREVS = (
-    ActIdAbbreviation('Tv.', '2099. évi CXV. törvény'),
-)
 
 BLOCK_AMENDMENT_CASES = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("2012. évi CCXIX. törvény", '28'))
+        BlockAmendmentMetadata((ref("2012. évi CCXIX. törvény", '28'),))
     ),
     (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("2012. évi I. törvény", "29", "2", "e"))
+        BlockAmendmentMetadata((ref("2012. évi I. törvény", "29", "2", "e"),))
     ),
     (
         "A Tv. 1. § 3. pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref('2099. évi CXV. törvény', "1", None, "3"))
+        BlockAmendmentMetadata((ref('Tv.', "1", None, "3"),))
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("2111. évi LXXV. törvény", "1", "1", "1", "c"))
+        BlockAmendmentMetadata((ref("2111. évi LXXV. törvény", "1", "1", "1", "c"),))
     ),
 )
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s, correct_metadata):
     parsed = GrammaticalAnalyzer().analyze(s)
     parsed.indented_print()
-    parsed_metadata = parsed.get_block_amendment_metadata(BLOCK_AMENDMENT_ABBREVS)
+    parsed_metadata = parsed.special_expression
     assert correct_metadata == parsed_metadata

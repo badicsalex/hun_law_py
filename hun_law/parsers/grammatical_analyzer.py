@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+import attr
 import os
 import collections
 import tatsu
@@ -85,20 +86,21 @@ class ReferenceCollector:
         yield InTextReference(start_override, end_override, Reference(*ref_args))
 
 
-class AbbreviationNotFoundError(Exception):
-    pass
-
-
+@attr.s(slots=True, frozen=True)
 class GrammaticalAnalysisResult:
-    def __init__(self, s, tree):
-        self.s = s
-        self.tree = tree
+    tree = attr.ib()
 
-    def get_references(self, abbreviations):
-        yield from self.get_act_references(abbreviations)
-        yield from self.get_element_references(abbreviations)
+    act_references = attr.ib(init=False)
+    element_references = attr.ib(init=False)
+    act_id_abbreviations = attr.ib(init=False)
+    special_expression = attr.ib(init=False)
 
-    def get_element_references(self, abbreviations):
+    @property
+    def all_references(self):
+        return self.act_references + self.element_references
+
+    @element_references.default
+    def _element_references_default(self):
         refs_to_parse = []
         refs_found = set()
         # Collect references where we might have Act Id
@@ -107,10 +109,7 @@ class GrammaticalAnalysisResult:
                 continue
             act_id = None
             if ref_container.act_reference is not None:
-                try:
-                    act_id = self.get_act_id_from_parse_result(ref_container.act_reference, abbreviations)
-                except AbbreviationNotFoundError:
-                    pass
+                act_id = self._get_act_id_from_parse_result(ref_container.act_reference)
             for reference in ref_container.references:
                 refs_to_parse.append((act_id, reference))
                 refs_found.add(reference)
@@ -121,85 +120,99 @@ class GrammaticalAnalysisResult:
                 continue
             refs_to_parse.append((None, ref))
 
+        result = []
         for act_id, parsed_ref in refs_to_parse:
-            yield from self.convert_single_reference(act_id, parsed_ref)
+            result.extend(self._convert_single_reference(act_id, parsed_ref))
+        return tuple(result)
 
     @classmethod
-    def convert_single_reference(cls, act_id, parsed_ref):
+    def _convert_single_reference(cls, act_id, parsed_ref):
         reference_collector = ReferenceCollector()
         if act_id is not None:
             reference_collector.act = act_id
 
-        cls.fill_reference_collector(parsed_ref, reference_collector)
-        full_start_pos, full_end_pos = cls.get_subtree_start_and_end_pos(parsed_ref)
+        cls._fill_reference_collector(parsed_ref, reference_collector)
+        full_start_pos, full_end_pos = cls._get_subtree_start_and_end_pos(parsed_ref)
         yield from reference_collector.iter(full_start_pos, full_end_pos)
 
     @classmethod
-    def fill_reference_collector(cls, parsed_ref, reference_collector):
+    def _fill_reference_collector(cls, parsed_ref, reference_collector):
         assert isinstance(parsed_ref, model.Reference), parsed_ref
         for ref_part in parsed_ref.children():
             assert isinstance(ref_part, model.ReferencePart), ref_part
             ref_type_name = ref_part.__class__.__name__[:-len('ReferencePart')].lower()
             for ref_list_item in ref_part.singles:
-                start_pos, end_pos = cls.get_subtree_start_and_end_pos(ref_list_item)
+                start_pos, end_pos = cls._get_subtree_start_and_end_pos(ref_list_item)
                 id_as_string = "".join(ref_list_item.id.id)
                 reference_collector.add_item(ref_type_name, id_as_string, start_pos, end_pos)
             for ref_list_item in ref_part.ranges:
-                start_pos, end_pos = cls.get_subtree_start_and_end_pos(ref_list_item)
+                start_pos, end_pos = cls._get_subtree_start_and_end_pos(ref_list_item)
                 start_id_as_string = "".join(ref_list_item.start.id)
                 end_id_as_string = "".join(ref_list_item.end.id)
                 reference_collector.add_item(ref_type_name, (start_id_as_string, end_id_as_string), start_pos, end_pos)
 
-    def get_act_references(self, abbreviations):
+    @act_references.default
+    def _act_references_default(self):
+        result = []
         for act_ref in iterate_depth_first(self.tree, model.ActReference):
             if act_ref.abbreviation is not None:
-                start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.abbreviation)
+                start_pos, end_pos = self._get_subtree_start_and_end_pos(act_ref.abbreviation)
             elif act_ref.act_id is not None:
-                start_pos, end_pos = self.get_subtree_start_and_end_pos(act_ref.act_id)
-
-            try:
-                yield InTextReference(start_pos, end_pos, Reference(act=self.get_act_id_from_parse_result(act_ref, abbreviations)))
-            except AbbreviationNotFoundError:
-                pass
+                start_pos, end_pos = self._get_subtree_start_and_end_pos(act_ref.act_id)
+            else:
+                raise ValueError('Neither abbreviation, nor act_id in act_ref')
+            act_str = self._get_act_id_from_parse_result(act_ref)
+            result.append(
+                InTextReference(
+                    start_pos, end_pos,
+                    Reference(act=act_str)
+                )
+            )
+        return tuple(result)
 
     @classmethod
-    def get_act_id_from_parse_result(cls, act_ref, abbreviations):
+    def _get_act_id_from_parse_result(cls, act_ref):
         if act_ref.act_id is not None:
             return "{}. évi {}. törvény".format(act_ref.act_id.year, act_ref.act_id.number)
         if act_ref.abbreviation is not None:
-            abbreviations_map = {a.abbreviation: a for a in abbreviations}
-            abbrev = act_ref.abbreviation.s
-            if abbrev not in abbreviations_map:
-                raise AbbreviationNotFoundError()
-            return abbreviations_map[abbrev].act
+            return act_ref.abbreviation.s
         raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
     @classmethod
-    def get_subtree_start_and_end_pos(cls, subtree):
+    def _get_subtree_start_and_end_pos(cls, subtree):
         return subtree.parseinfo.pos, subtree.parseinfo.endpos
 
-    def get_new_abbreviations(self):
+    @act_id_abbreviations.default
+    def _act_id_abbreviations_default(self):
+        result = []
         for act_ref in iterate_depth_first(self.tree, model.ActReference):
             if act_ref.from_now_on is None:
                 continue
-            yield ActIdAbbreviation(
-                str(act_ref.from_now_on.abbreviation.s),
-                self.get_act_id_from_parse_result(act_ref, [])
+            result.append(
+                ActIdAbbreviation(
+                    str(act_ref.from_now_on.abbreviation.s),
+                    self._get_act_id_from_parse_result(act_ref)
+                )
             )
+        return tuple(result)
 
-    def get_block_amendment_metadata(self, abbreviations):
+    @special_expression.default
+    def _special_expression_default(self):
+        if isinstance(self.tree, model.BlockAmendment):
+            return self._convert_block_amendment()
+        return None
+
+    def _convert_block_amendment(self):
         if not isinstance(self.tree, model.BlockAmendment):
             return None
         amendment_position = self.tree.amendment_position
-        act_id = self.get_act_id_from_parse_result(amendment_position.act_reference, abbreviations)
+        act_id = self._get_act_id_from_parse_result(amendment_position.act_reference)
 
         assert len(amendment_position.references) == 1
-        amended_references = tuple(self.convert_single_reference(act_id, amendment_position.references[0]))
-        # TODO: support "(1) and (2)" style of reference ranges
-        assert len(amended_references) == 1
+        amended_references = tuple(r.reference for r in self._convert_single_reference(act_id, amendment_position.references[0]))
 
         return BlockAmendmentMetadata(
-            amended_references[0].reference
+            amended_references
         )
 
     @classmethod
@@ -239,4 +252,4 @@ class GrammaticalAnalyzer:
             rule_name='start_default',
             trace=debug, colorize=debug,
         )
-        return GrammaticalAnalysisResult(s, parse_result)
+        return GrammaticalAnalysisResult(parse_result)

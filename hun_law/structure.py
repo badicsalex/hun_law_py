@@ -420,4 +420,4 @@ class ActIdAbbreviation:
 
 @attr.s(slots=True, frozen=True)
 class BlockAmendmentMetadata:
-    amended_reference = attr.ib(converter=str)
+    amended_references = attr.ib(converter=tuple)
