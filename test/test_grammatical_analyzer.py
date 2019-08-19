@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer, GrammaticalAnalysisType
+from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
 from hun_law.structure import Reference, ActIdAbbreviation, BlockAmendmentMetadata
 
 
@@ -459,10 +459,9 @@ CASES = [
 ]
 
 
-@pytest.mark.parametrize("analysis_type", GrammaticalAnalysisType)
 @pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
-def test_parse_results_are_correct(s, positions, refs, act_refs, analysis_type):
-    parsed = GrammaticalAnalyzer().analyze(s, analysis_type)
+def test_parse_results_are_correct(s, positions, refs, act_refs):
+    parsed = GrammaticalAnalyzer().analyze(s)
     if refs is None:
         return
     parsed.indented_print()
@@ -535,7 +534,7 @@ ABBREVIATION_CASES = (
 
 @pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)
 def test_new_abbreviations(s, abbrevs):
-    parsed = GrammaticalAnalyzer().analyze(s, GrammaticalAnalysisType.SIMPLE)
+    parsed = GrammaticalAnalyzer().analyze(s)
     parsed.indented_print()
     new_abbrevs = list(parsed.get_new_abbreviations())
     assert new_abbrevs == abbrevs
@@ -565,7 +564,7 @@ BLOCK_AMENDMENT_CASES = (
 )
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s, correct_metadata):
-    parsed = GrammaticalAnalyzer().analyze(s, GrammaticalAnalysisType.TRY_BLOCK_AMENDMENT)
+    parsed = GrammaticalAnalyzer().analyze(s)
     parsed.indented_print()
     parsed_metadata = parsed.get_block_amendment_metadata(BLOCK_AMENDMENT_ABBREVS)
     assert correct_metadata == parsed_metadata

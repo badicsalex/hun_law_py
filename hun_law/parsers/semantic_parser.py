@@ -19,7 +19,7 @@ import attr
 from collections import namedtuple
 
 from hun_law.structure import QuotedBlock, OutgoingReference
-from .grammatical_analyzer import GrammaticalAnalyzer, GrammaticalAnalysisType
+from .grammatical_analyzer import GrammaticalAnalyzer
 
 
 @attr.s(slots=True)
@@ -90,7 +90,7 @@ class ActSemanticsParser:
         if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
             return None
 
-        analysis_result = state.analyzer.analyze(text, GrammaticalAnalysisType.SIMPLE)
+        analysis_result = state.analyzer.analyze(text)
 
         state.act_id_abbreviations.extend(analysis_result.get_new_abbreviations())
 

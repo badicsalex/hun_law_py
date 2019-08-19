@@ -19,8 +19,9 @@
 @@grammar :: ActGrammar
 
 # ============ STARTING TOKENS ============
-start_simple_parsing = {any_simple_expression}+ $;
-start_block_amendment_parsing = (block_amendment |  {any_simple_expression}+) $;
+start_default =
+    | block_amendment $
+    | {any_simple_expression}+ $;
 
 # ============ STRUCTURE PARSING ============
 

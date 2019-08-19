@@ -226,29 +226,17 @@ class GrammaticalAnalysisResult:
         self._indented_print(self.tree, indent)
 
 
-class GrammaticalAnalysisError(Exception):
-    pass
-
-
-GrammaticalAnalysisType = Enum('GrammaticalAnalysisType', ('SIMPLE', 'TRY_BLOCK_AMENDMENT'))
-
-
 class GrammaticalAnalyzer:
-    TYPE_TO_RULE_NAME = {
-        GrammaticalAnalysisType.SIMPLE: 'start_simple_parsing',
-        GrammaticalAnalysisType.TRY_BLOCK_AMENDMENT: 'start_block_amendment_parsing',
-    }
-
     def __init__(self):
         self.parser = ActGrammarParser(
             semantics=model.ActGrammarModelBuilderSemantics(),
             parseinfo=True
         )
 
-    def analyze(self, s, analysis_type, *, debug=False):
+    def analyze(self, s, *, debug=False):
         parse_result = self.parser.parse(
             s,
-            rule_name=self.TYPE_TO_RULE_NAME[analysis_type],
+            rule_name='start_default',
             trace=debug, colorize=debug,
         )
         return GrammaticalAnalysisResult(s, parse_result)
