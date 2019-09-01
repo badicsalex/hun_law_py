@@ -537,20 +537,24 @@ def test_new_abbreviations(s, abbrevs):
 BLOCK_AMENDMENT_CASES = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata((ref("2012. évi CCXIX. törvény", '28'),))
+        BlockAmendmentMetadata(ref("2012. évi CCXIX. törvény", '28'))
     ),
     (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata((ref("2012. évi I. törvény", "29", "2", "e"),))
+        BlockAmendmentMetadata(ref("2012. évi I. törvény", "29", "2", "e"))
     ),
     (
         "A Tv. 1. § 3. pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata((ref('Tv.', "1", None, "3"),))
+        BlockAmendmentMetadata(ref('Tv.', "1", None, "3"))
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata((ref("2111. évi LXXV. törvény", "1", "1", "1", "c"),))
+        BlockAmendmentMetadata(ref("2111. évi LXXV. törvény", "1", "1", "1", "c"))
     ),
+    (
+        "A Batv. 1. § (2) bekezdés b)–f) pontja helyébe a következő rendelkezés lép:",
+        BlockAmendmentMetadata(ref("Batv.", "1", "2", ("b", "f")))
+    )
 )
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s, correct_metadata):

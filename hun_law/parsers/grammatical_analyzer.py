@@ -208,11 +208,30 @@ class GrammaticalAnalysisResult:
         amendment_position = self.tree.amendment_position
         act_id = self._get_act_id_from_parse_result(amendment_position.act_reference)
 
-        assert len(amendment_position.references) == 1
+        # "References" can only be a tuple, if there are multiple reference types
+        # in the single compound reference, i.e. an article reference and an
+        # article + paragraph reference (see grammar analysis tests for examples)
+        # This cannot happen with Block Amendments, so check for this case
+        # TODO: We may catch this in grammar phase by not using CompoundReference,
+        # but then ref collecting in _element_references_default needs to be updated
+        if len(amendment_position.references) != 1:
+            # Don't fail horribly in this case, just report that this as not a block amendment.
+            # Same as failing in grammar phase.
+            return None
+
+
         amended_references = tuple(r.reference for r in self._convert_single_reference(act_id, amendment_position.references[0]))
+        # Block amendments may only be contigous ranges, not lists.
+        # TODO: contigous pairs are usually not noted as a range, but as a list of the
+        # two ids with "és", but they should be parsed as ranges, really. Or converted
+        # here the latest.
+        if len(amended_references) != 1:
+            # Don't fail horribly in this case, just report that this as not a block amendment.
+            # Same as failing in grammar phase.
+            return None
 
         return BlockAmendmentMetadata(
-            amended_references
+            amended_reference=amended_references[0]
         )
 
     @classmethod

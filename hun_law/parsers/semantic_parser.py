@@ -185,11 +185,7 @@ class ActBlockAmendmentParser:
 
         assert len(paragraph.children) == 1
 
-        first_reference = analysis_result.amended_references
-        if isinstance(first_reference, tuple):
-            # reference range
-            first_reference = first_reference[0]
-        first_reference = first_reference.first_in_range()
+        first_reference = analysis_result.amended_reference.first_in_range()
 
         try:
             block_amendment = BlockAmendmentStructureParser.parse(

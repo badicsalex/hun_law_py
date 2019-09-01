@@ -361,7 +361,6 @@ class Article:
     def relative_reference(self):
         return Reference(article=self.identifier)
 
-
 BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint)
 
 
@@ -454,4 +453,4 @@ class ActIdAbbreviation:
 
 @attr.s(slots=True, frozen=True)
 class BlockAmendmentMetadata:
-    amended_references = attr.ib(converter=tuple)
+    amended_reference = attr.ib()
