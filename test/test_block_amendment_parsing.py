@@ -283,3 +283,16 @@ def test_block_amend_pair():
     # assert amended_structure.children[0].point('b').text.endswith('igénybe vehető.')
     assert amended_structure.children[1].identifier == '1b'
     assert amended_structure.children[1].text.startswith('Ha a közhasznú szervezet a (3)')
+
+
+def test_weird_amended_ids_1():
+    act_text = """
+        25. §   A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:
+                (A törvény alkalmazásában)
+                „3a. gazdálkodó szervezet: a polgári perrendtartásról szóló törvény szerinti gazdálkodó szervezet;”
+    """
+    resulting_structure = quick_parse_structure(act_text)
+    amended_structure = resulting_structure.article("1").paragraph().block_amendment()
+    assert amended_structure.children_type is NumericPoint
+    assert len(amended_structure.children) == 1
+    assert amended_structure.children[0].identifier == '3a'

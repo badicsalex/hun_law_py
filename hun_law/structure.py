@@ -498,7 +498,8 @@ class Reference:
             return self.subpoint, AlphabeticSubpoint
         if self.point is not None:
             first_point_id = self.point[0] if isinstance(self.point, tuple) else self.point
-            if first_point_id.isdigit():
+            if first_point_id[0].isdigit():
+                # Both 1, 12, and 3a are NumericPoints.
                 return self.point, NumericPoint
             else:
                 return self.point, AlphabeticPoint
