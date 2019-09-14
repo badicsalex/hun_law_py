@@ -608,6 +608,14 @@ class ArticleParser:
             else:
                 raise ValueError("Multiline article titles not supported")
 
+        if lines[0] == EMPTY_LINE:
+            # Pathological case where there is an empty line between the article title
+            # and the actual content. Very very rare, basically only happens in an
+            # amendment in 2013. évi CCLII. törvény 185. § (18)
+            # There can only be at most 1 consecutive EMPTY_LINE because of previous
+            # preprocessing in the PDF extractor.
+            lines = lines[1:]
+
         if not ParagraphParser.is_header(lines[0], ParagraphParser.first_identifier()):
             paragraphs = [ParagraphParser.parse(lines, None)]
         else:

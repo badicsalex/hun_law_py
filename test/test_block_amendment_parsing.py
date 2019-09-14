@@ -205,3 +205,30 @@ def test_complex_block_amendment_ptk1():
     assert article.paragraph("3").text.startswith("Vállalkozások közötti szerződés")
     assert "(1)–(2)" in article.paragraph("3").text
     assert article.paragraph("3").text.endswith("részében semmis.")
+
+
+def test_complex_block_amendment_ptk2():
+    # The main part here is the "junk" EMPTY line between the article header and
+    # its contents.
+    act_text = """
+    8. §   (1) A Ptk. 3:305. §-a a következő szöveggel lép hatályba:
+               „3:305. § [Kötvény helyett részvény igénylése és a kötvény részvénnyé történő átváltozása]
+
+                (1) Az átváltoztatható kötvény tulajdonosa a kötvény futamidején belül, a közgyűlés által meghatározott időtartam
+                alatt írásban – nyomdai úton előállított kötvények esetén a kötvényeknek az igazgatóság részére történő
+                benyújtásával – kötvényei helyébe részvényt igényelhet.
+                (2) Az átváltoztatható kötvény átváltoztatásáról szóló nyilatkozat megtételével, az átváltozó kötvény átváltozására
+                előírt feltétel bekövetkeztével a kötvénytulajdonos jogosulttá válik részvényutalványra.
+                (3) Az (1) bekezdés szerinti bejelentés megtételére rendelkezésre álló időtartam lejártát vagy az átváltozó kötvény
+                átváltozására előírt feltétel bekövetkeztét követően az igazgatóság – az átváltozó kötvény esetén a feltétel
+                bekövetkeztének megállapítása mellett – haladéktalanul intézkedik az alaptőke-emelés nyilvántartásba történő
+                bejegyzése iránt azzal, hogy az alapszabály módosítására nincs szükség. Az alaptőke-emelés során a nyilvántartásba
+                vételre és a részvény kiadására, jóváírására vonatkozó rendelkezéseket megfelelően alkalmazni kell.”
+    """
+
+    resulting_structure = quick_parse_structure(act_text)
+    amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
+
+    assert amended_structure.children_type is Article
+    assert len(amended_structure.children) == 1
+    assert len(amended_structure.children[0].children) == 3
