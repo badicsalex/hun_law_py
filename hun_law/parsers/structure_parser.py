@@ -273,11 +273,6 @@ class SubArticleElementParser(ABC):
 
     @classmethod
     @abstractmethod
-    def next_identifier(cls, identifier):
-        pass
-
-    @classmethod
-    @abstractmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
         pass
 
@@ -314,7 +309,7 @@ class SubArticleElementParser(ABC):
 
                 header_indentation = line.indent
                 current_element_identifier = next_element_identifier
-                next_element_identifier = cls.next_identifier(next_element_identifier)
+                next_element_identifier = cls.PARSED_TYPE.next_identifier(next_element_identifier)
                 current_lines = []
             current_lines.append(line)
 
@@ -354,14 +349,6 @@ class AlphabeticSubpointParser(SubArticleElementParser):
         return cls.PREFIX + 'a'
 
     @classmethod
-    def next_identifier(cls, identifier):
-        if cls.PREFIX:
-            if cls.PREFIX != identifier[0]:
-                raise ValueError("Invalid identifier for prefixed subpoint")
-            return cls.PREFIX + chr(ord(identifier[1]) + 1)
-        return chr(ord(identifier) + 1)
-
-    @classmethod
     def is_header(cls, line, identifier):
         prefix = cls.PARSED_TYPE.header_prefix(identifier)
         return line.content.startswith(prefix)
@@ -389,10 +376,6 @@ class NumericPointParser(SubArticleElementParser):
         return '1'
 
     @classmethod
-    def next_identifier(cls, identifier):
-        return str(int(identifier) + 1)
-
-    @classmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
         # Numbered points may only have alphabetic subpoints.
         try:
@@ -413,10 +396,6 @@ class AlphabeticPointParser(SubArticleElementParser):
     @classmethod
     def first_identifier(cls):
         return 'a'
-
-    @classmethod
-    def next_identifier(cls, identifier):
-        return chr(ord(identifier) + 1)
 
     @classmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
@@ -441,11 +420,6 @@ class ParagraphParser(SubArticleElementParser):
     @classmethod
     def first_identifier(cls):
         return '1'
-
-    @classmethod
-    def next_identifier(cls, identifier):
-        # TODO: Handle amended (number/character) type identifiers
-        return str(int(identifier) + 1)
 
     @classmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
@@ -584,12 +558,6 @@ class ArticleParser:
             return line.content.startswith(prefix1) or line.content.startswith(prefix2)
 
     @classmethod
-    def next_identifier(cls, identifier):
-        # TODO: Handle book-prefixed identifiers
-        # TODO: Handle amended (number/character) type identifiers
-        return str(int(identifier) + 1)
-
-    @classmethod
     def parse_body(cls, identifier, lines):
         title = ""
         paragraphs = []
@@ -633,6 +601,8 @@ class ActParsingError(StructureParsingError):
 
 
 class ActStructureParser:
+    PARSED_TYPE = Act
+
     @classmethod
     def parse(cls, identifier, subject, lines):
         try:
@@ -738,7 +708,7 @@ class BlockAmendmentStructureParser:
         for quote_level, line in iterate_with_quote_level(lines):
             if current_lines and quote_level == 0 and parser.is_header(line, expected_id):
                 yield parser.parse(current_lines, expected_id)
-                expected_id = parser.next_identifier(expected_id)
+                expected_id = parser.PARSED_TYPE.next_identifier(expected_id)
                 current_lines = []
             current_lines.append(line)
         yield parser.parse(current_lines, expected_id)

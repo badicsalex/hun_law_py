@@ -227,7 +227,12 @@ class SubArticleElement(ABC):
     @classmethod
     @abstractmethod
     def header_prefix(cls, identifier):
-        return "{}. ".format(identifier)
+        pass
+
+    @classmethod
+    @abstractmethod
+    def next_identifier(cls, identifier):
+        pass
 
     @property
     @abstractmethod
@@ -240,6 +245,14 @@ class AlphabeticSubpoint(SubArticleElement):
     @classmethod
     def header_prefix(cls, identifier):
         return "{}) ".format(identifier)
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        if len(identifier) == 1:
+            return chr(ord(identifier) + 1)
+        if len(identifier) == 2:
+            return identifier[0] + chr(ord(identifier[1]) + 1)
+        raise ValueError("Invalid identifier for subpoint '{}'".format(identifier))
 
     @property
     def relative_reference(self):
@@ -257,6 +270,10 @@ class NumericPoint(SubArticleElement):
     def subpoint(self, sp_id):
         return self.child(sp_id)
 
+    @classmethod
+    def next_identifier(cls, identifier):
+        return str(int(identifier) + 1)
+
     @property
     def relative_reference(self):
         return Reference(point=self.identifier)
@@ -273,6 +290,10 @@ class AlphabeticPoint(SubArticleElement):
     def subpoint(self, sp_id):
         return self.child(sp_id)
 
+    @classmethod
+    def next_identifier(cls, identifier):
+        return chr(ord(identifier) + 1)
+
     @property
     def relative_reference(self):
         return Reference(point=self.identifier)
@@ -285,6 +306,10 @@ class BlockAmendment(SubArticleElement):
     @classmethod
     def header_prefix(cls, identifier):
         raise TypeError("Block Amendments do not have header")
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        raise TypeError("Block Amendments do not have identifiers")
 
     @property
     def relative_reference(self):
@@ -318,6 +343,11 @@ class Paragraph(SubArticleElement):
             raise KeyError("Thee are no block amenddments in this paragraph")
         assert len(self.children) == 1, "There should be exactly one block amendment per paragraph"
         return self.children[0]
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        # TODO: Handle amended (number/character) type identifiers
+        return str(int(identifier) + 1)
 
     @property
     def relative_reference(self):
@@ -356,6 +386,17 @@ class Article:
             return self.paragraph_map[str(paragraph_id)]
         else:
             return self.paragraph_map[None]
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        if "/" in identifier:
+            prefix, letter = identifier.split('/')
+            return "{}/{}".format(prefix, chr(ord(letter) + 1))
+        if ":" in identifier:
+            book, num = identifier.split(":")
+            # "1:234/A" like cases are already handled above
+            return "{}:{}".format(book, int(num) + 1)
+        return str(int(identifier) + 1)
 
     @property
     def relative_reference(self):
