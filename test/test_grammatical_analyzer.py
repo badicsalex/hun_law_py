@@ -169,19 +169,17 @@ CASES = [
     ),
     (
         "A Gyvt. 5. §-a a következő ny) ponttal egészül ki:",
-        "  [   ] <    >             <         >            ",
+        "  [   ] <                            >            ",
         [
-            ref("Gyvt.", "5"),
-            ref(point="ny")
+            ref("Gyvt.", "5", None, "ny"),
         ],
         ["Gyvt."],
     ),
     (
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
-        "   [  ] <      >             <           >            ",
+        "   [  ] <                                >            ",
         [
-            ref("Eht.", "188"),
-            ref(point="31/a"),
+            ref("Eht.", "188", None, "31/a"),
         ],
         ["Eht."],
     ),
@@ -211,10 +209,9 @@ CASES = [
     ),
     (
         "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
-        "                          [                      ] <     >             <         >            ",
+        "                          [                      ] <                             >            ",
         [
-            ref("1995. évi XCVII. törvény", "71"),
-            ref(point="3a"),
+            ref("1995. évi XCVII. törvény", "71", None, "3a"),
         ],
         ["1995. évi XCVII. törvény"],
     ),
@@ -230,28 +227,25 @@ CASES = [
     ),
     (
         "A temetőkről és a temetkezésről szóló 1999. évi XLIII. törvény (a továbbiakban: temetőkről és a temetkezésről szóló törvény) 3. §-a a következő k) ponttal egészül ki:",
-        "                                      [                      ]                                                               <    >             <        >            ",
+        "                                      [                      ]                                                               <                           >            ",
         [
-            ref("1999. évi XLIII. törvény", "3"),
-            ref(point="k"),
+            ref("1999. évi XLIII. törvény", "3", None, "k"),
         ],
         ["1999. évi XLIII. törvény"],
     ),
     (
         "A víziközmű-szolgáltatásról szóló 2011. évi CCIX. törvény (a továbbiakban: Víziközmű tv.) 2. §-a a következő 31. ponttal egészül ki:",
-        "                                  [                     ]                                 <    >             <         >            ",
+        "                                  [                     ]                                 <                            >            ",
         [
-            ref("2011. évi CCIX. törvény", "2"),
-            ref(point="31"),
+            ref("2011. évi CCIX. törvény", "2", None, "31"),
         ],
         ["2011. évi CCIX. törvény"],
     ),
     (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
-        "  [           ] <     >             <                 >            ",
+        "  [           ] <                                     >            ",
         [
-            ref("Víziközmű tv.", "63"),
-            ref(paragraph=("5", "7")),
+            ref("Víziközmű tv.", "63", ("5", "7")),
         ],
         ["Víziközmű tv."]
     ),
@@ -554,7 +548,19 @@ BLOCK_AMENDMENT_CASES = (
     (
         "A Batv. 1. § (2) bekezdés b)–f) pontja helyébe a következő rendelkezés lép:",
         BlockAmendmentMetadata(ref("Batv.", "1", "2", ("b", "f")))
-    )
+    ),
+    (
+        "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
+        BlockAmendmentMetadata(ref("Eht.", "188", None, "31/a"))
+    ),
+    (
+        "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
+        BlockAmendmentMetadata(ref("1995. évi XCVII. törvény", "71", None, "3a"))
+    ),
+    (
+        "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(ref("Víziközmű tv.", "63", ("5", "7")))
+    ),
 )
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s, correct_metadata):

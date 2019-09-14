@@ -23,7 +23,7 @@ import pytest
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction
 from hun_law.cache import init_cache
-from hun_law.structure import Act, Article, Book, Part, Title, Chapter, Subtitle, QuotedBlock
+from hun_law.structure import Act, Article, Book, Part, Title, Chapter, Subtitle, QuotedBlock, AlphabeticPoint
 
 
 def parse_single_kozlony(year, issue):
@@ -207,8 +207,12 @@ def test_end_to_end_2018_123():
     assert acts["2018. évi LIII. törvény"].preamble.startswith("A magánélet, a családi élet, az otthon")
     assert acts["2018. évi LIII. törvény"].preamble.endswith("fokozott védelme, a következő törvényt alkotja:")
 
-    assert acts["2018. évi LV. törvény"].article(25).paragraph(5).children_type == QuotedBlock
-    assert acts["2018. évi LV. törvény"].article(25).paragraph(5).wrap_up == "[követik el.]"
+    block_amendment = acts["2018. évi LV. törvény"].article(25).paragraph(5).block_amendment()
+    assert block_amendment.children_type == AlphabeticPoint
+    assert block_amendment.intro == "(3) A büntetés bűntett miatt három évig terjedő szabadságvesztés, ha a rendbontást"
+    assert block_amendment.child("e").text == \
+        "a gyűlés gyülekezési jogról szóló törvény szerinti békés jellegét biztosító korlátozásokat megsértve"
+    assert block_amendment.wrap_up == "követik el."
 
     assert acts["2018. évi LIV. törvény"].article(2).paragraph().point(4).text.endswith("felfedett üzleti titokra épül."), \
         "Multiline numeric points parsed correctly"

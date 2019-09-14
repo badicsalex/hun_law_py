@@ -108,8 +108,21 @@ list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
 
 # ============ BLOCK AMENDMENT PARSING ============
 
+insertion_token = "a következő";
+
+insertion_reference::InsertionReference::Reference =
+    | insertion_token article:article_reference
+    | article:article_reference insertion_token paragraph:paragraph_reference
+    | article:article_reference [paragraph:paragraph_reference] insertion_token (point:alphabetic_point_reference | point:numeric_point_reference)
+    | article:article_reference [paragraph:paragraph_reference] (point:alphabetic_point_reference | point:numeric_point_reference) insertion_token (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference)
+    ;
+
 block_amendment::BlockAmendment
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* amendment_position:compound_reference "helyébe a következő rendelkezés lép:";
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference
+    (
+        reference:reference "helyébe a következő rendelkezés lép:" |
+        reference:insertion_reference "egészül ki:"
+    );
 
 
 # ============ SIMPLE TOKENS ============

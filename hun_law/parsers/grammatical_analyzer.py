@@ -101,18 +101,12 @@ class GrammaticalAnalysisResult:
 
     @element_references.default
     def _element_references_default(self):
-        refs_to_parse = []
-        refs_found = set()
-        # Collect references where we might have Act Id
-        for ref_container in iterate_depth_first(self.tree, model.CompoundReference):
-            if not ref_container.references:
-                continue
-            act_id = None
-            if ref_container.act_reference is not None:
-                act_id = self._get_act_id_from_parse_result(ref_container.act_reference)
-            for reference in ref_container.references:
-                refs_to_parse.append((act_id, reference))
-                refs_found.add(reference)
+        if isinstance(self.tree, model.BlockAmendment):
+            refs_to_parse = list(self._iterate_references_in_block_amendment())
+        else:
+            refs_to_parse = list(self._iterate_references_in_compound_references())
+
+        refs_found = set(reference for act_id, reference in refs_to_parse)
 
         # Collect all other refs scattered elsewhere
         for ref in iterate_depth_first(self.tree, model.Reference):
@@ -124,6 +118,20 @@ class GrammaticalAnalysisResult:
         for act_id, parsed_ref in refs_to_parse:
             result.extend(self._convert_single_reference(act_id, parsed_ref))
         return tuple(result)
+
+    def _iterate_references_in_compound_references(self):
+        for ref_container in iterate_depth_first(self.tree, model.CompoundReference):
+            if not ref_container.references:
+                continue
+            act_id = None
+            if ref_container.act_reference is not None:
+                act_id = self._get_act_id_from_parse_result(ref_container.act_reference)
+            for reference in ref_container.references:
+                yield act_id, reference
+
+    def _iterate_references_in_block_amendment(self):
+        act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
+        yield act_id, self.tree.reference
 
     @classmethod
     def _convert_single_reference(cls, act_id, parsed_ref):
@@ -205,22 +213,9 @@ class GrammaticalAnalysisResult:
     def _convert_block_amendment(self):
         if not isinstance(self.tree, model.BlockAmendment):
             return None
-        amendment_position = self.tree.amendment_position
-        act_id = self._get_act_id_from_parse_result(amendment_position.act_reference)
+        act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
 
-        # "References" can only be a tuple, if there are multiple reference types
-        # in the single compound reference, i.e. an article reference and an
-        # article + paragraph reference (see grammar analysis tests for examples)
-        # This cannot happen with Block Amendments, so check for this case
-        # TODO: We may catch this in grammar phase by not using CompoundReference,
-        # but then ref collecting in _element_references_default needs to be updated
-        if len(amendment_position.references) != 1:
-            # Don't fail horribly in this case, just report that this as not a block amendment.
-            # Same as failing in grammar phase.
-            return None
-
-
-        amended_references = tuple(r.reference for r in self._convert_single_reference(act_id, amendment_position.references[0]))
+        amended_references = tuple(r.reference for r in self._convert_single_reference(act_id, self.tree.reference))
         # Block amendments may only be contigous ranges, not lists.
         # TODO: contigous pairs are usually not noted as a range, but as a list of the
         # two ids with "és", but they should be parsed as ranges, really. Or converted
