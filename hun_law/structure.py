@@ -272,7 +272,11 @@ class NumericPoint(SubArticleElement):
 
     @classmethod
     def next_identifier(cls, identifier):
-        return str(int(identifier) + 1)
+        if identifier.isdigit():
+            return str(int(identifier) + 1)
+        number = identifier[:-1]
+        postfix = identifier[-1]
+        return number + chr(ord(postfix) + 1)
 
     @property
     def relative_reference(self):
@@ -346,8 +350,11 @@ class Paragraph(SubArticleElement):
 
     @classmethod
     def next_identifier(cls, identifier):
-        # TODO: Handle amended (number/character) type identifiers
-        return str(int(identifier) + 1)
+        if identifier.isdigit():
+            return str(int(identifier) + 1)
+        number = identifier[:-1]
+        postfix = identifier[-1]
+        return number + chr(ord(postfix) + 1)
 
     @property
     def relative_reference(self):
