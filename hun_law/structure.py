@@ -179,11 +179,11 @@ class QuotedBlock:
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE = ()
 
-    identifier = attr.ib(converter=attr.converters.optional(str))
-    text = attr.ib(converter=attr.converters.optional(str))
-    intro = attr.ib(converter=attr.converters.optional(str))
-    children = attr.ib(converter=attr.converters.optional(tuple))
-    wrap_up = attr.ib(converter=attr.converters.optional(str))
+    identifier = attr.ib(converter=attr.converters.optional(str), default=None)
+    text = attr.ib(converter=attr.converters.optional(str), default=None)
+    intro = attr.ib(converter=attr.converters.optional(str), default=None)
+    children = attr.ib(converter=attr.converters.optional(tuple), default=None)
+    wrap_up = attr.ib(converter=attr.converters.optional(str), default=None)
 
     children_type = attr.ib(init=False)
     children_map = attr.ib(init=False)
@@ -364,8 +364,8 @@ class Paragraph(SubArticleElement):
 @attr.s(slots=True, frozen=True)
 class Article:
     identifier = attr.ib(converter=str)
-    title = attr.ib(converter=attr.converters.optional(str))
     children = attr.ib(converter=tuple)
+    title = attr.ib(converter=attr.converters.optional(str), default=None)
 
     paragraph_map = attr.ib(init=False)
 

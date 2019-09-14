@@ -593,7 +593,7 @@ class ArticleParser:
                 raise ValueError("Junk detected in Article before first Paragraph")
             if wrap_up is not None:
                 raise ValueError("Junk detected in Article after last Paragraph")
-        return Article(identifier, title, paragraphs)
+        return Article(identifier, paragraphs, title)
 
 
 class ActParsingError(StructureParsingError):
