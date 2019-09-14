@@ -232,3 +232,54 @@ def test_complex_block_amendment_ptk2():
     assert amended_structure.children_type is Article
     assert len(amended_structure.children) == 1
     assert len(amended_structure.children[0].children) == 3
+
+
+def test_block_amendment_range():
+    # Note that this is modified text, the paragraph ids are different in the original
+    act_text = """
+    1. §  (1)   A Gyvt. 102. §-a a következő (5)–(8) bekezdéssel egészül ki:
+                „(5) A hivatásos gondnok egyidejűleg 30 gondnokolt érdekében járhat el, kivéve ha
+                a) az adott gondnokoltak igényeinek figyelembevétele alapján a gondnoki feladatok ellátását legfeljebb
+                35 gondnokolt egyidejű ellátása nem veszélyezteti, vagy
+                b) a hivatásos gondnoki feladatokat kormányzati szolgálati jogviszonyban álló személy látja el.
+                (6) Az (1a) bekezdés b) pontjában meghatározott személy egyidejűleg legfeljebb 45 gondnokolt érdekében
+                járhat el.
+                (7) Ha a hivatásos gondnok hivatásos támogatói feladatokat is ellát, a gondnokoltjainak és támogatott
+                személyeinek száma együttesen sem haladhatja meg az (1a) és (1b) bekezdésben foglalt létszámot.
+                (8) Ha a hivatásos gondnok tevékenységét munkavégzésre irányuló egyéb jogviszonyban látja el, díjazását úgy
+                kell megállapítani, hogy annak összege gondnokoltanként – a gondnoki feladatok mértéke alapján – az öregségi
+                nyugdíj mindenkori legkisebb összegének legalább 10%-át elérje.”
+    """
+    resulting_structure = quick_parse_structure(act_text)
+    amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
+
+    assert amended_structure.children_type is Paragraph
+    assert len(amended_structure.children) == 4
+    assert len(amended_structure.children[0].children) == 2
+    assert amended_structure.children[0].identifier == "5"
+    assert amended_structure.children[3].identifier == "8"
+
+
+def test_block_amend_pair():
+    act_text = """
+    1. §  (1)   A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:
+                „(1a) A közhasznú szervezet – a (3) bekezdésben foglalt kivétellel – azzal a vér szerinti szülővel és örökbe fogadni
+                szándékozó személlyel, akik már ismerik egymást és együtt kérik a nyílt örökbefogadást elősegítő szolgáltatást
+                a) megállapodást köt, vagy
+                b) – ha a megállapodás megkötésére nem kerül sor – tájékoztatást nyújt, hogy a nyílt örökbefogadást elősegítő
+                szolgáltatás a területi gyermekvédelmi szakszolgálatnál is igénybe vehető.
+                (1b) Ha a közhasznú szervezet a (3) bekezdésben meghatározott okokról szerez tudomást, öt napon belül írásban
+                értesíti az örökbefogadásra való alkalmasságot megállapító, valamint az örökbefogadás engedélyezésére illetékes
+                gyámhatóságot.”
+    """
+    resulting_structure = quick_parse_structure(act_text)
+    amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
+
+    assert amended_structure.children_type is Paragraph
+    assert len(amended_structure.children) == 2
+    assert amended_structure.children[0].identifier == '1a'
+    # TODO: point wrap-up detection is based on indentation. I don't know how to handle this case.
+    # Maybe detect 'és' or 'vagy' in the previous point.
+    # assert amended_structure.children[0].point('b').text.endswith('igénybe vehető.')
+    assert amended_structure.children[1].identifier == '1b'
+    assert amended_structure.children[1].text.startswith('Ha a közhasznú szervezet a (3)')

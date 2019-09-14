@@ -523,6 +523,8 @@ class ArticleParsingError(StructureParsingError):
 
 
 class ArticleParser:
+    PARSED_TYPE = Article
+
     HEADER_RE = re.compile("^([0-9]+:)?([0-9]+(/[A-Z])?)\\. ?§ *(.*)$")
 
     @classmethod
@@ -705,10 +707,12 @@ class BlockAmendmentStructureParser:
     @classmethod
     def do_parse_block_by_block(cls, parser, expected_id, lines):
         current_lines = []
+        next_id = parser.PARSED_TYPE.next_identifier(expected_id)
         for quote_level, line in iterate_with_quote_level(lines):
-            if current_lines and quote_level == 0 and parser.is_header(line, expected_id):
+            if current_lines and quote_level == 0 and parser.is_header(line, next_id):
                 yield parser.parse(current_lines, expected_id)
-                expected_id = parser.PARSED_TYPE.next_identifier(expected_id)
+                expected_id = next_id
+                next_id = parser.PARSED_TYPE.next_identifier(expected_id)
                 current_lines = []
             current_lines.append(line)
         yield parser.parse(current_lines, expected_id)
