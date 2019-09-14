@@ -569,12 +569,29 @@ BLOCK_AMENDMENT_CASES = (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(ref("Víziközmű tv.", "63", ("5", "7")))
     ),
+    (
+        "A Ptk. 6:417. § (4) bekezdése a következő szöveggel lép hatályba:",
+        BlockAmendmentMetadata(ref("Ptk.", "6:417", "4"))
+    ),
+    (
+        "A Ptk. 6:130. §-a a következő szöveggel lép hatályba:",
+        BlockAmendmentMetadata(ref("Ptk.", "6:130"))
+    ),
+    (
+        "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba:",
+        BlockAmendmentMetadata(ref("Ptk.", "3:391", "3"))
+    ),
+    (
+        "A Ptk. 3:278. § (1) bekezdés e) pontja a következő szöveggel lép hatályba:",
+        BlockAmendmentMetadata(ref("Ptk.", "3:278", "1", "e"))
+    ),
+    (
+        "A polgári törvénykönyvről szóló 2013. évi V. tv. 3:319. § (5) bekezdése a következő szöveggel lép hatályba:",
+        BlockAmendmentMetadata(ref("2013. évi V. törvény", "3:319", "5"))
+    ),
     # TODO:
-    # Before the Act comes into force:
-    #   "A Ptk. 6:417. § (4) bekezdése a következő szöveggel lép hatályba"
-    #   "A Ptk. 6:130. §-a a következő szöveggel lép hatályba"
-    #   "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba"
-    #   "A Ptk. 3:278. § (1) bekezdés e) pontja a következő szöveggel lép hatályba"
+    # Ranges with "and"
+    #   "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba"
 
     # Simultaneous substitution and insertion
     #   "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki"

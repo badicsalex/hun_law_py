@@ -15,12 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from hun_law.utils import IndentedLine, IndentedLinePart
+from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
+
+
 from hun_law.structure import Reference, OutgoingReference, Article, Paragraph, AlphabeticPoint, AlphabeticSubpoint, NumericPoint
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActBlockAmendmentParser
 
 import pytest
+import json
 
 
 def absref(act=None, article=None, paragraph=None, point=None, subpoint=None):
@@ -43,7 +46,9 @@ def quick_parse_structure(act_text):
             parts.append(IndentedLinePart(5, char))
         lines.append(IndentedLine(parts))
     act = ActStructureParser.parse("2345 évi 1. törvény", "About testing", lines)
-    return ActBlockAmendmentParser.parse(act)
+    act = ActBlockAmendmentParser.parse(act)
+    print(json.dumps(object_to_dict_recursive(act), indent='  ', ensure_ascii=False))
+    return act
 
 
 def test_simple_block_amendment_1():
@@ -152,3 +157,51 @@ def test_complex_block_amendment_2():
     assert amended_structure.children[0].subpoint("sa").text.startswith("független műszaki szakértői")
     assert amended_structure.children[0].subpoint("sa").text.endswith("eltérő szabályait;")
     assert amended_structure.children[0].subpoint("sb").text.endswith("működésének és alkalmazásának szabályait.")
+
+
+def test_complex_block_amendment_ptk1():
+    act_text = """
+    8. §       (1)  A Ptk. 6:130. §-a a következő szöveggel lép hatályba:
+                    „6:130. § [Pénztartozás teljesítésének ideje]
+                    (1) Ha a felek a szerződésben a pénztartozás teljesítésének idejét nem határozták meg, a pénztartozást a jogosult
+                    fizetési felszólításának vagy számlájának kézhezvételétől számított harminc napon belül kell teljesíteni. Ha
+                    a pénztartozás fizetésére kötelezett szerződő hatóság, a szerződő hatóságnak nem minősülő vállalkozással kötött
+                    szerződése esetén pénztartozását a jogosult fizetési felszólításának vagy számlájának kézhezvételétől számított
+                    harminc napon belül köteles teljesíteni, ebben az esetben a számla kézhezvételének napja nem képezheti a felek
+                    között érvényes megállapodás tárgyát.
+                    (2) A jogosult teljesítésétől számított harminc napon belül kell teljesíteni a pénztartozást, ha
+                    a) a jogosult fizetési felszólításának vagy számlájának kézhezvétele a jogosult teljesítését (vállalkozási szerződés
+                    esetén az átadás-átvételi eljárás befejezését) megelőzte;
+                    b) nem állapítható meg egyértelműen a jogosult fizetési felszólítása vagy számlája kézhezvételének időpontja; vagy
+                    c) a kötelezettnek fizetési felszólítás vagy számla bevárása nélkül teljesítenie kell fizetési kötelezettségét.
+                    (3) Vállalkozások közötti szerződés esetén az e § rendelkezéseitől a jóhiszeműség és tisztesség követelményének
+                    megsértésével egyoldalúan és indokolatlanul a jogosult hátrányára eltérő szerződési feltételt – mint tisztességtelen
+                    kikötést – a jogosult megtámadhatja. Pénztartozás fizetésére kötelezett szerződő hatóságnak szerződő
+                    hatóságnak nem minősülő vállalkozással kötött szerződése esetén a pénztartozás teljesítésére kikötött idő az
+                    (1)–(2) bekezdésben meghatározott határidőket csak akkor haladhatja meg, ha a szerződésben a felek
+                    a pénztartozás halasztott teljesítésében állapodtak meg, feltéve hogy a szerződés jellege miatt ez tényszerűen
+                    indokolt; a pénztartozás teljesítésére kikötött idő ebben az esetben sem haladhatja meg a hatvan napot.
+                    Pénztartozás fizetésére kötelezett szerződő hatóságnak szerződő hatóságnak nem minősülő vállalkozással kötött
+                    szerződése esetén a pénztartozás teljesítésére kikötött idő a hatvan napot meghaladó részében semmis.
+                    (4) Vállalkozások közötti szerződés esetén az ellenkező bizonyításáig tisztességtelen kikötésnek kell tekinteni
+                    a jóhiszeműség és tisztesség követelményének megsértésével egyoldalúan és indokolatlanul a jogosult hátrányára
+                    eltérő olyan szerződési feltételt, amely a pénztartozás teljesítésére az (1) és (2) bekezdésben foglaltaktól eltérő,
+                    hatvan napnál hosszabb határidőt határoz meg. Pénztartozás fizetésére kötelezett szerződő hatóságnak szerződő
+                    hatóságnak nem minősülő vállalkozással kötött szerződése esetén a pénztartozás teljesítésére az (1)–(2) bekezdés
+                    rendelkezéseitől eltérően, a jóhiszeműség és tisztesség követelményének megsértésével egyoldalúan és
+                    indokolatlanul a jogosult hátrányára kikötött olyan határidőt, amely a hatvan napot nem haladja meg – mint
+                    tisztességtelen kikötést –, a jogosult megtámadhatja.”
+    """
+    resulting_structure = quick_parse_structure(act_text)
+    amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
+
+    assert amended_structure.children_type is Article
+    assert len(amended_structure.children) == 1
+    article = amended_structure.children[0]
+
+    assert article.title == "Pénztartozás teljesítésének ideje"
+    assert len(article.children) == 4
+    assert article.paragraph("2").point("b").text.startswith("nem állapítható meg")
+    assert article.paragraph("3").text.startswith("Vállalkozások közötti szerződés")
+    assert "(1)–(2)" in article.paragraph("3").text
+    assert article.paragraph("3").text.endswith("részében semmis.")

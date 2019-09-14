@@ -23,13 +23,16 @@ import pytest
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction
 from hun_law.cache import init_cache
-from hun_law.structure import Act, Article, Book, Part, Title, Chapter, Subtitle, QuotedBlock, AlphabeticPoint
+from hun_law.structure import \
+    Act, Book, Part, Title, Chapter, Subtitle, \
+    Article, QuotedBlock, AlphabeticPoint, BlockAmendment, Paragraph
 
 
 def parse_single_kozlony(year, issue):
     init_cache(os.path.join(os.path.join(os.path.dirname(__file__), '..'), 'cache'))
     extracted = do_extraction([KozlonyToDownload(year, issue)], (Act, ))
     return extracted
+
 
 def test_end_to_end_2010_181():
     # The  first MK to use "The new format" is 2009/117.
@@ -48,6 +51,7 @@ def test_end_to_end_2010_181():
     acts["2010. évi CXXX. törvény"].article(25).paragraph(1).text == \
         "A Magyar Köztársaság hivatalos lapja a Magyar Közlöny. A Magyar Közlönyt a kormányzati portálon történő" \
         "elektronikus dokumentumként való közzététellel kell kiadni, melynek szövegét hitelesnek kell tekinteni."
+
 
 def test_end_to_end_2013_31():
     # The 2013 Ptk is a great way to test high level structure
@@ -143,15 +147,15 @@ def test_end_to_end_2013_222():
     assert act.identifier == "2013. évi CCLII. törvény"
     assert act.subject == "egyes törvényeknek az új Polgári Törvénykönyv hatálybalépésével összefüggő módosításáról"
 
-
     assert act.article(181).paragraph(2).intro == "A Szövtv. 20−24. §-a helyébe a következő rendelkezések lépnek:"
     assert act.article(181).paragraph(2).children_type == QuotedBlock
     assert len(act.article(181).paragraph(2).children) == 1
 
     # This is a fixupped Paragraph the original text has wrong quote marks to begin the amendment text.
     assert act.article(185).paragraph(4).intro == "A Ptk. 3:85. § (1) bekezdése a következő szöveggel lép hatályba:"
-    assert act.article(185).paragraph(4).children_type == QuotedBlock
+    assert act.article(185).paragraph(4).children_type == BlockAmendment
     assert len(act.article(185).paragraph(4).children) == 1
+    assert act.article(185).paragraph(4).block_amendment().children_type == Paragraph
 
     assert act.article(188).paragraph(3).intro == "A Ptk. 6:155. §-a a következő szöveggel lép hatályba:"
 
