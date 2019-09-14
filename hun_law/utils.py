@@ -272,7 +272,7 @@ def object_to_dict_recursive(obj):
         recurse=False,
         filter=lambda a, v: a.init and v != a.default
     )
-    for k,v in dct.items():
+    for k, v in dct.items():
         dct[k] = object_to_dict_recursive(v)
     dct['__type__'] = obj.__class__.__name__
     return dct
@@ -287,7 +287,7 @@ def dict_to_object_recursive(dct, types_to_use, *, types_dict=None):
         return tuple(dict_to_object_recursive(v, types_to_use, types_dict=types_dict) for v in dct)
     T = types_dict[dct['__type__']]
     args_for_T = {}
-    for k,v  in dct.items():
+    for k, v in dct.items():
         if k == '__type__':
             continue
         if k[0] == '_':
