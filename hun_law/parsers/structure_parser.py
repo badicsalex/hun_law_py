@@ -712,9 +712,17 @@ class ActStructureParser:
 
 
 class BlockAmendmentStructureParser:
+    PARSERS_FOR_TYPE = {
+        Article: ArticleParser,
+        Paragraph: ParagraphParser,
+        AlphabeticPoint: AlphabeticPointParser,
+        NumericPoint: NumericPointParser,
+        AlphabeticSubpoint: AlphabeticSubpointParser,  # In the default case at least
+    }
+
     @classmethod
-    def parse(cls, expected_first_reference, context_intro, context_wrap_up, lines):
-        parser, expected_id = cls.get_parser_and_id(expected_first_reference)
+    def parse(cls, expected_reference, context_intro, context_wrap_up, lines):
+        parser, expected_id = cls.get_parser_and_id(expected_reference)
         children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
         return BlockAmendment(
             identifier=None,
@@ -736,26 +744,17 @@ class BlockAmendmentStructureParser:
         yield parser.parse(current_lines, expected_id)
 
     @classmethod
-    def get_parser_and_id(cls, expected_first_reference):
-        if expected_first_reference.subpoint is not None:
-            if not expected_first_reference.point.isdigit():
-                # TODO. Keep in mind the weird PrefixedAlphabeticSubpointParser thing.
-                raise SubArticleParsingError("Alphabetic-alphabetic subpoint amendments not supported currently", BlockAmendment)
-            return AlphabeticSubpointParser, expected_first_reference.subpoint
+    def get_parser_and_id(cls, expected_reference):
+        expected_id, structural_type = expected_reference.last_component_with_type()
+        if isinstance(expected_id, tuple):
+            # In case of reference range, get start of range.
+            # TODO: check for end of range too
+            expected_id = expected_id[0]
 
-        if expected_first_reference.point is not None:
-            if expected_first_reference.point.isdigit():
-                return NumericPointParser, expected_first_reference.point
-            else:
-                return AlphabeticPointParser, expected_first_reference.point
-
-        if expected_first_reference.paragraph is not None:
-            return ParagraphParser, expected_first_reference.paragraph
-
-        if expected_first_reference.article is not None:
-            return ArticleParser, expected_first_reference.article
-
-        raise ValueError("Empty 'expected reference' given to Block Amendment Parser'")
+        if structural_type is AlphabeticSubpoint and len(expected_id) != 1:
+            # TODO. Keep in mind the weird PrefixedAlphabeticSubpointParser thing.
+            raise SubArticleParsingError("Prefixed (alphabetic-alphbetic) subpoint amendments not supported currently", BlockAmendment)
+        return cls.PARSERS_FOR_TYPE[structural_type], expected_id
 
 
 def similar_indent(a, b):

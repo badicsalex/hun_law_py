@@ -361,6 +361,7 @@ class Article:
     def relative_reference(self):
         return Reference(article=self.identifier)
 
+
 BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint)
 
 
@@ -443,6 +444,23 @@ class Reference:
         if isinstance(result.subpoint, tuple):
             result = attr.evolve(result, subpoint=result.subpoint[0])
         return result
+
+    def last_component_with_type(self):
+        if self.subpoint is not None:
+            return self.subpoint, AlphabeticSubpoint
+        if self.point is not None:
+            first_point_id = self.point[0] if isinstance(self.point, tuple) else self.point
+            if first_point_id.isdigit():
+                return self.point, NumericPoint
+            else:
+                return self.point, AlphabeticPoint
+        if self.paragraph is not None:
+            return self.paragraph, Paragraph
+        if self.article is not None:
+            return self.article, Article
+        if self.act is not None:
+            return self.act, Act
+        return None, None
 
 
 @attr.s(slots=True, frozen=True)
