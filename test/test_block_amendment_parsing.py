@@ -296,3 +296,26 @@ def test_weird_amended_ids_1():
     assert amended_structure.children_type is NumericPoint
     assert len(amended_structure.children) == 1
     assert amended_structure.children[0].identifier == '3a'
+
+
+def test_weird_amended_ids_2():
+    act_text = """
+        1. §    (1) A Gyvt. 5. §-a a következő ny) ponttal egészül ki:
+                    (E törvény alkalmazásában)
+                    „ny) nevelőszülő: a Ptk. 4:122. § (2) bekezdése szerinti gyermekvédelmi nevelőszülő,”
+                (2) A Gyvt. 5. §-a a következő sz) ponttal egészül ki:
+                    (E törvény alkalmazásában)
+                    „sz) családbafogadó gyám: az a gyámként kirendelt személy, akinél a gyámhatóság a gyermeket ideiglenes hatállyal
+                    elhelyezte, vagy akinél a bíróság a gyermeket elhelyezte, vagy aki a gyermeket a gyámhatóság hozzájárulásával
+                    családba fogadta, kivéve ha a gyermeket ideiglenes hatállyal nevelőszülőnél, gyermekotthonban vagy más
+                    bentlakásos intézményben helyezték el,”
+"""
+    resulting_structure = quick_parse_structure(act_text)
+
+    amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
+    assert amended_structure.children_type is AlphabeticPoint
+    assert amended_structure.children[0].identifier == 'ny'
+
+    amended_structure = resulting_structure.article("1").paragraph("2").block_amendment()
+    assert amended_structure.children_type is AlphabeticPoint
+    assert amended_structure.children[0].identifier == 'sz'

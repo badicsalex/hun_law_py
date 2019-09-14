@@ -296,6 +296,10 @@ class AlphabeticPoint(SubArticleElement):
 
     @classmethod
     def next_identifier(cls, identifier):
+        if identifier == 'ny':
+            return 'o'
+        if identifier == 'sz':
+            return 't'
         return chr(ord(identifier) + 1)
 
     @property
