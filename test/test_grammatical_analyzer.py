@@ -561,6 +561,25 @@ BLOCK_AMENDMENT_CASES = (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(ref("Víziközmű tv.", "63", ("5", "7")))
     ),
+    # TODO:
+    # Before the Act comes into force:
+    #   "A Ptk. 6:417. § (4) bekezdése a következő szöveggel lép hatályba"
+    #   "A Ptk. 6:130. §-a a következő szöveggel lép hatályba"
+    #   "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba"
+    #   "A Ptk. 3:278. § (1) bekezdés e) pontja a következő szöveggel lép hatályba"
+
+    # Simultaneous substitution and insertion
+    #   "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki"
+    #   "A GET. 16. § (1) bekezdés f) pontja helyébe a következő rendelkezés lép, és a § a következő g) és h) pontokkal egészül ki"
+    #   "Az R2. 5/A. § (2a) bekezdése helyébe a következő rendelkezés lép, és a § a következő (2b)–(2f ) bekezdéssel egészül ki"
+    #   "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
+    #   "Az Evt. 108. § (4) bekezdése helyébe a következő rendelkezés lép, valamint a következő (5)–(10) bekezdéssel egészül ki"
+    #   "A Btk. 459. § (1) bekezdés 24. pontja helyébe a következő rendelkezés lép, valamint a 459. § (1) bekezdése a következő 24a. ponttal egészül ki:"
+    # "követően" constructs:
+    #   "A Tfvt. a 17/A. §-t követően a következő 17/B. és 17/C. §-sal egészül ki"
+    #   "Az Ngt. a 6/C. §-át követően a következő alcímmel és 6/D−K. §-sal egészül ki:"
+    #   "A helyi adókról szóló 1990. évi C. törvény (a továbbiakban: Htv.) a 11. §-t követően a következő 11/A. §-sal egészül ki"
+
 )
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s, correct_metadata):
