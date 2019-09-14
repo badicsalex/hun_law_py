@@ -56,7 +56,7 @@ act_reference::ActReference = abbreviation:abbreviation | (act_id:act_id [from_n
 from_now_on = "(" "a" "továbbiakban" [":"] abbreviation:abbreviation ["törvény"] ")" ;
 from_now_on_long = "(" "a" "továbbiakban" [":"] {word}+ ")" ;
 act_id::ActId = year:number "." "évi" number:roman "." act_suffix;
-act_suffix = "törvény" | /törvén[a-zéáőúöüóíű]+/;
+act_suffix = "törvény" | /törvén[a-zéáőúöüóíű]+/ | "tv.";
 
 article_reference::ArticleReferencePart::ReferencePart
     = {(ranges+:article_range | singles+:article_single) [list_separator [az]]}+ article_suffix ;
