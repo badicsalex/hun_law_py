@@ -35,10 +35,9 @@ CASES = [
     ),
     (
         "A Magyarország 2013. évi központi költségvetéséről szóló 2012. évi CCIV. törvény 44/B. és 44/C. §-a helyébe a következő rendelkezés lép:",
-        "                                                         [                     ] <   >    <       >                                     ",
+        "                                                         [                     ] <                >                                     ",
         [
-            ref("2012. évi CCIV. törvény", "44/B"),
-            ref("2012. évi CCIV. törvény", "44/C"),
+            ref("2012. évi CCIV. törvény", ("44/B", "44/C")),
         ],
         ["2012. évi CCIV. törvény"],
     ),
@@ -145,19 +144,17 @@ CASES = [
     ),
     (
         "Ha az (1) és a (2) bekezdésben meghatározott előzetes.",
-        "      < >      <             >                        ",
+        "      <                      >                        ",
         [
-            ref(None, None, "1"),
-            ref(None, None, "2"),
+            ref(None, None, ("1", "2")),
         ],
         []
     ),
     (
         "Ha létrejött adás-vételi szerződést a 23. § (4) bekezdésének a) vagy b) pontjában foglalt esetek fennállása alapján jóváhagyja.",
-        "                                      <                       >      <          >                                              ",
+        "                                      <                                         >                                              ",
         [
-            ref(None, "23", "4", "a"),
-            ref(None, "23", "4", "b"),
+            ref(None, "23", "4", ("a", "b")),
         ],
         []
     ),
@@ -182,6 +179,14 @@ CASES = [
             ref("Eht.", "188", None, "31/a"),
         ],
         ["Eht."],
+    ),
+    (
+        "A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:",
+        "  [   ] <                                            >            ",
+        [
+            ref("Gyvt.", "69/D", ("1a", "1b")),
+        ],
+        ["Gyvt."],
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
@@ -401,12 +406,12 @@ CASES = [
         "(1) és (3)–(5) bekezdése, a 38. §, a 39. § (1) és (3)–(5) bekezdése, a 40–59. §, a 60. § (1) bekezdése, a 61. § (1), (2) "
         "és (7) bekezdése, 62–66. §, a 67. § (5) bekezdés a)–d) és g) pontja, a 68. § (1)–(3), (10) és (12)–(15) bekezdése, "
         "a 68. § (17) bekezdés 1., 2., 4., 6–8., 10–13., 15., 16., 18–20. és 25. pontja, a 69–76. §, a 77. § (3) és (4) bekezdése, a 78–82. §, "
-        "a 181. §, a 182. §, a 192. § a)–b), valamint d)–n) pontja és a 193. § 2014. március 15-én lép hatályba.",
+        "a 181. és 182. §, a 192. § a)–b), valamint d)–n) pontja és a 193. § 2014. március 15-én lép hatályba.",
         "   <     >    <       >    <               >    <      >    <       >    <               >    <   >    <     "
-        "  >    <               >    <   >    <       >    <               >    <      >    <                 >    <       >  < > "
+        "  >    <               >    <   >    <       >    <               >    <      >    <                 >    <            > "
         "   <           >  <      >    <                      >    <       >    <           >  <  >    <                 >  "
-        "  <                    >  <>  <>  <  >  <    >  < >  < >  <    >    <        >    <      >    <       >    <           >    <      >  "
-        "  <    >    <    >    <          >           <          >      <    >                                  ",
+        "  <                        >  <>  <  >  <    >  <      >  <    >    <        >    <      >    <                        >    <      >  "
+        "  <            >    <          >           <          >      <    >                                  ",
         [
             ref(None, ('1', '30')),
             ref(None, '31', '1'),
@@ -422,8 +427,7 @@ CASES = [
             ref(None, '39', ('3', '5')),
             ref(None, ('40', '59')),
             ref(None, '60', '1'),
-            ref(None, '61', '1'),
-            ref(None, '61', '2'),
+            ref(None, '61', ('1', '2')),
             ref(None, '61', '7'),
             ref(None, ('62', '66')),
             ref(None, '67', '5', ('a', 'd')),
@@ -431,21 +435,17 @@ CASES = [
             ref(None, '68', ('1', '3')),
             ref(None, '68', '10'),
             ref(None, '68', ('12', '15')),
-            ref(None, '68', '17', '1'),
-            ref(None, '68', '17', '2'),
+            ref(None, '68', '17', ('1', '2')),
             ref(None, '68', '17', '4'),
             ref(None, '68', '17', ('6', '8')),
             ref(None, '68', '17', ('10', '13')),
-            ref(None, '68', '17', '15'),
-            ref(None, '68', '17', '16'),
+            ref(None, '68', '17', ('15', '16')),
             ref(None, '68', '17', ('18', '20')),
             ref(None, '68', '17', '25'),
             ref(None, ('69', '76')),
-            ref(None, '77', '3'),
-            ref(None, '77', '4'),
+            ref(None, '77', ('3', '4')),
             ref(None, ('78', '82')),
-            ref(None, '181'),
-            ref(None, '182'),
+            ref(None, ('181', '182')),
             ref(None, '192', None, ('a', 'b')),
             ref(None, '192', None, ('d', 'n')),
             ref(None, '193'),
@@ -589,10 +589,15 @@ BLOCK_AMENDMENT_CASES = (
         "A polgári törvénykönyvről szóló 2013. évi V. tv. 3:319. § (5) bekezdése a következő szöveggel lép hatályba:",
         BlockAmendmentMetadata(ref("2013. évi V. törvény", "3:319", "5"))
     ),
+    (
+        "A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(ref("Gyvt.", "69/D", ("1a", "1b")))
+    ),
+    (
+        "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba:",
+        BlockAmendmentMetadata(ref("Ptk.", "3:261", ("4", "5")))
+    ),
     # TODO:
-    # Ranges with "and"
-    #   "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba"
-
     # Simultaneous substitution and insertion
     #   "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki"
     #   "A GET. 16. § (1) bekezdés f) pontja helyébe a következő rendelkezés lép, és a § a következő g) és h) pontokkal egészül ki"
@@ -606,6 +611,8 @@ BLOCK_AMENDMENT_CASES = (
     #   "A helyi adókról szóló 1990. évi C. törvény (a továbbiakban: Htv.) a 11. §-t követően a következő 11/A. §-sal egészül ki"
 
 )
+
+
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s, correct_metadata):
     parsed = GrammaticalAnalyzer().analyze(s)

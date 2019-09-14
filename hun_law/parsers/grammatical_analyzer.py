@@ -25,7 +25,8 @@ from enum import Enum
 from .grammar import model
 from .grammar.parser import ActGrammarParser
 
-from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata
+from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint
 
 
 def iterate_depth_first(node, filter_class=None):
@@ -45,7 +46,23 @@ def iterate_depth_first(node, filter_class=None):
         yield node
 
 
+@attr.s(slots=True)
+class ReferenceCollectorDeferredItem:
+    ref_type = attr.ib()
+    ref_data = attr.ib()
+    start_pos = attr.ib()
+    end_pos = attr.ib()
+
+
 class ReferenceCollector:
+    NAME_TO_STRUCTURE = {
+        'article': Article,
+        'paragraph': Paragraph,
+        'alphabeticpoint': AlphabeticPoint,
+        'numericpoint': NumericPoint,
+        'alphabeticsubpoint': AlphabeticSubpoint,
+    }
+
     def __init__(self):
         self.act = None
         self.articles = [(None, 0, 0)]
@@ -56,15 +73,49 @@ class ReferenceCollector:
         self.subpoints = [(None, 0, 0)]
         self.alphabeticsubpoints = self.subpoints  # alias
         self.numericsubpoints = self.subpoints  # alias
+        self.deferred_item = None
 
     def add_item(self, ref_type, ref_data, start_pos, end_pos):
-        ref_list = getattr(self, ref_type + 's')
-        if ref_list[0][0] is None:
-            ref_list[0] = (ref_data, start_pos, end_pos)
+        if self.mergeable_into_deferred(ref_type, ref_data):
+            self.merge_to_deferred(ref_data, end_pos)
+            self.commit_deferred_item()
         else:
-            ref_list.append((ref_data, start_pos, end_pos))
+            self.commit_deferred_item()
+            self.deferred_item = ReferenceCollectorDeferredItem(ref_type, ref_data, start_pos, end_pos)
+
+    def mergeable_into_deferred(self, ref_type, ref_data):
+        if self.deferred_item is None:
+            return False
+        if self.deferred_item.ref_type != ref_type:
+            return False
+        if isinstance(ref_data, tuple) or isinstance(self.deferred_item.ref_data, tuple):
+            return False
+        if ref_type not in self.NAME_TO_STRUCTURE:
+            return False
+        next_id = self.NAME_TO_STRUCTURE[ref_type].next_identifier(self.deferred_item.ref_data)
+        return next_id == ref_data
+
+    def merge_to_deferred(self, ref_data, end_pos):
+        self.deferred_item.ref_data = (self.deferred_item.ref_data, ref_data)
+        self.deferred_item.end_pos = end_pos
+
+    def commit_deferred_item(self):
+        if self.deferred_item is None:
+            return
+        ref_list = getattr(self, self.deferred_item.ref_type + 's')
+        item_to_add = (
+            self.deferred_item.ref_data,
+            self.deferred_item.start_pos,
+            self.deferred_item.end_pos,
+        )
+        if ref_list[0][0] is None:
+            ref_list[0] = item_to_add
+        else:
+            ref_list.append(item_to_add)
+        self.deferred_item = None
 
     def iter(self, start_override, end_override):
+        self.commit_deferred_item()
         ref_args = [self.act, None, None, None, None]
         levels = ("articles", "paragraphs", "points", "subpoints")
         last_end = 0
