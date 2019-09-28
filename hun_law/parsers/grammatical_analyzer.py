@@ -268,12 +268,9 @@ class GrammaticalAnalysisResult:
 
         amended_references = tuple(r.reference for r in self._convert_single_reference(act_id, self.tree.reference))
         # Block amendments may only be contigous ranges, not lists.
-        # TODO: contigous pairs are usually not noted as a range, but as a list of the
-        # two ids with "és", but they should be parsed as ranges, really. Or converted
-        # here the latest.
         if len(amended_references) != 1:
-            # Don't fail horribly in this case, just report that this as not a block amendment.
-            # Same as failing in grammar phase.
+            # Most likely a misparse, so don't fail horribly in this case, just report
+            # that this as not a block amendment. Same as failing in grammar phase.
             return None
 
         return BlockAmendmentMetadata(
