@@ -597,14 +597,65 @@ BLOCK_AMENDMENT_CASES = (
         "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba:",
         BlockAmendmentMetadata(amended_reference=ref("Ptk.", "3:261", ("4", "5")))
     ),
+    (
+        "A Kkt. 49. § (2) bekezdés i) pontja helyébe a következő rendelkezés lép, és a bekezdés a következő j) ponttal egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Kkt.", "49", "2", "i"),
+            inserted_reference=ref("Kkt.", "49", "2", "j"),
+        )
+    ),
+    (
+        "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Elszámolási tv.", "35", "4"),
+            inserted_reference=ref("Elszámolási tv.", "35", "5"),
+        )
+    ),
+    (
+        "A Ptk. 3:268. § (2) és (3) bekezdése helyébe a következő rendelkezések lépnek, és a § a következő (4) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Ptk.", "3:268", ("2", "3")),
+            inserted_reference=ref("Ptk.", "3:268", "4"),
+        )
+    ),
+    (
+        "A Ptk. 8:6. § r) pontja helyébe a következő rendelkezés lép, és a § a következő s) ponttal egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Ptk.", "8:6", None, "r"),
+            inserted_reference=ref("Ptk.", "8:6", None, "s"),
+        )
+    ),
+    (
+        "A Tv. 16. § (1) bekezdés f) pontja helyébe a következő rendelkezés lép, és a § a következő g) és h) pontokkal egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Tv.", "16", "1", "f"),
+            inserted_reference=ref("Tv.", "16", "1", ("g", "h")),
+        )
+    ),
+    (
+        "Az Tv. 5/A. § (2a) bekezdése helyébe a következő rendelkezés lép, és a § a következő (2b)–(2f) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Tv.", "5/A", "2a"),
+            inserted_reference=ref("Tv.", "5/A", ("2b", "2f")),
+        )
+    ),
+    (
+        "Az Evt. 108. § (4) bekezdése helyébe a következő rendelkezés lép, valamint a következő (5)–(10) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Evt.", "108", "4"),
+            inserted_reference=ref("Evt.", "108", ("5", "10")),
+        )
+    ),
+    (
+        "A Btk. 459. § (1) bekezdés 24. pontja helyébe a következő rendelkezés lép, valamint a 459. § (1) bekezdése a következő 24a. ponttal egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Btk.", "459", "1", "24"),
+            inserted_reference=ref("Btk.", "459", "1", "24a"),
+        )
+    ),
     # TODO:
-    # Simultaneous substitution and insertion
-    #   "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki"
-    #   "A GET. 16. § (1) bekezdés f) pontja helyébe a következő rendelkezés lép, és a § a következő g) és h) pontokkal egészül ki"
-    #   "Az R2. 5/A. § (2a) bekezdése helyébe a következő rendelkezés lép, és a § a következő (2b)–(2f ) bekezdéssel egészül ki"
-    #   "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
-    #   "Az Evt. 108. § (4) bekezdése helyébe a következő rendelkezés lép, valamint a következő (5)–(10) bekezdéssel egészül ki"
-    #   "A Btk. 459. § (1) bekezdés 24. pontja helyébe a következő rendelkezés lép, valamint a 459. § (1) bekezdése a következő 24a. ponttal egészül ki:"
+    # Other simultaneous amendment + insertion cases:
+    # Full articles: "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
     # "követően" constructs:
     #   "A Tfvt. a 17/A. §-t követően a következő 17/B. és 17/C. §-sal egészül ki"
     #   "Az Ngt. a 6/C. §-át követően a következő alcímmel és 6/D−K. §-sal egészül ki:"

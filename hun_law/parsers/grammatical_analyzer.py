@@ -293,6 +293,10 @@ class GrammaticalAnalysisResult:
                 return None
             inserted_reference = inserted_references[0]
 
+        if amended_reference is not None and inserted_reference is not None:
+            # Act has to be cut off first, because otherwise relative_to does not do anything.
+            inserted_reference = attr.evolve(inserted_reference, act=None)
+            inserted_reference = inserted_reference.relative_to(amended_reference)
         return BlockAmendmentMetadata(
             amended_reference=amended_reference,
             inserted_reference=inserted_reference,
