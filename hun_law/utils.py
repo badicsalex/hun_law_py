@@ -73,7 +73,11 @@ class IndentedLine:
         if skipped_parts_index >= len(self._parts):
             return EMPTY_LINE
         if skipped_len != start:
-            raise ValueError("Couldn't slice precisely at requested index (multi-char part in the way)")
+            offending_part = self._parts[skipped_parts_index-1].content
+            raise ValueError(
+                "Couldn't slice precisely at requested start index (multi-char part '{}' in the way)"
+                .format(offending_part)
+            )
 
         included_parts_index = skipped_parts_index
         included_len = 0
@@ -82,7 +86,11 @@ class IndentedLine:
             included_parts_index += 1
 
         if included_len != end-start:
-            raise ValueError("Couldn't slice precisely at requested index (multi-char part in the way)")
+            offending_part = self._parts[included_parts_index-1].content
+            raise ValueError(
+                "Couldn't slice precisely at requested end index (multi-char part '{}' in the way)"
+                .format(offending_part)
+            )
 
         first_part = self._parts[skipped_parts_index]
         if skipped_x:
