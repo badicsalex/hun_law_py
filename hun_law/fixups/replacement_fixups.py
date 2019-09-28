@@ -1397,6 +1397,108 @@ replacement_fixups = {
             "replacement": "„a) az önkéntes tartalékos katona hivatásos, szerződéses, honvéd tisztjelölt vagy honvéd altiszt-jelölt szolgálati"
         }
     ],
+    "2016. évi LXXI. törvény": [
+        {
+            "needle": "Aláírásra került Brüsszelben, 2016. „ ’-án.",
+            "replacement": "Aláírásra került Brüsszelben, 2016.  ’-án."
+        },
+        {
+            "needle": "Aláírásra került Brüsszelben, 2016.  ’-án.",
+            "replacement": "Aláírásra került Brüsszelben, 2016.  ’-án.”"
+        }
+    ],
+    "2016. évi LXXVI. törvény": [
+        {
+            "needle": "Szakképzési Hídprogramot” szöveg,”",
+            "replacement": "Szakképzési Hídprogramot” szöveg,"
+        }
+    ],
+    "2016. évi LXXX. törvény": [
+        {
+            "needle": "fenntartott köznevelési intézmény kivételével –,",
+            "replacement": "fenntartott köznevelési intézmény kivételével –”,"
+        }
+    ],
+    "2017. évi CLXXXVI. törvény": [
+        {
+            "needle": "a vezető tisztségviselő képviseleti jogot nem gyakorol, ez a tény) szöveg,",
+            "replacement": "a vezető tisztségviselő képviseleti jogot nem gyakorol, ez a tény)” szöveg,"
+        }
+    ],
+    "2017. évi CXCIII. törvény": [
+        {
+            "needle": "„6. életkezdési letéti számla: a kiutaló által a gyermek nevén vezetett nyilvántartási számla;“",
+            "replacement": "„6. életkezdési letéti számla: a kiutaló által a gyermek nevén vezetett nyilvántartási számla;”"
+        },
+        {
+            "needle": "belföldi gyermek adatszolgáltatás időpontjában nyilvántartott adatai vonatkozásában is teljesíti 2018. március 31-ig.",
+            "replacement": "belföldi gyermek adatszolgáltatás időpontjában nyilvántartott adatai vonatkozásában is teljesíti 2018. március 31-ig.”"
+        }
+    ],
+    "2017. évi CXXX. törvény": [
+        {
+            "needle": "4. 34. § (2) és (4) bekezdésében a „kérelmet elutasító végzés” szövegrész helyébe a kérelmet elutasító vagy",
+            "replacement": "4. 34. § (2) és (4) bekezdésében a „kérelmet elutasító végzés” szövegrész helyébe a „kérelmet elutasító vagy"
+        }
+    ],
+    "2017. évi CXXXIV. törvény": [
+        {
+            "needle": "telekalakítási, illetve építési tilalmat elrendelni.”",
+            "replacement": "telekalakítási, illetve építési tilalmat elrendelni.””"
+        }
+    ],
+    "2017. évi L. törvény": [
+        {
+            "needle": "a) megtiltja a további foglalkoztatást, ha az alkalmazás vagy a foglalkoztatás a 3. § (1) bekezdés a) pontjának első",
+            "replacement": "„a) megtiltja a további foglalkoztatást, ha az alkalmazás vagy a foglalkoztatás a 3. § (1) bekezdés a) pontjának első"
+        },
+        {
+            "needle": "„53/A. § Az építésügyi és építésfelügyeleti eljárásokban az eljáró hatóság és szakhatóság az eljárást és annak eljárási",
+            "replacement": "53/A. § Az építésügyi és építésfelügyeleti eljárásokban az eljáró hatóság és szakhatóság az eljárást és annak eljárási"
+        },
+        {
+            "needle": "c) 28. § (1) bekezdésében a „jogerős” szövegrész helyébe a „végleges szöveg,",
+            "replacement": "c) 28. § (1) bekezdésében a „jogerős” szövegrész helyébe a „végleges” szöveg,"
+        },
+        {
+            "needle": "során.",
+            "needle_prev_lines": [
+                "j) hatósági bizonyítvány kiállítása"
+            ],
+            "replacement": "során.”"
+        },
+        {
+            "needle": "alá vett szöveg, a „lefoglalást” szövegrész helyébe a „zár alá vételt” szöveg",
+            "replacement": "alá vett” szöveg, a „lefoglalást” szövegrész helyébe a „zár alá vételt” szöveg"
+        },
+        {
+            "needle": "(3) Ha harmadik személy javára a Földforgalmi törvényen, más törvényen vagy megállapodáson alapuló elővásárlási",
+            "replacement": "„(3) Ha harmadik személy javára a Földforgalmi törvényen, más törvényen vagy megállapodáson alapuló elővásárlási"
+        },
+        {
+            "needle": "(rendeletben határozza meg.)",
+            "needle_prev_lines": [
+                "jóváhagyott információhordozók és feladathordozók tankönyvvé nyilvánításának rendjét"
+            ],
+            "replacement": "(rendeletben határozza meg.)”"
+        },
+        {
+            "needle": "p) a bizalmi felügyelet által vezetett nyilvántartás tartalmával és a bizalmi szolgáltatás nyújtásával összefüggő",
+            "replacement": "„p) a bizalmi felügyelet által vezetett nyilvántartás tartalmával és a bizalmi szolgáltatás nyújtásával összefüggő"
+        }
+    ],
+    "2017. évi LXI. törvény": [
+        {
+            "needle": "az engedély kiadásához vagy a nyilvántartásba vételhez szükséges feltételek már nem állnak fenn.”",
+            "replacement": "az engedély kiadásához vagy a nyilvántartásba vételhez szükséges feltételek már nem állnak fenn."
+        }
+    ],
+    "2017. évi LXVIII. törvény": [
+        {
+            "needle": "d) 41. § (5) bekezdésében az ”Az állami vagy önkormányzati fenntartású előadó-művészeti” szövegrész helyébe",
+            "replacement": "d) 41. § (5) bekezdésében az „Az állami vagy önkormányzati fenntartású előadó-művészeti” szövegrész helyébe"
+        }
+    ],
     "2018. évi LI. törvény": [
         {
             "needle": "Maďarsko a Slovenská republika (ďalej len „zmluvné strany“),",
