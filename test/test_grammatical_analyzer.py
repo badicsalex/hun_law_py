@@ -539,63 +539,63 @@ def test_new_abbreviations(s, abbrevs):
 BLOCK_AMENDMENT_CASES = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("2012. évi CCXIX. törvény", '28'))
+        BlockAmendmentMetadata(amended_reference=ref("2012. évi CCXIX. törvény", '28'))
     ),
     (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("2012. évi I. törvény", "29", "2", "e"))
+        BlockAmendmentMetadata(amended_reference=ref("2012. évi I. törvény", "29", "2", "e"))
     ),
     (
         "A Tv. 1. § 3. pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref('Tv.', "1", None, "3"))
+        BlockAmendmentMetadata(amended_reference=ref('Tv.', "1", None, "3"))
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("2111. évi LXXV. törvény", "1", "1", "1", "c"))
+        BlockAmendmentMetadata(amended_reference=ref("2111. évi LXXV. törvény", "1", "1", "1", "c"))
     ),
     (
         "A Batv. 1. § (2) bekezdés b)–f) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(ref("Batv.", "1", "2", ("b", "f")))
+        BlockAmendmentMetadata(amended_reference=ref("Batv.", "1", "2", ("b", "f")))
     ),
     (
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
-        BlockAmendmentMetadata(ref("Eht.", "188", None, "31/a"))
+        BlockAmendmentMetadata(inserted_reference=ref("Eht.", "188", None, "31/a"))
     ),
     (
         "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
-        BlockAmendmentMetadata(ref("1995. évi XCVII. törvény", "71", None, "3a"))
+        BlockAmendmentMetadata(inserted_reference=ref("1995. évi XCVII. törvény", "71", None, "3a"))
     ),
     (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(ref("Víziközmű tv.", "63", ("5", "7")))
+        BlockAmendmentMetadata(inserted_reference=ref("Víziközmű tv.", "63", ("5", "7")))
     ),
     (
         "A Ptk. 6:417. § (4) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(ref("Ptk.", "6:417", "4"))
+        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "6:417", "4"))
     ),
     (
         "A Ptk. 6:130. §-a a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(ref("Ptk.", "6:130"))
+        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "6:130"))
     ),
     (
         "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba:",
-        BlockAmendmentMetadata(ref("Ptk.", "3:391", "3"))
+        BlockAmendmentMetadata(inserted_reference=ref("Ptk.", "3:391", "3"))
     ),
     (
         "A Ptk. 3:278. § (1) bekezdés e) pontja a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(ref("Ptk.", "3:278", "1", "e"))
+        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "3:278", "1", "e"))
     ),
     (
         "A polgári törvénykönyvről szóló 2013. évi V. tv. 3:319. § (5) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(ref("2013. évi V. törvény", "3:319", "5"))
+        BlockAmendmentMetadata(amended_reference=ref("2013. évi V. törvény", "3:319", "5"))
     ),
     (
         "A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(ref("Gyvt.", "69/D", ("1a", "1b")))
+        BlockAmendmentMetadata(inserted_reference=ref("Gyvt.", "69/D", ("1a", "1b")))
     ),
     (
         "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(ref("Ptk.", "3:261", ("4", "5")))
+        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "3:261", ("4", "5")))
     ),
     # TODO:
     # Simultaneous substitution and insertion

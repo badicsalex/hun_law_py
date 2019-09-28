@@ -186,8 +186,12 @@ class ActBlockAmendmentParser:
         assert len(paragraph.children) == 1
 
         try:
+            starting_reference = analysis_result.amended_reference
+            if starting_reference is None:
+                starting_reference = analysis_result.inserted_reference
+
             block_amendment = BlockAmendmentStructureParser.parse(
-                analysis_result.amended_reference,
+                starting_reference,
                 context_intro, context_outro,
                 paragraph.quoted_block(0).lines
             )

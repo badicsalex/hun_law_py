@@ -524,4 +524,9 @@ class ActIdAbbreviation:
 
 @attr.s(slots=True, frozen=True)
 class BlockAmendmentMetadata:
-    amended_reference = attr.ib()
+    amended_reference = attr.ib(kw_only=True, default=None)
+    inserted_reference = attr.ib(kw_only=True, default=None)
+
+    def __attrs_post_init__(self):
+        if self.amended_reference is None and self.inserted_reference is None:
+            raise ValueError("A BlockAmendmentMetadata object has to contain at least an amendment or an insertion")

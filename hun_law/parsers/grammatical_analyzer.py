@@ -182,7 +182,10 @@ class GrammaticalAnalysisResult:
 
     def _iterate_references_in_block_amendment(self):
         act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
-        yield act_id, self.tree.reference
+        if self.tree.amended_reference:
+            yield act_id, self.tree.amended_reference
+        if self.tree.inserted_reference:
+            yield act_id, self.tree.inserted_reference
 
     @classmethod
     def _convert_single_reference(cls, act_id, parsed_ref):
@@ -266,15 +269,33 @@ class GrammaticalAnalysisResult:
             return None
         act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
 
-        amended_references = tuple(r.reference for r in self._convert_single_reference(act_id, self.tree.reference))
-        # Block amendments may only be contigous ranges, not lists.
-        if len(amended_references) != 1:
-            # Most likely a misparse, so don't fail horribly in this case, just report
-            # that this as not a block amendment. Same as failing in grammar phase.
-            return None
+        amended_reference = None
+        if self.tree.amended_reference:
+            amended_references = tuple(
+                r.reference for r in self._convert_single_reference(act_id, self.tree.amended_reference)
+            )
+            # Block amendments may only be contigous ranges, not lists.
+            if len(amended_references) != 1:
+                # Most likely a misparse, so don't fail horribly in this case, just report
+                # that this as not a block amendment. Same as failing in grammar phase.
+                return None
+            amended_reference = amended_references[0]
+
+        inserted_reference = None
+        if self.tree.inserted_reference:
+            inserted_references = tuple(
+                r.reference for r in self._convert_single_reference(act_id, self.tree.inserted_reference)
+            )
+            # Block amendments may only be contigous ranges, not lists.
+            if len(inserted_references) != 1:
+                # Most likely a misparse, so don't fail horribly in this case, just report
+                # that this as not a block amendment. Same as failing in grammar phase.
+                return None
+            inserted_reference = inserted_references[0]
 
         return BlockAmendmentMetadata(
-            amended_reference=amended_references[0]
+            amended_reference=amended_reference,
+            inserted_reference=inserted_reference,
         )
 
     @classmethod
