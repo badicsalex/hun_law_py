@@ -292,7 +292,7 @@ def test_weird_amended_ids_1():
                 „3a. gazdálkodó szervezet: a polgári perrendtartásról szóló törvény szerinti gazdálkodó szervezet;”
     """
     resulting_structure = quick_parse_structure(act_text)
-    amended_structure = resulting_structure.article("1").paragraph().block_amendment()
+    amended_structure = resulting_structure.article("25").paragraph().block_amendment()
     assert amended_structure.children_type is NumericPoint
     assert len(amended_structure.children) == 1
     assert amended_structure.children[0].identifier == '3a'
