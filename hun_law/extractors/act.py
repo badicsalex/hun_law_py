@@ -22,12 +22,29 @@ from hun_law.fixups import text_fixups
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
 
+import attr
+
+@attr.s(slots=True)
+class StructureOnlyAct:
+    act = attr.ib()
+
+@attr.s(slots=True)
+class BlockAmendmentOnlyAct:
+    act = attr.ib()
 
 @Extractor(MagyarKozlonyLawRawText)
-def MagyarKozlonyLawFixupper(raw):
+def MagyarKozlonyToStructureOnlyAct(raw):
     # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
     fixupped_body = do_all_fixups(raw.identifier, raw.body)
     act = ActStructureParser.parse(raw.identifier, raw.subject, fixupped_body)
-    act = ActBlockAmendmentParser.parse(act)
-    act = ActSemanticsParser.parse(act)
+    yield StructureOnlyAct(act)
+
+@Extractor(StructureOnlyAct)
+def EnrichActWithBlockAmendments(structure_only):
+    act = ActBlockAmendmentParser.parse(structure_only.act)
+    yield BlockAmendmentOnlyAct(act)
+
+@Extractor(BlockAmendmentOnlyAct)
+def EnrichActWithOtherSemanticData(block_amendment_only):
+    act = ActSemanticsParser.parse(block_amendment_only.act)
     yield act
