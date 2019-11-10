@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-import enum
 import re
 from collections import namedtuple
 
@@ -113,82 +112,94 @@ def MagyarKozlonySectionExtractor(kozlony):
 MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', 'subject', 'body'])
 
 
-@Extractor(MagyarKozlonyLawsSection)
-def MagyarKozlonyLawExtractor(laws_section):
-    States = enum.Enum(
-        "States",
-        [
-            "WAITING_FOR_HEADER_NEWLINE",
-            "WAITING_FOR_HEADER",
-            "HEADER",
-            "BODY_BEFORE_ASTERISK_FOOTER",
-            "BODY_AFTER_ASTERISK_FOOTER",
-        ]
-    )
-    header_starting_re = re.compile('^[12][09][0-9][0-9]. évi [IVXLC]+. törvény')
-    footer_re = re.compile('köztársasági elnök az Országgyűlés (al)?elnöke')
+class LawExtractorStateMachine:
+    HEADER_STARTING_RE = re.compile('^[12][09][0-9][0-9]. évi [IVXLC]+. törvény')
+    ACT_FOOTER_RE = re.compile('köztársasági elnök az Országgyűlés (al)?elnöke')
 
-    identifier = ''
-    subject = ''
-    body = []
+    def __init__(self):
+        self.identifier = ''
+        self.subject = ''
+        self.body = []
+        self.state = self.WAITING_FOR_HEADER_NEWLINE
+        self.pending_result = None
 
-    state = States.WAITING_FOR_HEADER_NEWLINE
-    for line in laws_section.lines:
-        if state == States.WAITING_FOR_HEADER_NEWLINE:
-            if line != EMPTY_LINE:
-                continue
-            state = States.WAITING_FOR_HEADER
-            continue
+    def feed_line(self, line):
+        self.pending_result = None
+        self.state(line)
+        return self.pending_result
 
-        if state == States.WAITING_FOR_HEADER:
-            if not header_starting_re.match(line.content):
-                state = States.WAITING_FOR_HEADER_NEWLINE
-                continue
-            identifier = line.content
-            state = States.HEADER
-            continue
+    def WAITING_FOR_HEADER_NEWLINE(self, line):
+        if line != EMPTY_LINE:
+            return
+        self.state = self.WAITING_FOR_HEADER
 
-        if state == States.HEADER:
-            if subject != '':
-                subject = subject + ' ' + line.content
-            else:
-                subject = line.content
-            # TODO: this is alwo a huge hack, because it depend on there being a footer about
-            # when the law or amendment was enacted and by whom.
-            if subject[-1] == '*':
-                subject = subject[:-1]
-                state = States.BODY_BEFORE_ASTERISK_FOOTER
-            continue
+    def WAITING_FOR_HEADER(self, line):
+        if not self.HEADER_STARTING_RE.match(line.content):
+            self.state = self.WAITING_FOR_HEADER_NEWLINE
+            return
+        self.identifier = line.content
+        self.state = self.HEADER
 
-        if state in (States.BODY_BEFORE_ASTERISK_FOOTER, States.BODY_AFTER_ASTERISK_FOOTER):
-            body.append(line)
-            # TODO: this is also a hack that depends on the things below being true
-            if len(body) < 4:
-                continue
+    def HEADER(self, line):
+        if self.subject != '':
+            self.subject = self.subject + ' ' + line.content
+        else:
+            self.subject = line.content
 
+        # TODO: this is also a huge hack, because we depend on there always being a footer about
+        # when the law or amendment was enacted and by whom.
+        if self.subject[-1] == '*':
+            self.subject = self.subject[:-1]
+            self.state = self.BODY_BEFORE_ASTERISK_FOOTER
+
+    def BODY_BEFORE_ASTERISK_FOOTER(self, line):
+        # State to swallow the following footer:
+        # "* A törvényt az Országgyûlés a 2010. november 22-i ülésnapján fogadta el."
+
+        self.body.append(line)
+        if len(self.body) >= 4:
             # TODO: this whole asterisk footer whatever is ugly. The footer should be detected
             # in extractors before this one, based on other cues.
             # Also let's just hope there are no two small laws on a single page
-            if state == States.BODY_BEFORE_ASTERISK_FOOTER:
-                if body[-3] == EMPTY_LINE and body[-1] == EMPTY_LINE and body[-2].content[0] == '*':
-                    body = body[:-3] + [EMPTY_LINE]
-                    state = States.BODY_AFTER_ASTERISK_FOOTER
-                    continue
+            if self.body[-3] == EMPTY_LINE and self.body[-1] == EMPTY_LINE and self.body[-2].content[0] == '*':
+                self.body = self.body[:-3] + [EMPTY_LINE]
+                self.state = self.BODY_AFTER_ASTERISK_FOOTER
+                return
 
-            if body[-3] == EMPTY_LINE and footer_re.match(body[-1].content):
-                # TODO: Extract footer
-                yield MagyarKozlonyLawRawText(
-                    identifier,
-                    subject,
-                    body[:-3]
-                )
-                identifier = ''
-                subject = ''
-                body = []
-                state = States.WAITING_FOR_HEADER_NEWLINE
-            continue
+        # There might not be an asterisk footer at all before the end of the act,
+        # so check for that too in this state.
+        # But let's pretend the append never happened, first.
+        self.body.pop()
+        self.BODY_AFTER_ASTERISK_FOOTER(line)
 
-        # TODO: extract Annexes
+    def BODY_AFTER_ASTERISK_FOOTER(self, line):
+        self.body.append(line)
 
-        raise ValueError("What state is this.")
-    # TODO: assert for correct state
+        if len(self.body) < 4:
+            # body not long enough to contain ACT_FOOTER_RE
+            return
+
+        # Example for the actual format of the act footer
+        # [EMPTY]
+        # Dr. Schmitt Pál s. k.,     Dr. Kövér László s. k.,
+        # köztársasági elnök     az Országgyűlés elnöke
+        if self.body[-3] == EMPTY_LINE and self.ACT_FOOTER_RE.match(self.body[-1].content):
+            # TODO: Extract footer
+            self.pending_result = MagyarKozlonyLawRawText(
+                self.identifier,
+                self.subject,
+                self.body[:-3]
+            )
+            self.identifier = ''
+            self.subject = ''
+            self.body = []
+            self.state = self.WAITING_FOR_HEADER_NEWLINE
+
+
+@Extractor(MagyarKozlonyLawsSection)
+def MagyarKozlonyLawExtractor(laws_section):
+    state_machine = LawExtractorStateMachine()
+    for line in laws_section.lines:
+        result = state_machine.feed_line(line)
+        if result is not None:
+            yield result
