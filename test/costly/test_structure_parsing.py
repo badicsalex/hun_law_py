@@ -21,6 +21,7 @@ import os
 import pytest
 
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
+from hun_law.extractors.act import BlockAmendmentOnlyAct
 from hun_law.extractors.all import do_extraction
 from hun_law.cache import init_cache
 from hun_law.structure import \
@@ -30,8 +31,8 @@ from hun_law.structure import \
 
 def parse_single_kozlony(year, issue):
     init_cache(os.path.join(os.path.join(os.path.dirname(__file__), '..', '..'), 'cache'))
-    extracted = do_extraction([KozlonyToDownload(year, issue)], (Act, ))
-    return extracted
+    extracted = do_extraction([KozlonyToDownload(year, issue)], (BlockAmendmentOnlyAct, ))
+    return (e.act for e in extracted)
 
 
 def test_end_to_end_2010_181():
