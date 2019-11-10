@@ -30,11 +30,10 @@ def txt_writer(printed_type):
 
 @txt_writer(StructuralElement)
 def write_structural_element_as_txt(output_file, element, indent):
-    name = "{} {}".format(element.__class__.__name__, element.identifier)
-    indented_line_wrapped_print(name, indent, file=output_file)
-    indent = indent + " " * 5
+    indented_line_wrapped_print(element.formatted_identifier, indent, file=output_file)
+    indent = " " * len(indent)
     if element.title:
-        indented_line_wrapped_print(element.title, file=output_file)
+        indented_line_wrapped_print(element.title, indent, file=output_file)
 
 
 @txt_writer(BlockAmendment)
