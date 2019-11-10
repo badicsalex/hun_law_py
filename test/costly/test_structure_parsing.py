@@ -29,7 +29,7 @@ from hun_law.structure import \
 
 
 def parse_single_kozlony(year, issue):
-    init_cache(os.path.join(os.path.join(os.path.dirname(__file__), '..'), 'cache'))
+    init_cache(os.path.join(os.path.join(os.path.dirname(__file__), '..', '..'), 'cache'))
     extracted = do_extraction([KozlonyToDownload(year, issue)], (Act, ))
     return extracted
 
