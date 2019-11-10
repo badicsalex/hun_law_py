@@ -164,3 +164,69 @@ def test_indented_line_concat():
 
     assert line.slice(-2, -1).content == ' '
     assert line.slice(-2, -1).indent == 20
+
+
+BOLDNESS_TESTS = [
+    (
+        (
+            ('a', True),
+            ('b', True),
+            ('c', True),
+            ('d', True),
+        ), True,
+    ),
+    (
+        (
+            ('a', False),
+            ('b', False),
+            ('c', False),
+            ('d', False),
+        ), False,
+    ),
+    (
+        (
+            ('a', True),
+            ('b', False),
+            ('c', False),
+            ('d', False),
+        ), False,
+    ),
+    (
+        (
+            ('a', False),
+            ('b', True),
+            ('c', True),
+            ('d', True),
+        ), True,
+    ),
+    (
+        (
+            ('abcdef', True),
+            ('b', False),
+            ('c', False),
+        ), True,
+    ),
+    (
+        (
+            ('abcdef', False),
+            ('b', True),
+            ('c', True),
+        ), False,
+    ),
+    (
+        (
+            ('1. § (1)', True),
+            ('A devizakölcsönök...', False),
+            ('b', False),
+        ), False,
+    ),
+]
+
+
+@pytest.mark.parametrize("parts,should_be_bold", BOLDNESS_TESTS)
+def test_indented_line_bold(parts, should_be_bold):
+    line = IndentedLine(
+        IndentedLinePart(5, s, bold) for s, bold in parts
+    )
+
+    assert line.bold == should_be_bold

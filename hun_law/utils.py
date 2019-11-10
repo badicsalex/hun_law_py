@@ -25,6 +25,7 @@ from string import ascii_uppercase
 class IndentedLinePart:
     dx = attr.ib(converter=float)
     content = attr.ib(converter=str)
+    bold = attr.ib(converter=bool, default=False)
 
 
 @attr.s(slots=True, frozen=True)
@@ -32,6 +33,7 @@ class IndentedLine:
     _parts = attr.ib(factory=tuple, converter=tuple)
     content = attr.ib(init=False)
     indent = attr.ib(init=False)
+    bold = attr.ib(init=False)
 
     @_parts.validator
     def _parts_validator(self, attribute, parts):
@@ -48,6 +50,16 @@ class IndentedLine:
         if not self._parts:
             return 0
         return self._parts[0].dx
+
+    @bold.default
+    def _bold_default(self):
+        sum_len = 0
+        bold_len = 0
+        for p in self._parts:
+            sum_len += len(p.content)
+            if p.bold:
+                bold_len += len(p.content)
+        return bold_len * 2 > sum_len
 
     def slice(self, start, end=None):
         if start < 0:
