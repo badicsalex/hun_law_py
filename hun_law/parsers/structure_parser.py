@@ -391,6 +391,15 @@ class AlphabeticSubpointParser(SubArticleElementParser):
         raise NoSubpointsError()
 
 
+def get_prefixed_alphabetic_subpoint_parser(prefix):
+    # Soo, this is a great example of functional-oop hybrid things, which i
+    # both pretty compact, elegant, and disgusting at the same time.
+    # Thank 48. § (3) for this.
+    class PrefixedAlphabeticSubpointParser(AlphabeticSubpointParser):
+        PREFIX = prefix
+    return PrefixedAlphabeticSubpointParser
+
+
 class NumericPointParser(SubArticleElementParser):
     PARSED_TYPE = NumericPoint
 
@@ -431,15 +440,10 @@ class AlphabeticPointParser(SubArticleElementParser):
 
     @classmethod
     def try_parse_subpoints(cls, lines, parent_identifier):
-        # Soo, this is a great example of functional-oop hybrid things, which i
-        # both pretty compact, elegant, and disgusting at the same time.
-        # Thank 48. § (3) for this.
-        class PrefixedAlphabeticSubpointParser(AlphabeticSubpointParser):
-            PREFIX = parent_identifier
-
         # Numbered points may only have alphabetic subpoints.
         try:
-            return PrefixedAlphabeticSubpointParser.extract_multiple_from_text(lines)
+            parser = get_prefixed_alphabetic_subpoint_parser(parent_identifier)
+            return parser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
             pass
 
@@ -758,8 +762,8 @@ class BlockAmendmentStructureParser:
             expected_id = expected_id[0]
 
         if structural_type is AlphabeticSubpoint and len(expected_id) != 1:
-            # TODO. Keep in mind the weird PrefixedAlphabeticSubpointParser thing.
-            raise SubArticleParsingError("Prefixed (alphabetic-alphbetic) subpoint amendments not supported currently", BlockAmendment)
+            # TODO: let's hope it is not a two-letter subpoint like "ny"
+            return get_prefixed_alphabetic_subpoint_parser(expected_id[:-1]), expected_id
         return cls.PARSERS_FOR_TYPE[structural_type], expected_id
 
 

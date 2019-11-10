@@ -319,3 +319,31 @@ def test_weird_amended_ids_2():
     amended_structure = resulting_structure.article("1").paragraph("2").block_amendment()
     assert amended_structure.children_type is AlphabeticPoint
     assert amended_structure.children[0].identifier == 'sz'
+
+
+def test_alphabetic_alphabetic_subpoint():
+    act_text = """
+        75. §     (1)  A Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: Btk.) 28. §-a a következő (1a)
+                       bekezdéssel egészül ki:
+                       „(1a) Ha az erős felindulásban elkövetett emberölés, a háromévi szabadságvesztésnél súlyosabban
+                       büntetendő szándékos súlyos testi sértés, az emberrablás, az emberkereskedelem, a személyi
+                       szabadság megsértése, illetve a nemi élet szabadsága és a nemi erkölcs elleni bűncselekmény
+                       sértettje a bűncselekmény elkövetésekor a tizennyolcadik életévét még nem töltötte be, az
+                       elévülés határidejébe nem számít be az a tartam, amíg a tizennyolcadik életévét be nem tölti,
+                       vagy be nem töltötte volna.”
+                  (2)  A Btk. 250. § (4) bekezdésében az „(1) bekezdés a) pontjában” szövegrész helyébe az „(1) bekezdésben”
+                       szöveg lép.
+                  (3)  A Btk. 398. § (3) bekezdés a) pont af) alpontja helyébe a következő rendelkezés lép:
+                       [A (2) bekezdés b) pontja alkalmazása szempontjából
+                       az alapanyag jelentős mennyiségű, ha]
+                       „af) szárított dohány, fermentált dohány vagy vágott dohány esetén az 5 kilogrammot,”
+                       (meghaladja.)
+    """
+    resulting_structure = quick_parse_structure(act_text)
+    amended_structure = resulting_structure.article("75").paragraph("1").block_amendment()
+    assert amended_structure.children_type is Paragraph
+    assert amended_structure.children[0].identifier == '1a'
+
+    amended_structure = resulting_structure.article("75").paragraph("3").block_amendment()
+    assert amended_structure.children_type is AlphabeticSubpoint
+    assert amended_structure.children[0].identifier == 'af'
