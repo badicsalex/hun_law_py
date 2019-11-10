@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-from hun_law.structure import StructuralElement, SubArticleElement, BlockAmendment, QuotedBlock, Article, Act
+from hun_law.structure import StructuralElement, SubArticleElement, BlockAmendment, QuotedBlock, Article, Act, Subtitle
 from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
 
 all_txt_writers = []
@@ -26,6 +26,16 @@ def txt_writer(printed_type):
         all_txt_writers.append((printed_type, fn))
         return fn
     return txt_writer_decorator
+
+
+@txt_writer(Subtitle)
+def write_structural_element_as_txt(output_file, element, indent):
+    id_to_print = ""
+    if element.formatted_identifier:
+        id_to_print = element.formatted_identifier + " "
+    if element.title:
+        id_to_print = id_to_print + element.title
+    indented_line_wrapped_print(id_to_print.strip(), indent, file=output_file)
 
 
 @txt_writer(StructuralElement)

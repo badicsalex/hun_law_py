@@ -142,8 +142,13 @@ class Subtitle(StructuralElement):
     # Guaranteed to be uppercase
     # Example:
     # 17. Az alcím
+    #
+    # For older acts, there is no number, only a text.
+
     @property
     def formatted_identifier(self):
+        if not self.identifier:
+            return ""
         # TODO: special parts
         return "{}.".format(self.identifier)
 
