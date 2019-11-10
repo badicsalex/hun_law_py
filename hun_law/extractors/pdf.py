@@ -33,7 +33,17 @@ from hun_law.cache import CacheObject
 from . import Extractor
 from .file import PDFFileDescriptor
 
-TextBox = namedtuple('TextBox', ['x', 'y', 'width', 'width_of_space', 'content'])
+
+@attr.s(slots=True, frozen=True)
+class TextBox:
+    x = attr.ib(converter=float)
+    y = attr.ib(converter=float)
+    width = attr.ib(converter=float)
+    width_of_space = attr.ib(converter=float)
+    content = attr.ib(converter=str)
+    bold = attr.ib(converter=bool)
+
+
 PageOfTextBoxes = namedtuple('PageOfTextBoxes', ['textboxes'])
 PdfOfTextBoxes = namedtuple('PdfOfTextBoxes', ['pages'])
 
@@ -50,6 +60,11 @@ class PDFMinerAdapter(PDFTextDevice):
 
     def end_page(self, page):
         pass
+
+    def is_font_bold(self, font):
+        if not hasattr(font, 'is_bold'):
+            font.is_bold = 'bold' in font.fontname or 'Bold' in font.fontname
+        return font.is_bold
 
     def render_char(self, matrix, font, fontsize, scaling, rise, cid, *args):
         try:
@@ -99,7 +114,8 @@ class PDFMinerAdapter(PDFTextDevice):
             y = round(matrix[5], 3)
             textbox_width = textwidth * matrix[0]
             width_of_space = unscaled_width_of_space * fontsize * scaling * matrix[0]
-            self.current_page.textboxes.append(TextBox(x, y, textbox_width, width_of_space, text))
+            bold = self.is_font_bold(font)
+            self.current_page.textboxes.append(TextBox(x, y, textbox_width, width_of_space, text, bold))
         return textwidth
 
     # TODO: parse graphical lines, so that footers can be detected more easily
@@ -156,7 +172,7 @@ def extract_lines(potb):
             # TODO: instad of 0.2, use some real line height thing
             # 0.2 is small enough not to trigger for the e.g. the 2 in "m2" (the unit).
             # And this is okay for now
-            if last_y_coord is not None and abs(y_coord-last_y_coord)<0.2:
+            if last_y_coord is not None and abs(y_coord-last_y_coord) < 0.2:
                 # TODO: let's hope there is no intersection between the previous line's
                 # X coordinates and the current one. There shouldn't be any though.
                 textboxes_as_dicts[last_y_coord].update(textboxes_as_dicts[y_coord])
@@ -182,7 +198,7 @@ def extract_lines(potb):
                     if parts and parts[-1].content[-1] != ' ':
                         parts.append(IndentedLinePart(threshold_to_space - prev_x, ' '))
                         prev_x = threshold_to_space
-                parts.append(IndentedLinePart(box.x - prev_x, box.content))
+                parts.append(IndentedLinePart(box.x - prev_x, box.content, box.bold))
                 prev_x = box.x
                 threshold_to_space = x + box.width + box.width_of_space * 0.5
                 current_right_side = x + box.width
