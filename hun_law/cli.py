@@ -64,7 +64,7 @@ class GenerateCommand:
         )
 
     def run(self, argv):
-        init_cache(os.path.join(os.path.dirname(__file__), 'cache'))
+        init_cache(os.path.join(os.path.dirname(__file__), '..', 'cache'))
         parsed_args = self.argparser.parse_args(argv)
         if parsed_args.output_dir is not None:
             os.makedirs(parsed_args.output_dir, exist_ok=True)
