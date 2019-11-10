@@ -17,6 +17,9 @@
 
 from . import extractors_for_class
 
+# Yes, this is a hacky way to get all extractors, but you don't get to
+# judge me, pylint.
+# pylint: disable=unused-import
 from . import file, kozlonyok_hu_downloader, magyar_kozlony, pdf, act
 
 

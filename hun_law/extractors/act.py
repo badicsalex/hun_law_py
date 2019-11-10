@@ -15,22 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+import attr
+
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActSemanticsParser, ActBlockAmendmentParser
 from hun_law.fixups.common import do_all_fixups
+
+# TODO: this is a hacky way to enable text fixups
+# pylint: disable=unused-import
 from hun_law.fixups import text_fixups
+
 from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
 
-import attr
 
 @attr.s(slots=True)
 class StructureOnlyAct:
     act = attr.ib()
 
+
 @attr.s(slots=True)
 class BlockAmendmentOnlyAct:
     act = attr.ib()
+
 
 @Extractor(MagyarKozlonyLawRawText)
 def MagyarKozlonyToStructureOnlyAct(raw):
@@ -39,10 +46,12 @@ def MagyarKozlonyToStructureOnlyAct(raw):
     act = ActStructureParser.parse(raw.identifier, raw.subject, fixupped_body)
     yield StructureOnlyAct(act)
 
+
 @Extractor(StructureOnlyAct)
 def EnrichActWithBlockAmendments(structure_only):
     act = ActBlockAmendmentParser.parse(structure_only.act)
     yield BlockAmendmentOnlyAct(act)
+
 
 @Extractor(BlockAmendmentOnlyAct)
 def EnrichActWithOtherSemanticData(block_amendment_only):

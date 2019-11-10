@@ -82,19 +82,15 @@ def delete_line(needle):
 
 def replace_line_content(needle, replacement, *, needle_prev_lines=None):
     common_prefix_len = 0
-    while (
-        common_prefix_len < len(needle) and
-        common_prefix_len < len(replacement) and
-        needle[common_prefix_len] == replacement[common_prefix_len]
-    ):
+    while common_prefix_len < len(needle) and \
+            common_prefix_len < len(replacement) and \
+            needle[common_prefix_len] == replacement[common_prefix_len]:
         common_prefix_len += 1
 
     common_postfix_len = 1
-    while (
-        common_prefix_len + common_postfix_len <= len(needle) and
-        common_prefix_len + common_postfix_len <= len(replacement) and
-        needle[-common_postfix_len] == replacement[-common_postfix_len]
-    ):
+    while common_prefix_len + common_postfix_len <= len(needle) and \
+            common_prefix_len + common_postfix_len <= len(replacement) and \
+            needle[-common_postfix_len] == replacement[-common_postfix_len]:
         common_postfix_len += 1
     common_postfix_len = common_postfix_len - 1
 
@@ -132,7 +128,6 @@ def replace_line_content(needle, replacement, *, needle_prev_lines=None):
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part)
                 result.append(to_append)
                 needle_count = needle_count + 1
-            prev_line = l.content
 
         if needle_count == 0:
             raise ValueError("Text '{}' not found in body".format(needle))
@@ -155,7 +150,6 @@ def ptke_article_header_fixer(body):
 
     title_re = re.compile('^[\\[(](.*)[)\\]]$')
     article_re = re.compile('^([0-9]+\\. § )(.*)$')
-    there_was_a_match = False
 
     result = []
     prev_line = None

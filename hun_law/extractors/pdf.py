@@ -24,7 +24,6 @@ import attr
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfdevice import PDFTextDevice
-from pdfminer.utils import isnumber
 from pdfminer.pdffont import PDFUnicodeNotDefined
 
 from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2, object_to_dict_recursive, dict_to_object_recursive
@@ -61,12 +60,14 @@ class PDFMinerAdapter(PDFTextDevice):
     def end_page(self, page):
         pass
 
-    def is_font_bold(self, font):
+    @classmethod
+    def is_font_bold(cls, font):
         if not hasattr(font, 'is_bold'):
             font.is_bold = 'bold' in font.fontname or 'Bold' in font.fontname
         return font.is_bold
 
-    def render_char(self, matrix, font, fontsize, scaling, rise, cid, *args):
+    @classmethod
+    def cid_to_string(cls, font, cid):
         try:
             text = font.to_unichr(cid)
             # Keep in mind that 'text' can be multiple characters, like 'ffi'
@@ -92,6 +93,13 @@ class PDFMinerAdapter(PDFTextDevice):
         text = text.replace("õ", "ő")  # note the ~ on top of the first ő
         text = text.replace("Û", "Ű")  # Note the ^ on top of the first ű
         text = text.replace("û", "ű")  # note the ^ on top of the first ű
+        return text
+
+    def render_char(self, matrix, font, fontsize, scaling, rise, cid, *_args):
+        # We need to support multiple pdfminer versions simultaneously.
+        # Hence the *args
+        # pylint: disable=arguments-differ,too-many-arguments
+        text = self.cid_to_string(font, cid)
 
         textwidth = font.char_width(cid) * fontsize * scaling
 
@@ -106,16 +114,19 @@ class PDFMinerAdapter(PDFTextDevice):
 
         if not text.isspace():
             unscaled_width_of_space = font.char_width(32)
-            if unscaled_width_of_space == 1.0 or unscaled_width_of_space == 0.0:
+            if unscaled_width_of_space in (1.0, 0.0):
                 # Workaround for missing default width of space
                 # e.g. the font does not define the space character
                 unscaled_width_of_space = 0.25
-            x = matrix[4]
-            y = round(matrix[5], 3)
-            textbox_width = textwidth * matrix[0]
-            width_of_space = unscaled_width_of_space * fontsize * scaling * matrix[0]
-            bold = self.is_font_bold(font)
-            self.current_page.textboxes.append(TextBox(x, y, textbox_width, width_of_space, text, bold))
+            textbox = TextBox(
+                x=matrix[4],
+                y=round(matrix[5], 3),
+                width=textwidth * matrix[0],
+                width_of_space=unscaled_width_of_space * fontsize * scaling * matrix[0],
+                content=text,
+                bold=self.is_font_bold(font),
+            )
+            self.current_page.textboxes.append(textbox)
         return textwidth
 
     # TODO: parse graphical lines, so that footers can be detected more easily
@@ -146,66 +157,78 @@ def extract_textboxes(f):
     return PdfOfTextBoxes(device.pages)
 
 
+def sort_textboxes_into_dicts(textboxes):
+    textboxes_as_dicts = {}
+    for tb in textboxes:
+        if tb.y not in textboxes_as_dicts:
+            # TODO: quantize y if needed. We are only lucky that
+            # lines don't have an epsilon amount of y space between words
+            # And that sub and superscripts are not used
+            textboxes_as_dicts[tb.y] = {}
+        if tb.x in textboxes_as_dicts[tb.y]:
+            if tb.content != textboxes_as_dicts[tb.y][tb.x].content:
+                raise ValueError(
+                    "Multiple textboxes on the exact same coordinates"
+                    "(Already there: '{}', to-be-inserted: '{}')"
+                    .format(textboxes_as_dicts[tb.y][tb.x], tb.content)
+                )
+        else:
+            textboxes_as_dicts[tb.y][tb.x] = tb
+
+    # Consolidate boxes into lines, i.e. try to put characters
+    # from the same line to the same "y" bucket.
+    last_y_coord = None
+    for y_coord in sorted(textboxes_as_dicts):
+        # TODO: instad of 0.2, use some real line height thing
+        # 0.2 is small enough not to trigger for the e.g. the 2 in "m2" (the unit).
+        # And this is okay for now
+        if last_y_coord is not None and abs(y_coord-last_y_coord) < 0.2:
+            # TODO: let's hope there is no intersection between the previous line's
+            # X coordinates and the current one. There shouldn't be any though.
+            textboxes_as_dicts[last_y_coord].update(textboxes_as_dicts[y_coord])
+            # Deleting elements during this iteration should be okay,
+            # because "sorted" creates a copy of the keys
+            del textboxes_as_dicts[y_coord]
+        else:
+            last_y_coord = y_coord
+
+    return textboxes_as_dicts
+
+
+def convert_textbox_dict_to_line(textbox_dict):
+    parts = []
+    threshold_to_space = None
+    prev_x = 0
+    for x in sorted(textbox_dict):
+        box = textbox_dict[x]
+        if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
+            if parts and parts[-1].content[-1] != ' ':
+                parts.append(IndentedLinePart(threshold_to_space - prev_x, ' '))
+                prev_x = threshold_to_space
+        parts.append(IndentedLinePart(box.x - prev_x, box.content, box.bold))
+        prev_x = box.x
+        threshold_to_space = x + box.width + box.width_of_space * 0.5
+
+    return IndentedLine(parts)
+
+
+def extract_single_page(page):
+    processed_page = PageOfLines()
+    textboxes_as_dicts = sort_textboxes_into_dicts(page.textboxes)
+    prev_y = 0
+    for y in sorted(textboxes_as_dicts, reverse=True):
+        # TODO: don't hardcode the 18, but use actual textbox dimensions
+        if prev_y != 0 and (prev_y - y) > 18:
+            processed_page.add_line(EMPTY_LINE)
+        prev_y = y
+        processed_page.add_line(convert_textbox_dict_to_line(textboxes_as_dicts[y]))
+    return processed_page
+
+
 def extract_lines(potb):
     result = PdfOfLines()
-    for page_num, page in enumerate(potb.pages):
-        processed_page = PageOfLines()
-        textboxes_as_dicts = {}
-        for tb in page.textboxes:
-            if tb.y not in textboxes_as_dicts:
-                # TODO: quantize y if needed. We are only lucky that
-                # lines don't have an epsilon amount of y space between words
-                # And that sub and superscripts are not used
-                textboxes_as_dicts[tb.y] = {}
-            if tb.x in textboxes_as_dicts[tb.y]:
-                if tb.content != textboxes_as_dicts[tb.y][tb.x].content:
-                    raise ValueError(
-                        "Multiple textboxes on the exact same coordinates on page  {}"
-                        "(Already there: '{}', to-be-inserted: '{}')"
-                        .format(page_num, textboxes_as_dicts[tb.y][tb.x], tb.content)
-                    )
-            else:
-                textboxes_as_dicts[tb.y][tb.x] = tb
-
-        last_y_coord = None
-        for y_coord in sorted(textboxes_as_dicts):
-            # TODO: instad of 0.2, use some real line height thing
-            # 0.2 is small enough not to trigger for the e.g. the 2 in "m2" (the unit).
-            # And this is okay for now
-            if last_y_coord is not None and abs(y_coord-last_y_coord) < 0.2:
-                # TODO: let's hope there is no intersection between the previous line's
-                # X coordinates and the current one. There shouldn't be any though.
-                textboxes_as_dicts[last_y_coord].update(textboxes_as_dicts[y_coord])
-                # Deleting elements during this iteration should be okay,
-                # because "sorted" creates a copy of the keys
-                del textboxes_as_dicts[y_coord]
-            else:
-                last_y_coord = y_coord
-
-        prev_y = 0
-        for y in sorted(textboxes_as_dicts, reverse=True):
-            # TODO: do't hardcode the 18, but use actual textbox dimensions
-            if prev_y != 0 and (prev_y - y) > 18:
-                processed_page.add_line(EMPTY_LINE)
-            prev_y = y
-
-            parts = []
-            threshold_to_space = None
-            prev_x = 0
-            for x in sorted(textboxes_as_dicts[y]):
-                box = textboxes_as_dicts[y][x]
-                if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
-                    if parts and parts[-1].content[-1] != ' ':
-                        parts.append(IndentedLinePart(threshold_to_space - prev_x, ' '))
-                        prev_x = threshold_to_space
-                parts.append(IndentedLinePart(box.x - prev_x, box.content, box.bold))
-                prev_x = box.x
-                threshold_to_space = x + box.width + box.width_of_space * 0.5
-                current_right_side = x + box.width
-
-            processed_page.add_line(IndentedLine(parts))
-
-        result.add_page(processed_page)
+    for page in potb.pages:
+        result.add_page(extract_single_page(page))
     return result
 
 

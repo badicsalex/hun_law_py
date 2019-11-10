@@ -18,7 +18,6 @@
 import argparse
 import sys
 import os
-from collections import namedtuple
 
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.all import do_extraction

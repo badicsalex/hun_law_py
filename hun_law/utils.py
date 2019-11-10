@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-import attr
 import textwrap
-from collections import namedtuple
 from string import ascii_uppercase
+import attr
 
 
 @attr.s(slots=True, frozen=True)
@@ -36,7 +35,8 @@ class IndentedLine:
     bold = attr.ib(init=False)
 
     @_parts.validator
-    def _parts_validator(self, attribute, parts):
+    def _parts_validator(self, _attribute, parts):
+        # pylint: disable=no-self-use
         for p in parts:
             if not isinstance(p, IndentedLinePart):
                 raise TypeError("IndentedLine must be initialized with IndentedLineParts")
@@ -116,6 +116,9 @@ class IndentedLine:
         x = 0
         for o in others:
             first = True
+            # Accessing protected properties is literally the point of
+            # classmethods.
+            # pylint: disable=protected-access
             for p in o._parts:
                 if first:
                     parts.append(IndentedLinePart(p.dx - x, p.content))

@@ -14,8 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-import attr
 from abc import ABC, abstractmethod
+
+import attr
 
 from hun_law.utils import int_to_text_hun, int_to_text_roman
 
@@ -212,18 +213,20 @@ class SubArticleElement(ABC):
         return {c.identifier: c for c in self.children}
 
     @text.validator
-    def _content_validator_if_text(self, attribute, text):
+    def _content_validator_if_text(self, _attribute, text):
         if text is not None:
             if self.intro is not None or self.wrap_up is not None or self.children is not None:
                 raise ValueError("SAE can contain either text or intro/wrap-up/children")
 
     @children.validator
-    def _content_validator_if_children(self, attribute, children):
+    def _content_validator_if_children(self, _attribute, children):
         if self.children_type is None:
             return
         if self.children_type not in self.ALLOWED_CHILDREN_TYPE:
             raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.children_type))
         for c in children:
+            # We really do want type equality here, not "isintance".
+            # pylint: disable=unidiomatic-typecheck
             if type(c) != self.children_type:
                 raise TypeError(
                     "All children  has to be of the  same type ({} is not {})"
@@ -385,7 +388,9 @@ class Article:
     paragraph_map = attr.ib(init=False)
 
     @children.validator
-    def _children_validator(self, attribute, children):
+    def _children_validator(self, _attribute, children):
+        # Attrs validators as decorators are what they are, it cannot be a function.
+        # pylint: disable=no-self-use
         for c in children:
             if not isinstance(c, Paragraph):
                 # Always wrap everything in Pragraphs, pls.
@@ -406,8 +411,7 @@ class Article:
     def paragraph(self, paragraph_id=None):
         if paragraph_id is not None:
             return self.paragraph_map[str(paragraph_id)]
-        else:
-            return self.paragraph_map[None]
+        return self.paragraph_map[None]
 
     @classmethod
     def next_identifier(cls, identifier):
@@ -509,6 +513,8 @@ class Reference:
         return result
 
     def last_component_with_type(self):
+        # Thanks pylint, but this is the simplest form of this function.
+        # pylint: disable=too-many-return-statements
         if self.subpoint is not None:
             return self.subpoint, AlphabeticSubpoint
         if self.point is not None:
@@ -516,8 +522,7 @@ class Reference:
             if first_point_id[0].isdigit():
                 # Both 1, 12, and 3a are NumericPoints.
                 return self.point, NumericPoint
-            else:
-                return self.point, AlphabeticPoint
+            return self.point, AlphabeticPoint
         if self.paragraph is not None:
             return self.paragraph, Paragraph
         if self.article is not None:

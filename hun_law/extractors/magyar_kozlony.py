@@ -20,11 +20,8 @@ import re
 from collections import namedtuple
 
 from hun_law.utils import EMPTY_LINE
-from hun_law.fixups.common import do_all_fixups
-from hun_law.fixups import text_fixups
 from . import Extractor
 from .pdf import PdfOfLines
-
 
 
 def is_magyar_kozlony(pdf_file):
@@ -70,7 +67,7 @@ SECTION_TYPES = {
     'III. Kormányrendeletek': None,
     'IV. A Magyar Nemzeti Bank elnökének rendeletei,': None,  # TODO: This could be formatted in otehr ways
     'V. A Kormány tagjainak rendeletei': None,
-    'VI.Az Alkotmánybíróság határozatai, teljes ülési': None,  #TODO: This is most probably word-wrapped in oither ways
+    'VI.Az Alkotmánybíróság határozatai, teljes ülési': None,  # TODO: This is most probably word-wrapped in oither ways
     'VII. A Kúria határozatai': None,
     # TODO: VIII.
     'IX. Határozatok Tára': None,
@@ -109,7 +106,7 @@ def MagyarKozlonySectionExtractor(kozlony):
         # This is where we do away with the "Page" abstraction, and further processing
         # can only use EMPTY_LINE to have some separation info.
         content_of_current_section.append(EMPTY_LINE)
-    if SECTION_TYPES[current_section_type]  is not None:
+    if SECTION_TYPES[current_section_type] is not None:
         yield SECTION_TYPES[current_section_type](content_of_current_section)
 
 
@@ -118,7 +115,8 @@ MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', '
 
 @Extractor(MagyarKozlonyLawsSection)
 def MagyarKozlonyLawExtractor(laws_section):
-    States = enum.Enum("States",
+    States = enum.Enum(
+        "States",
         [
             "WAITING_FOR_HEADER_NEWLINE",
             "WAITING_FOR_HEADER",
