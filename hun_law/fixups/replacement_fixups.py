@@ -925,6 +925,12 @@ replacement_fixups = {
             "replacement": "szöveg lép."
         }
     ],
+    "2013. évi LXXX. törvény": [
+        {
+            "needle": "„ 7/A. § (1) Az állam tulajdonában álló nemzeti vagyon tekintetében tulajdonosi joggyakorló kizárólag",
+            "replacement": "„7/A. § (1) Az állam tulajdonában álló nemzeti vagyon tekintetében tulajdonosi joggyakorló kizárólag"
+        }
+    ],
     "2013. évi LXXXVII. törvény": [
         {
             "needle": "évi LXXXVII. törvénnyel megállapított rendelkezéseit 2014. január 1-jétől kell alkalmazni.",
