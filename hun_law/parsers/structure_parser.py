@@ -195,17 +195,37 @@ class SubtitleParser(StructuralElementParser):
     # Guaranteed to be uppercase
     # Example:
     # 17. Az alcím
+    # For older acts, there is no number, only a text.
+
     PARSED_TYPE = Subtitle
 
     def __init__(self, sibling_before=None, lines=None):
         super().__init__(sibling_before, lines)
         prefix_of_current = '{}. '.format(self.number)
         full_title = " ".join([l.content for l in lines])
-        self.title = full_title.split(prefix_of_current, maxsplit=1)[1]
+        if prefix_of_current in full_title:
+            self.title = full_title.split(prefix_of_current, maxsplit=1)[1]
+            self.no_number = False
+        else:
+            # We got called most probably because of the "bold" condition
+            # in is_line_header... Or something's wrong in the code.
+            assert lines[0].bold
+            self.title = full_title
+            self.no_number = True
+
         self.prefix_of_next = '{}. '.format(self.number + 1)
 
     @classmethod
     def is_line_correct(cls, prefix, line):
+        # Huge hack: most subtitles are bold.
+        # We also depend on only getting called when we are probably a
+        # subtitle, i.e. there was an empty line above this one, and probably
+        # another one below it.
+        # Also see __init__
+        if line.bold and is_uppercase_hun(line.content[0]):
+            return True
+
+        # Checks for the default, numbered case
         if len(line.content) < len(prefix) + 1:
             return False
         if not line.content.startswith(prefix):
@@ -221,8 +241,20 @@ class SubtitleParser(StructuralElementParser):
     def is_line_header_of_next(self, line):
         return self.is_line_correct(self.prefix_of_next, line)
 
+    def get_parsed_element(self):
+        return self.PARSED_TYPE(
+            identifier="" if self.no_number else self.number,
+            title=self.title
+        )
 
-STRUCTURE_ELEMENT_PARSERS = (SubtitleParser, ChapterParser, TitleParser, PartParser, BookParser)
+
+STRUCTURE_ELEMENT_PARSERS = (
+    BookParser,
+    PartParser,
+    TitleParser,
+    ChapterParser,
+    SubtitleParser,
+)
 
 
 class SubArticleElementNotFoundError(Exception):

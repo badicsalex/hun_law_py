@@ -54,6 +54,47 @@ def test_end_to_end_2010_181():
         "elektronikus dokumentumként való közzététellel kell kiadni, melynek szövegét hitelesnek kell tekinteni."
 
 
+def test_end_to_end_2012_92():
+    # The new Penal Code.
+    # This act notably uses bold, unnumbered Subtitles, which we test here.
+    acts = [a for a in parse_single_kozlony(2012, 92) if isinstance(a, Act)]
+    assert len(acts) == 1, "Issue 2012/92 of Magyar Kozlony contains a single Act"
+    btk = acts[0]
+
+    assert btk.identifier == "2012. évi C. törvény"
+    assert btk.subject == "a Büntető Törvénykönyvről"
+
+    assert btk.children[:3] == (
+        Part("1", ""),
+        Chapter("1", "ALAPVETŐ RENDELKEZÉSEK"),
+        Subtitle("", "A törvényesség elve"),
+    )
+
+    assert isinstance(btk.children[3], Article)
+
+    subtitles = tuple(st for st in btk.children if isinstance(st, Subtitle))
+    # TODO: No check for the number of subtitles, because I have never manually checked
+    # have many there are, and I don't trust the parser blindly
+    assert subtitles[:5] == (
+        Subtitle("", "A törvényesség elve"),
+        Subtitle("", "Időbeli hatály"),
+        Subtitle("", "Területi és személyi hatály"),
+        Subtitle("", "A bűncselekmény"),
+        Subtitle("", "A bűnhalmazat és a folytatólagosan elkövetett bűncselekmény"),
+    )
+
+    assert Subtitle("", "A választás, a népszavazás, a népi kezdeményezés és az európai polgári kezdeményezés rendje elleni bűncselekmény") in subtitles, \
+        "Multiline bold subtitles should be properly parsed"
+
+    assert subtitles[-5:] == (
+        Subtitle("", "Értelmező rendelkezések"),
+        Subtitle("", "Egyes bűncselekmények értékhatára és szabálysértési alakzata"),
+        Subtitle("", "Hatálybalépés"),
+        Subtitle("", "Hatályon kívül helyező rendelkezések"),
+        Subtitle("", "Az Európai Unió jogának való megfelelés"),
+    )
+
+
 def test_end_to_end_2013_31():
     # The 2013 Ptk is a great way to test high level structure
     # parsing, because it has  a ton of Books, chapters, etc.,

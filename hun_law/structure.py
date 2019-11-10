@@ -153,7 +153,13 @@ class Subtitle(StructuralElement):
         return "{}.".format(self.identifier)
 
 
-STRUCTURE_ELEMENT_TYPES = (Subtitle, Chapter, Title, Part, Book)
+STRUCTURE_ELEMENT_TYPES = (
+    Book,
+    Part,
+    Title,
+    Chapter,
+    Subtitle,
+)
 
 
 @attr.s(slots=True, frozen=True)
