@@ -1,0 +1,52 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Article",
+            "identifier": "1",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "intro": "A gyámhatóságnak",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "text": "2014-ben az 1982. december 31. előtt,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "2015-ben az 1983. január 1. és 1994. december 31. között,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "c",
+                            "text": "2016-ban az 1995. január 1. és 2001. december 31. között,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "d",
+                            "text": "2017-ben a 2002. január 1. és 2007. december 31. között,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "e",
+                            "text": "2018-ban a 2008. január 1. és 2014. március 14. között"
+                        }
+                    ],
+                    "wrap_up": "elrendelt – cselekvőképességet kizáró gondnokság alá helyezésről szóló, felülvizsgálati kötelezettséget nem tartalmazó – határozatok felülvizsgálata iránt kell a bíróságon pert indítania."
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "2",
+                    "text": "A Ptk. hatálybalépése előtt hozott, felülvizsgálati kötelezettséget tartalmazó határozatok esetében a felülvizsgálati eljárást a bírósági határozatban megjelölt időpontban, de legkésőbb a Ptk. hatálybalépésétől számított öt éven belül kell a gyámhatóságnak megindítania."
+                }
+            ]
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}

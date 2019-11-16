@@ -1,0 +1,58 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Egy sorban levo szakasz."
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Ket sorban levo szakasz."
+                }
+            ],
+            "identifier": "2"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Sortores a szakasz elott."
+                }
+            ],
+            "identifier": "3"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Sortores a szakasz kozben."
+                }
+            ],
+            "identifier": "4"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Vege."
+                }
+            ],
+            "identifier": "5"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}

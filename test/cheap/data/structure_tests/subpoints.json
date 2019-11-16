@@ -1,0 +1,113 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Subtitle",
+            "identifier": "1",
+            "title": "A törvény hatálya"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "E törvény hatálya kiterjed a gondnokoltak, az előzetes jognyilatkozatot tett személyek és az előzetes jognyilatkozataik adatainak a nyilvántartására (a továbbiakban együtt: nyilvántartások)."
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "__type__": "Subtitle",
+            "identifier": "2",
+            "title": "A gondnokoltak nyilvántartása"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "A gondnokoltak nyilvántartásában szereplő adatok kezelésének célja a gondnokság alá helyezés tényének igazolása a gondnokság alá helyezett személy jogai gyakorlásának elősegítése, illetve harmadik személyek jogainak védelme érdekében."
+                }
+            ],
+            "identifier": "2"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "aa",
+                                    "text": "családi és utónevét,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ab",
+                                    "text": "születési családi és utónevét,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ac",
+                                    "text": "születési helyét és idejét,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ad",
+                                    "text": "anyjának születési családi és utónevét,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ae",
+                                    "text": "lakcímét,"
+                                }
+                            ],
+                            "identifier": "a",
+                            "intro": "a gondnokolt"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "a gondnokság alá helyezésről, annak módosításáról, felülvizsgálatáról, megszüntetéséről jogerős határozatot hozó bíróság megnevezését és ügyszámát,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "c",
+                            "text": "a gondnokság alá helyezés, annak módosítása, felülvizsgálata, megszüntetése tárgyában hozott határozat jogerőre emelkedésének napját,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "d",
+                            "text": "a gondnokság cselekvőképességet korlátozó részleges vagy teljes jellegét,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "e",
+                            "text": "a bíróságnak a cselekvőképességet részlegesen korlátozó ítéletében meghatározott ügycsoportot vagy ügycsoportokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "f",
+                            "text": "a gondnokság alá helyezés kötelező felülvizsgálatának időpontját és"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "g",
+                            "text": "a választójogból való kizárás tényét, ha a bíróság a gondnokság alá helyezett személyt a választójogból kizárta. (2) A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját. (3) Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza."
+                        }
+                    ],
+                    "identifier": "1",
+                    "intro": "A gondnokoltak nyilvántartása a következő adatokat és a változás időpontjának megjelölésével az adatváltozásokat tartalmazza:"
+                }
+            ],
+            "identifier": "3"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "Fake preamble.",
+    "subject": "A tesztelésről"
+}

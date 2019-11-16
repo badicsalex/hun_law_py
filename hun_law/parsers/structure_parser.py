@@ -597,7 +597,7 @@ class ArticleParser:
 
     @classmethod
     def parse_body(cls, identifier, lines):
-        title = ""
+        title = None
         paragraphs = []
 
         if lines[0].content[0] == '[':
@@ -683,7 +683,7 @@ class ActStructureParser:
     @classmethod
     def parse_structural_elements(cls, lines, last_structural_element_parser):
         result = []
-        while lines[-1] == EMPTY_LINE:
+        while lines and lines[-1] == EMPTY_LINE:
             lines.pop()
             if EMPTY_LINE not in lines:
                 break

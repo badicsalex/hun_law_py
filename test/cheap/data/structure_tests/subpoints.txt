@@ -1,0 +1,34 @@
+Fake preamble.
+
+           <BOLD> 1. A törvény hatálya
+
+         1. § E törvény hatálya kiterjed a gondnokoltak, az előzetes jognyilatkozatot tett személyek és az előzetes
+                  jognyilatkozataik adatainak a nyilvántartására (a továbbiakban együtt: nyilvántartások).
+
+           <BOLD> 2. A gondnokoltak nyilvántartása
+
+         2. § A gondnokoltak nyilvántartásában szereplő adatok kezelésének célja a gondnokság alá helyezés tényének igazolása
+                  a gondnokság alá helyezett személy jogai gyakorlásának elősegítése, illetve harmadik személyek jogainak védelme
+                  érdekében.
+
+         3. § (1) A gondnokoltak nyilvántartása a következő adatokat és a változás időpontjának megjelölésével az adatváltozásokat
+                  tartalmazza:
+                  a) a gondnokolt
+                       aa) családi és utónevét,
+                       ab) születési családi és utónevét,
+
+                       ac) születési helyét és idejét,
+                       ad) anyjának születési családi és utónevét,
+                       ae) lakcímét,
+                  b) a gondnokság alá helyezésről, annak módosításáról, felülvizsgálatáról, megszüntetéséről jogerős határozatot
+                       hozó bíróság megnevezését és ügyszámát,
+                  c) a gondnokság alá helyezés, annak módosítása, felülvizsgálata, megszüntetése tárgyában hozott határozat
+                       jogerőre emelkedésének napját,
+                  d) a gondnokság cselekvőképességet korlátozó részleges vagy teljes jellegét,
+                  e) a bíróságnak a cselekvőképességet részlegesen korlátozó ítéletében meghatározott ügycsoportot vagy
+                       ügycsoportokat,
+                  f) a gondnokság alá helyezés kötelező felülvizsgálatának időpontját és
+                  g) a választójogból való kizárás tényét, ha a bíróság a gondnokság alá helyezett személyt a választójogból
+                       kizárta.
+               (2) A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját.
+               (3) Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza.

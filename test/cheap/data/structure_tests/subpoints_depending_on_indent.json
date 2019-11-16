@@ -1,0 +1,95 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Article",
+            "identifier": "1",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "text": "A bíróság polgári peres és nemperes eljárás vagy büntetőeljárás lefolytatása céljából a gondnokoltak nyilvántartásában kezelt adatok teljes körét közvetlen adathozzáféréssel (a továbbiakban: közvetlen hozzáférés) jogosult megismerni és kezelni."
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "2",
+                    "intro": "A gondnokoltak nyilvántartásában az érintettre vonatkozóan szereplő alábbi adatokat a cselekvőképesség fennállásának vizsgálata céljából konkrét ügyben közvetlen hozzáféréssel jogosult megismerni és kezelni:",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "text": "az ügyészség és a nyomozó hatóság a büntetőeljárás lefolytatása céljából, valamint a büntetés-végrehajtási szervezet és a rendőrség a fogvatartott gondnokának értesítése céljából a 3. § (1) bekezdés a)–f) pontjában szereplő adatokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "a rendőrség a fegyverengedély-ügyi és a személy- és vagyonvédelmi, valamint magánnyomozói tevékenység végzésével összefüggő hatósági engedélyezési feladatok ellátása céljából a 3. § (1) bekezdés a)–f) pontjában szereplő adatokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "c",
+                            "text": "az ügyészség a gondnokság alá helyezés, annak megszüntetése vagy módosítása, a választójogból való kizárás vagy a választójogból való kizárás megszüntetése iránti per megindításával kapcsolatos feladatai ellátása során a 3. § (1) bekezdésében szereplő adatokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "d",
+                            "text": "a közjegyző polgári nemperes eljárás lefolytatása céljából a 3. § (1) bekezdés a)–e) pontjában szereplő adatokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "e",
+                            "text": "az önálló bírósági végrehajtó a bírósági végrehajtási cselekmények ellátása során a 3. § (1) bekezdés a)–e) pontjában szereplő adatokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "f",
+                            "text": "a választójoggal nem rendelkező polgárok nyilvántartását vezető szerv a 3. § (1) bekezdés a), c) és g) pontjában szereplő adatokat,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "g",
+                            "intro": "a gyámhatóság",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ga",
+                                    "text": "a gondnokok felügyeletével kapcsolatos feladata ellátása során a 3. § (1) bekezdés a)–e) és g) pontjában szereplő adatokat,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "gb",
+                                    "text": "a gondnokság alá helyezési per megindítása, a gondnokság felülvizsgálata, a választójogból való kizárás vagy a választójogból való kizárás megszüntetése iránti per megindítása miatt a 3. § (1) bekezdésében szereplő adatokat,"
+                                }
+                            ]
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "h",
+                            "intro": "az anyakönyvvezető",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ha",
+                                    "text": "a házasságkötéssel kapcsolatos feladatai ellátása céljából a 3. § (1) bekezdés a)–d) pontjában szereplő adatokat,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "hb",
+                                    "text": "a családi jogállás rendezésével kapcsolatos feladatai ellátása céljából a 3. § (1) bekezdés a)–e) pontjában szereplő adatokat,"
+                                }
+                            ]
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "i",
+                            "text": "a járási hivatal szervezeti egységeként működő okmányiroda és a Központi Okmányiroda a közúti közlekedési igazgatási, illetve a személyi okmány ügyintézési eljárásokban a 3. § (1) bekezdés a)–e) pontjában szereplő adatokat."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}

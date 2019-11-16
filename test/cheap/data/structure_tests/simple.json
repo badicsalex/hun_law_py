@@ -1,0 +1,18 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Ebben a torvenyben mas nincs."
+                }
+            ],
+            "identifier": "1"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "Torveny preambulummal tobb sorban.",
+    "subject": "A tesztelésről"
+}

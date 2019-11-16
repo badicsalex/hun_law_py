@@ -169,7 +169,7 @@ def test_end_to_end_2013_185():
     assert acts["2013. évi CLXXVI. törvény"].article(36).paragraph(1).wrap_up == "való megfelelést szolgálja."
 
     # This Act has super-retarded Article Titles, so test the parsing (or fixups)
-    assert acts["2013. évi CLXXVII. törvény"].article(5).title == ""
+    assert acts["2013. évi CLXXVII. törvény"].article(5).title is None
     assert acts["2013. évi CLXXVII. törvény"].article(58).title == "A Ptk. 7:10–7:24. §-ához"
     assert acts["2013. évi CLXXVII. törvény"].article(59).title == "A Ptk. 7:28. § (3) és (4) bekezdéséhez"
 
