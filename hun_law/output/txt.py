@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+from hun_law.extractors.magyar_kozlony import MagyarKozlonyLawRawText
 from hun_law.structure import StructuralElement, SubArticleElement, BlockAmendment, QuotedBlock, Article, Act, Subtitle
 from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
 
@@ -108,6 +109,16 @@ def write_act_as_txt(output_file, element, indent=''):
         write_txt(output_file, c, indent)
         indent = " " * len(indent)
         print(file=output_file)
+
+
+@txt_writer(MagyarKozlonyLawRawText)
+def write_act_as_txt(output_file, element, indent=''):
+    print("==== {} - {} =====\n".format(element.identifier, element.subject), file=output_file)
+    base_indent_of_body = min(l.indent for l in element.body if l != EMPTY_LINE)
+    for l in element.body:
+        indent_of_body = ' ' * int((l.indent - base_indent_of_body)*0.2)
+        print(indent + ' ' * 5 + indent_of_body + l.content, file=output_file)
+    print(file=output_file)
 
 
 def write_txt(output_file, element, indent=''):

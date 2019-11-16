@@ -19,7 +19,7 @@ import json
 from hun_law.utils import object_to_dict_recursive
 
 
-def serialize_act_to_json_file(act, f):
+def serialize_to_json_file(act, f):
     return json.dump(
         object_to_dict_recursive(act),
         f,

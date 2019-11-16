@@ -20,8 +20,9 @@ import sys
 import os
 
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
+from hun_law.extractors.magyar_kozlony import MagyarKozlonyLawRawText
 from hun_law.extractors.all import do_extraction
-from hun_law.output.json import serialize_act_to_json_file
+from hun_law.output.json import serialize_to_json_file
 from hun_law.output.txt import write_txt
 from hun_law.output.html import generate_html_for_act
 from hun_law.structure import Act
@@ -35,6 +36,11 @@ Downloads Magyar Közlöny issues as PDFs and converts the Acts in them to machi
 
 
 class GenerateCommand:
+    EXTRACTION_STEP_TO_CLASS = {
+        'full': Act,
+        'raw_act': MagyarKozlonyLawRawText,
+    }
+
     def __init__(self):
         self.argparser = argparse.ArgumentParser(description=GENERATOR_DESCRIPTION)
         self.argparser.add_argument(
@@ -59,7 +65,13 @@ class GenerateCommand:
             '--single-act', '-s', default=None,
             help="Extract only a single Act from the MK issue. "
             "Useful for printing single documents to stdout. "
+            "Only supported with full parses. "
             "Example: '2013. évi V. törvény'"
+        )
+        self.argparser.add_argument(
+            '--extraction-step', '-e', default="full",
+            choices=tuple(sorted(self.EXTRACTION_STEP_TO_CLASS.keys())),
+            help="Stop at a specific extraction/parsing step, instead of doing a full parse."
         )
 
     def run(self, argv):
@@ -70,29 +82,33 @@ class GenerateCommand:
 
         print("Starting extraction of {} issue(s)".format(len(parsed_args.issues)))
         output_fn = getattr(self, "output_" + parsed_args.output_format)
-        for act in do_extraction(parsed_args.issues, (Act,)):
-            if parsed_args.single_act is not None and act.identifier != parsed_args.single_act:
-                print("Not outputting {}".format(act.identifier), file=sys.stderr)
-                continue
+        output_class = self.EXTRACTION_STEP_TO_CLASS[parsed_args.extraction_step]
+        for extracted in do_extraction(parsed_args.issues, (output_class,)):
+            if output_class in (Act, MagyarKozlonyLawRawText):
+                if parsed_args.single_act is not None and extracted.identifier != parsed_args.single_act:
+                    print("Not outputting {}".format(extracted.identifier), file=sys.stderr)
+                    continue
             if parsed_args.output_dir is not None:
                 file_path = os.path.join(
                     parsed_args.output_dir,
-                    "{}.{}".format(act.identifier, parsed_args.output_format)
+                    "{}.{}".format(extracted.identifier, parsed_args.output_format)
                 )
                 print("Writing {}".format(file_path))
                 with open(file_path, 'w') as output_file:
-                    output_fn(act, output_file)
+                    output_fn(extracted, output_file)
             else:
-                output_fn(act, sys.stdout)
+                output_fn(extracted, sys.stdout)
 
     @classmethod
-    def output_txt(cls, act, output_file):
-        write_txt(output_file, act)
+    def output_txt(cls, extracted, output_file):
+        write_txt(output_file, extracted)
 
     @classmethod
-    def output_json(cls, act, output_file):
-        serialize_act_to_json_file(act, output_file)
+    def output_json(cls, extracted, output_file):
+        serialize_to_json_file(extracted, output_file)
 
     @classmethod
-    def output_html(cls, act, output_file):
-        generate_html_for_act(act, output_file)
+    def output_html(cls, extracted, output_file):
+        if not isinstance(extracted, Act):
+            raise TypeError("Html output is only supported for Acts")
+        generate_html_for_act(extracted, output_file)
