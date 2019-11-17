@@ -157,7 +157,8 @@ class ActBlockAmendmentParser:
     def parse_paragraph(cls, paragraph):
         if paragraph.children_type != QuotedBlock:
             return paragraph
-
+        if len(paragraph.intro) > 10000:
+            return paragraph
         # TODO: We don't currently parse structural amendments properly in the
         # structural step.
         # Block amendements have a two-part intro, which we unfortunately merge:
