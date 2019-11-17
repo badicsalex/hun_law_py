@@ -274,6 +274,25 @@ class AlphabeticSubpoint(SubArticleElement):
 
 
 @attr.s(slots=True, frozen=True)
+class NumericSubpoint(SubArticleElement):
+    @classmethod
+    def header_prefix(cls, identifier):
+        return "{}. ".format(identifier)
+
+    @classmethod
+    def next_identifier(cls, identifier):
+        if identifier.isdigit():
+            return str(int(identifier) + 1)
+        number = identifier[:-1]
+        postfix = identifier[-1]
+        return number + chr(ord(postfix) + 1)
+
+    @property
+    def relative_reference(self):
+        return Reference(subpoint=self.identifier)
+
+
+@attr.s(slots=True, frozen=True)
 class NumericPoint(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
 
@@ -299,7 +318,7 @@ class NumericPoint(SubArticleElement):
 
 @attr.s(slots=True, frozen=True)
 class AlphabeticPoint(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
+    ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, NumericSubpoint, )
 
     @classmethod
     def header_prefix(cls, identifier):
