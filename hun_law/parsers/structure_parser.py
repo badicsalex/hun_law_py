@@ -463,7 +463,7 @@ class ParagraphParser(SubArticleElementParser):
         # and international agreements only appear in Paragraph and Article
         # level, and we always parse Articles into a single Paragraph.
         try:
-            return QuotedBlockParser.try_parse(lines)
+            return QuotedBlockParser.extract_multiple_from_text(lines)
         except SubArticleElementNotFoundError:
             pass
 
@@ -490,7 +490,7 @@ class QuotedBlockParser:
     ParseStates = Enum('ParseStates', ('START', 'INTRO', 'QUOTED_BLOCK', 'WRAP_UP_MAYBE', 'WRAP_UP'))
 
     @classmethod
-    def try_parse(cls, lines):
+    def extract_multiple_from_text(cls, lines):
         state = cls.ParseStates.START
         blocks = []
         wrap_up = None
