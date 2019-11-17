@@ -1,0 +1,27 @@
+1. §  (1) Don't forget
+            1. There can be numeric points.
+            2. with subpoints like
+                a) subpoint 1,
+                b) subpoint 2.
+            3. So there's that.
+      (2) Oh by the way
+            a) It can be
+                1. The other way around too
+                2. just so you know.
+            b) Man, this sucks.
+      (3) By the way 2, if there is only one point reference like
+          a) we still should not parse it as points,
+          because it's wrong.
+      (4) This is especially true if there is a fake numeric point like
+          1. but then there are
+          a) one real subpoint
+          b) two real subpoints
+          Then it should be alphabetic subpoints.
+          Even without indentation.
+      (5) This is especially true if there is a fake numeric point like
+          1. but then there are
+          a) one real subpoint
+          b) two real subpoints
+          However, if there is
+          2. another point, then we can do nothing but have
+          numeric subpoints. Such is life.

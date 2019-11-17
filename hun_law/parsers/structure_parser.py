@@ -25,7 +25,7 @@ from hun_law.utils import \
 from hun_law.structure import \
     Act, Article, QuotedBlock, BlockAmendment,\
     Subtitle, Chapter, Title, Part, Book,\
-    Paragraph, AlphabeticSubpoint, NumericPoint, AlphabeticPoint
+    Paragraph, AlphabeticSubpoint, NumericSubpoint, NumericPoint, AlphabeticPoint
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -261,7 +261,7 @@ class SubArticleElementNotFoundError(Exception):
     pass
 
 
-class NoSubpointsError(Exception):
+class NoSubelementsError(Exception):
     pass
 
 
@@ -291,12 +291,36 @@ class SubArticleElementParser(ABC):
         indented_first_line = lines[0].slice(len(prefix))
         lines = [indented_first_line] + lines[1:]
         try:
-            intro, children, wrap_up = cls.try_parse_subpoints(lines, identifier)
-        except NoSubpointsError:
+            intro, children, wrap_up = cls.try_parse_subelements(lines, identifier)
+        except NoSubelementsError:
             text = " ".join([l.content for l in lines if l != EMPTY_LINE])
         except Exception as e:
             raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), cls.PARSED_TYPE) from e
         return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
+
+    @classmethod
+    def try_parse_subelements(cls, lines, parent_identifier):
+        parsers_with_first_header = []
+        for parser in cls.get_subelement_parsers(parent_identifier):
+            first_header = parser.first_header_lineno(lines)
+            if first_header is None:
+                continue
+            if first_header == 0 and parser.PARENT_MUST_HAVE_INTRO:
+                continue
+            parsers_with_first_header.append((first_header, parser))
+
+        parsers_with_first_header.sort()
+        for first_header, parser in parsers_with_first_header:
+            try:
+                if first_header == 0:
+                    intro = None
+                else:
+                    intro = " ".join([l.content for l in lines[:first_header] if l != EMPTY_LINE])
+                children, wrapup = parser.extract_multiple_from_text(lines[first_header:])
+                return intro, children, wrapup
+            except SubArticleElementNotFoundError:
+                pass
+        raise NoSubelementsError()
 
     @classmethod
     @abstractmethod
@@ -305,7 +329,8 @@ class SubArticleElementParser(ABC):
 
     @classmethod
     @abstractmethod
-    def try_parse_subpoints(cls, lines, parent_identifier):
+    def get_subelement_parsers(cls, parent_identifier):
+        # Function, since it can be dymnamic
         pass
 
     @classmethod
@@ -314,12 +339,23 @@ class SubArticleElementParser(ABC):
         return line.content.startswith(prefix)
 
     @classmethod
+    def first_header_lineno(cls, lines):
+        first_id = cls.first_identifier()
+        for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
+            if quote_level == 0 and cls.is_header(line, first_id):
+                return lineno
+        return None
+
+    @classmethod
     def extract_multiple_from_text(cls, lines):
         elements = []
-        intro = None
         wrap_up = None
         current_element_identifier = None
         next_element_identifier = cls.first_identifier()
+        # The only way this is not true is a programming error,
+        # it is the callers job to assure this.
+        assert cls.is_header(lines[0], next_element_identifier)
+
         current_lines = []
         header_indentation = None
         for quote_level, line in iterate_with_quote_level(lines):
@@ -332,10 +368,7 @@ class SubArticleElementParser(ABC):
                 (header_indentation is None or similar_indent(header_indentation, line.indent) or line.indent < header_indentation) and
                 cls.is_header(line, next_element_identifier)
             ):
-                if current_element_identifier is None:
-                    if current_lines:
-                        intro = " ".join([l.content for l in current_lines])
-                else:
+                if current_element_identifier is not None:
                     element = cls.parse(current_lines, current_element_identifier)
                     elements.append(element)
 
@@ -350,9 +383,6 @@ class SubArticleElementParser(ABC):
         if not elements and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
             raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
 
-        if intro is None and cls.PARENT_MUST_HAVE_INTRO:
-            raise SubArticleElementNotFoundError("No intro found in text.")
-
         if cls.PARENT_CAN_HAVE_WRAPUP:
             # TODO: This is a stupid heuristic: we hope line-broken points are indented, while
             # the wrapup will be at the same level as the headers.
@@ -364,7 +394,7 @@ class SubArticleElementParser(ABC):
 
         element = cls.parse(current_lines, current_element_identifier)
         elements.append(element)
-        return intro, elements, wrap_up
+        return elements, wrap_up
 
 
 class AlphabeticSubpointParser(SubArticleElementParser):
@@ -386,9 +416,8 @@ class AlphabeticSubpointParser(SubArticleElementParser):
         return line.content.startswith(prefix)
 
     @classmethod
-    def try_parse_subpoints(cls, lines, parent_identifier):
-        # Subpoints may not have sub-subpoints: 48. § (6)
-        raise NoSubpointsError()
+    def get_subelement_parsers(cls, parent_identifier):
+        return ()
 
 
 def get_prefixed_alphabetic_subpoint_parser(prefix):
@@ -417,14 +446,29 @@ class NumericPointParser(SubArticleElementParser):
         return '1'
 
     @classmethod
-    def try_parse_subpoints(cls, lines, parent_identifier):
-        # Numbered points may only have alphabetic subpoints.
-        try:
-            return AlphabeticSubpointParser.extract_multiple_from_text(lines)
-        except SubArticleElementNotFoundError:
-            pass
+    def get_subelement_parsers(cls, parent_identifier):
+        return (AlphabeticSubpointParser,)
 
-        raise NoSubpointsError()
+
+class NumericSubpointParser(SubArticleElementParser):
+    PARSED_TYPE = NumericSubpoint
+
+    PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
+    PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
+    # No PARENT_CAN_HAVE_WRAPUP, because it looks like numbered lists are usuaally
+    # not well-indented, i.e.:
+    # 1. Element: blalbalba, lalblblablabl, lbalb
+    # blballabalvblbla, lbblaa.
+    # 2. Element: saddsadasdsadsa, adsdsadas
+    # adsasddas.
+
+    @classmethod
+    def first_identifier(cls):
+        return '1'
+
+    @classmethod
+    def get_subelement_parsers(cls, parent_identifier):
+        return ()
 
 
 class AlphabeticPointParser(SubArticleElementParser):
@@ -439,15 +483,9 @@ class AlphabeticPointParser(SubArticleElementParser):
         return 'a'
 
     @classmethod
-    def try_parse_subpoints(cls, lines, parent_identifier):
-        # Numbered points may only have alphabetic subpoints.
-        try:
-            parser = get_prefixed_alphabetic_subpoint_parser(parent_identifier)
-            return parser.extract_multiple_from_text(lines)
-        except SubArticleElementNotFoundError:
-            pass
-
-        raise NoSubpointsError()
+    def get_subelement_parsers(cls, parent_identifier):
+        parser = get_prefixed_alphabetic_subpoint_parser(parent_identifier)
+        return (NumericSubpointParser, parser,)
 
 
 class ParagraphParser(SubArticleElementParser):
@@ -458,36 +496,19 @@ class ParagraphParser(SubArticleElementParser):
         return '1'
 
     @classmethod
-    def try_parse_subpoints(cls, lines, parent_identifier):
-        # We look for block quotes in paragraphs only, because both amendments
-        # and international agreements only appear in Paragraph and Article
-        # level, and we always parse Articles into a single Paragraph.
-        try:
-            return QuotedBlockParser.extract_multiple_from_text(lines)
-        except SubArticleElementNotFoundError:
-            pass
-
-        # EMPTY_LINEs are only needed for detecting structural elements.
-        # From this point, they only mess up parsing, so let's get rid of them
-        # TODO: Large Structured Amendments that replace whole Parts could need
-        # empty lines again, so be careful.
-        lines = [l for l in lines if l != EMPTY_LINE]
-
-        try:
-            return NumericPointParser.extract_multiple_from_text(lines)
-        except SubArticleElementNotFoundError:
-            pass
-
-        try:
-            return AlphabeticPointParser.extract_multiple_from_text(lines)
-        except SubArticleElementNotFoundError:
-            pass
-
-        raise NoSubpointsError()
+    def get_subelement_parsers(cls, parent_identifier):
+        return (QuotedBlockParser, AlphabeticPointParser, NumericPointParser)
 
 
 class QuotedBlockParser:
-    ParseStates = Enum('ParseStates', ('START', 'INTRO', 'QUOTED_BLOCK', 'WRAP_UP_MAYBE', 'WRAP_UP'))
+    ParseStates = Enum('ParseStates', ('START', 'QUOTED_BLOCK', 'WRAP_UP_MAYBE', 'WRAP_UP'))
+
+    @classmethod
+    def first_header_lineno(cls, lines):
+        for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
+            if quote_level == 0 and line != EMPTY_LINE and line.content[0] in ("„", "“"):
+                return lineno
+        return None
 
     @classmethod
     def extract_multiple_from_text(cls, lines):
@@ -499,22 +520,17 @@ class QuotedBlockParser:
             # state needs them to operate correctly.
             if state == cls.ParseStates.START:
                 if line != EMPTY_LINE:
-                    intro = line.content
-                    state = cls.ParseStates.INTRO
-
-            elif state == cls.ParseStates.INTRO:
-                if line != EMPTY_LINE:
-                    if line.content[0] == "„" and quote_level == 0:
-                        if line.content[-1] == "”":
-                            quoted_lines = [line.slice(1, -1)]
-                            blocks.append(QuotedBlock(quoted_lines))
-                            quoted_lines = None
-                            state = cls.ParseStates.WRAP_UP_MAYBE
-                        else:
-                            quoted_lines = [line.slice(1)]
-                            state = cls.ParseStates.QUOTED_BLOCK
+                    # This is the job of the caller: only call this function where
+                    # "lines" surely starts with the quoted block itself
+                    assert line.content[0] in ("„", "“") and quote_level == 0
+                    if line.content[-1] == "”":
+                        quoted_lines = [line.slice(1, -1)]
+                        blocks.append(QuotedBlock(quoted_lines))
+                        quoted_lines = None
+                        state = cls.ParseStates.WRAP_UP_MAYBE
                     else:
-                        intro = intro + " " + line.content
+                        quoted_lines = [line.slice(1)]
+                        state = cls.ParseStates.QUOTED_BLOCK
 
             elif state == cls.ParseStates.QUOTED_BLOCK:
                 quote_level_at_line_end = quote_level + quote_level_diff(line.content)
@@ -529,7 +545,7 @@ class QuotedBlockParser:
 
             elif state == cls.ParseStates.WRAP_UP_MAYBE:
                 if line != EMPTY_LINE:
-                    if line.content[0] == "„" and quote_level == 0:
+                    if line.content[0] in ("„", "“") and quote_level == 0:
                         if line.content[-1] == "”":
                             quoted_lines = [line.slice(1, -1)]
                             blocks.append(QuotedBlock(quoted_lines))
@@ -551,7 +567,7 @@ class QuotedBlockParser:
         if state not in (cls.ParseStates.WRAP_UP, cls.ParseStates.WRAP_UP_MAYBE):
             raise SubArticleElementNotFoundError()
 
-        return intro, blocks, wrap_up
+        return blocks, wrap_up
 
 
 class ArticleParsingError(StructureParsingError):
@@ -625,10 +641,7 @@ class ArticleParser:
         if not ParagraphParser.is_header(lines[0], ParagraphParser.first_identifier()):
             paragraphs = [ParagraphParser.parse(lines, None)]
         else:
-            intro, paragraphs, wrap_up = ParagraphParser.extract_multiple_from_text(lines)
-            if intro is not None:
-                # Should LITERALLY never happen
-                raise ValueError("Junk detected in Article before first Paragraph")
+            paragraphs, wrap_up = ParagraphParser.extract_multiple_from_text(lines)
             if wrap_up is not None:
                 raise ValueError("Junk detected in Article after last Paragraph")
         return Article(identifier, paragraphs, title)

@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
-from hun_law.parsers.structure_parser import ActStructureParser
-
 import pytest
 import json
 import os
 import sys
+
+from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
+from hun_law.parsers.structure_parser import ActStructureParser
+from hun_law.structure import QuotedBlock
 
 
 def quick_parse_structure(act_text):
@@ -68,3 +69,38 @@ def test_structure_parsing_exact(text, expected_structure):
     json.dump(result_as_dict, sys.stdout, indent='    ', ensure_ascii=False, sort_keys=True)
 
     assert result_as_dict == expected_structure
+
+
+def test_quoting_parsing():
+    text = """
+         1. § Az Önkéntes Kölcsönös Biztosító Pénztárakról szóló 1993. évi XCVI. törvény 40/A. § (1) bekezdésében
+              az „a Ptk. 2:47. § (1) bekezdésében” szövegrész helyébe az „az üzleti titok védelméről szóló 2018. évi LIV. törvény
+              1. § (1) bekezdésében” szöveg lép.
+         2. § A második szakasz viszont mar
+              „Csodalatos quote-olt blokk”
+              meghozzá szöveggel utána
+         3. § A harmadik szakasz pedig
+              „Többet is tartalmaz”
+              „Egyes idezett szövegeket
+              több sorban is
+              akár”
+
+              “Kihagzott sorokkal, „nestelt
+
+              idezetekkel” es egyeb
+              finomsagokkal”
+              meg persze idezojelen kivuli
+              befejezessel.
+    """
+    resulting_structure = quick_parse_structure(text)
+    assert resulting_structure.article("1").paragraph().text is not None
+
+    assert resulting_structure.article("2").paragraph().children_type is not None
+    assert len(resulting_structure.article("2").paragraph().children) == 1
+    assert resulting_structure.article("2").paragraph().intro is not None
+    assert resulting_structure.article("2").paragraph().wrap_up is not None
+
+    assert resulting_structure.article("3").paragraph().children_type is not None
+    assert len(resulting_structure.article("3").paragraph().children) == 3
+    assert resulting_structure.article("3").paragraph().intro is not None
+    assert resulting_structure.article("3").paragraph().wrap_up is not None

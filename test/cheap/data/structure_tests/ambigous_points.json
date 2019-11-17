@@ -1,0 +1,130 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Article",
+            "identifier": "1",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "intro": "Don't forget",
+                    "children": [
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "1",
+                            "text": "There can be numeric points."
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "2",
+                            "intro": "with subpoints like",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "a",
+                                    "text": "subpoint 1,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "b",
+                                    "text": "subpoint 2."
+                                }
+                            ]
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "3",
+                            "text": "So there's that."
+                        }
+                    ]
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "2",
+                    "intro": "Oh by the way",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "intro": "It can be",
+                            "children": [
+                                {
+                                    "__type__": "NumericSubpoint",
+                                    "identifier": "1",
+                                    "text": "The other way around too"
+                                },
+                                {
+                                    "__type__": "NumericSubpoint",
+                                    "identifier": "2",
+                                    "text": "just so you know."
+                                }
+                            ]
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "Man, this sucks."
+                        }
+                    ]
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "3",
+                    "text": "By the way 2, if there is only one point reference like a) we still should not parse it as points, because it's wrong."
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "4",
+                    "intro": "This is especially true if there is a fake numeric point like 1. but then there are",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "text": "one real subpoint"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "two real subpoints"
+                        }
+                    ],
+                    "wrap_up": "Then it should be alphabetic subpoints. Even without indentation."
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "5",
+                    "intro": "This is especially true if there is a fake numeric point like",
+                    "children": [
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "1",
+                            "intro": "but then there are",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "a",
+                                    "text": "one real subpoint"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "b",
+                                    "text": "two real subpoints"
+                                }
+                            ],
+                            "wrap_up": "However, if there is"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "2",
+                            "text": "another point, then we can do nothing but have numeric subpoints. Such is life."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}
