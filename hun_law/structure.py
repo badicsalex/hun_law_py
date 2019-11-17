@@ -362,7 +362,7 @@ class Paragraph(SubArticleElement):
 
     def block_amendment(self):
         if self.children_type not in (BlockAmendment,):
-            raise KeyError("Thee are no block amenddments in this paragraph")
+            raise KeyError("There are no block amendments in this paragraph")
         assert len(self.children) == 1, "There should be exactly one block amendment per paragraph"
         return self.children[0]
 
