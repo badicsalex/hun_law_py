@@ -91,11 +91,11 @@ class StructuralElementParser(ABC):
 
     @classmethod
     @abstractmethod
-    def is_line_header_of_first(cls, line):
+    def is_header_of_first(cls, line):
         pass
 
     @abstractmethod
-    def is_line_header_of_next(self, line):
+    def is_header_of_next(self, line):
         pass
 
     def get_parsed_element(self):
@@ -114,10 +114,10 @@ class BookParser(StructuralElementParser):
         self.header_of_next = int_to_text_hun(self.number + 1).upper() + ' KÖNYV'
 
     @classmethod
-    def is_line_header_of_first(cls, line):
+    def is_header_of_first(cls, line):
         return line.content == 'ELSŐ KÖNYV'
 
-    def is_line_header_of_next(self, line):
+    def is_header_of_next(self, line):
         return line.content == self.header_of_next
 
 
@@ -144,10 +144,10 @@ class PartParser(StructuralElementParser):
             self.header_of_next = int_to_text_hun(self.number + 1).upper() + ' RÉSZ'
 
     @classmethod
-    def is_line_header_of_first(cls, line):
+    def is_header_of_first(cls, line):
         return line.content == 'ELSŐ RÉSZ' or line.content == cls.SPECIAL_PARTS[0]
 
-    def is_line_header_of_next(self, line):
+    def is_header_of_next(self, line):
         return line.content == self.header_of_next
 
 
@@ -163,10 +163,10 @@ class TitleParser(StructuralElementParser):
         self.header_of_next = int_to_text_roman(self.number + 1) + '. CÍM'
 
     @classmethod
-    def is_line_header_of_first(cls, line):
+    def is_header_of_first(cls, line):
         return line.content == 'I. CÍM'
 
-    def is_line_header_of_next(self, line):
+    def is_header_of_next(self, line):
         return line.content == self.header_of_next
 
 
@@ -183,10 +183,10 @@ class ChapterParser(StructuralElementParser):
         self.header_of_next = int_to_text_roman(self.number + 1) + '. FEJEZET'
 
     @classmethod
-    def is_line_header_of_first(cls, line):
+    def is_header_of_first(cls, line):
         return line.content.upper() == 'I. FEJEZET'
 
-    def is_line_header_of_next(self, line):
+    def is_header_of_next(self, line):
         return line.content.upper() == self.header_of_next
 
 
@@ -208,7 +208,7 @@ class SubtitleParser(StructuralElementParser):
             self.no_number = False
         else:
             # We got called most probably because of the "bold" condition
-            # in is_line_header... Or something's wrong in the code.
+            # in is_header... Or something's wrong in the code.
             assert lines[0].bold
             self.title = full_title
             self.no_number = True
@@ -235,10 +235,10 @@ class SubtitleParser(StructuralElementParser):
         return True
 
     @classmethod
-    def is_line_header_of_first(cls, line):
+    def is_header_of_first(cls, line):
         return cls.is_line_correct('1. ', line)
 
-    def is_line_header_of_next(self, line):
+    def is_header_of_next(self, line):
         return self.is_line_correct(self.prefix_of_next, line)
 
     def get_parsed_element(self):
@@ -723,11 +723,11 @@ class ActStructureParser:
         for se_type in STRUCTURE_ELEMENT_PARSERS:
             # TODO: we do not impose ANY rules about restarting numbering here
             # this is by design for now, as many laws are pretty much malformed.
-            if se_type.is_line_header_of_first(lines[0]):
+            if se_type.is_header_of_first(lines[0]):
                 return se_type(None, lines)
             if se_type in last_structural_element_parser:
                 last_se = last_structural_element_parser[se_type]
-                if last_se.is_line_header_of_next(lines[0]):
+                if last_se.is_header_of_next(lines[0]):
                     return se_type(last_se, lines)
         return None
 
