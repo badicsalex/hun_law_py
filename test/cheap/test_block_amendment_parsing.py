@@ -38,14 +38,19 @@ def quick_parse_structure(act_text):
     lines = []
     for l in act_text.split('\n'):
         parts = []
-        skip_spaces = True
+        spaces_num = 1
+        bold = '<BOLD>' in l
+        l = l.replace("<BOLD>", "      ")
         for char in l:
-            if char == ' ' and skip_spaces:
-                continue
-            skip_spaces = False
-            parts.append(IndentedLinePart(5, char))
+            if char == ' ':
+                if spaces_num == 0:
+                    parts.append(IndentedLinePart(5, char, bold=bold))
+                spaces_num += 1
+            else:
+                parts.append(IndentedLinePart(5 + spaces_num * 5, char, bold=bold))
+                spaces_num = 0
         lines.append(IndentedLine(parts))
-    act = ActStructureParser.parse("2345 évi 1. törvény", "About testing", lines)
+    act = ActStructureParser.parse("2345 évi I. törvény", "A tesztelésről", lines)
     act = ActBlockAmendmentParser.parse(act)
     print(json.dumps(object_to_dict_recursive(act), indent='  ', ensure_ascii=False))
     return act

@@ -36,10 +36,9 @@ def quick_parse_structure(act_text):
             if char == ' ':
                 if spaces_num == 0:
                     parts.append(IndentedLinePart(5, char, bold=bold))
-                else:
-                    spaces_num += 1
+                spaces_num += 1
             else:
-                parts.append(IndentedLinePart(5 + spaces_num * 5, char))
+                parts.append(IndentedLinePart(5 + spaces_num * 5, char, bold=bold))
                 spaces_num = 0
         lines.append(IndentedLine(parts))
     act = ActStructureParser.parse("2345 évi I. törvény", "A tesztelésről", lines)

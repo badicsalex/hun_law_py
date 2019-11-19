@@ -185,7 +185,7 @@ def quick_parse_structure(act_text):
         for char in l:
             if char == ' ' and skip_spaces:
                 continue
-            skip_spaces = False
+            skip_spaces = char == ' '
             parts.append(IndentedLinePart(5, char))
         lines.append(IndentedLine(parts))
     act = ActStructureParser.parse("2345 évi 1. törvény", "About testing", lines)

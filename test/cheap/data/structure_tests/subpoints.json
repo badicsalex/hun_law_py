@@ -36,6 +36,8 @@
             "children": [
                 {
                     "__type__": "Paragraph",
+                    "identifier": "1",
+                    "intro": "A gondnokoltak nyilvántartása a következő adatokat és a változás időpontjának megjelölésével az adatváltozásokat tartalmazza:",
                     "children": [
                         {
                             "__type__": "AlphabeticPoint",
@@ -97,11 +99,19 @@
                         {
                             "__type__": "AlphabeticPoint",
                             "identifier": "g",
-                            "text": "a választójogból való kizárás tényét, ha a bíróság a gondnokság alá helyezett személyt a választójogból kizárta. (2) A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját. (3) Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza."
+                            "text": "a választójogból való kizárás tényét, ha a bíróság a gondnokság alá helyezett személyt a választójogból kizárta."
                         }
-                    ],
-                    "identifier": "1",
-                    "intro": "A gondnokoltak nyilvántartása a következő adatokat és a változás időpontjának megjelölésével az adatváltozásokat tartalmazza:"
+                    ]
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "2",
+                    "text": "A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját."
+                },
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "3",
+                    "text": "Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza."
                 }
             ],
             "identifier": "3"

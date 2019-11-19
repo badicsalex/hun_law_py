@@ -30,5 +30,5 @@ Fake preamble.
                   f) a gondnokság alá helyezés kötelező felülvizsgálatának időpontját és
                   g) a választójogból való kizárás tényét, ha a bíróság a gondnokság alá helyezett személyt a választójogból
                        kizárta.
-               (2) A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját.
-               (3) Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza.
+              (2) A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját.
+              (3) Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza.
