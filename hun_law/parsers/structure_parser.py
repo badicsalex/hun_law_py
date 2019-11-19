@@ -271,23 +271,23 @@ class SubArticleParsingError(StructureParsingError):
 
 class SubArticleElementParser(ABC):
     PARSED_TYPE = None
+    HEADER_REGEX = None
 
     PARENT_MUST_HAVE_INTRO = False
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = False
     PARENT_CAN_HAVE_WRAPUP = False
 
     @classmethod
-    def parse(cls, lines, identifier):
+    def parse(cls, lines):
         text = None
         intro = None
         children = None
         wrap_up = None
 
+        identifier = cls.extract_identifier(lines[0])
         prefix = cls.PARSED_TYPE.header_prefix(identifier)
-        if not lines[0].content.startswith(prefix):
-            raise SubArticleParsingError("Invalid header ('{}' does not start with '{}'".format(lines[0].content, prefix), cls.PARSED_TYPE)
+        assert lines[0].content.startswith(prefix)
 
-        truncated_first_line = lines[0].content[len(prefix):]
         indented_first_line = lines[0].slice(len(prefix))
         lines = [indented_first_line] + lines[1:]
         try:
@@ -334,15 +334,15 @@ class SubArticleElementParser(ABC):
         pass
 
     @classmethod
-    def is_header(cls, line, identifier):
-        prefix = cls.PARSED_TYPE.header_prefix(identifier)
-        return line.content.startswith(prefix)
+    def extract_identifier(cls, line):
+        result = cls.HEADER_REGEX.match(line.content)
+        return None if result is None else result.group(1)
 
     @classmethod
     def first_header_lineno(cls, lines):
         first_id = cls.first_identifier()
         for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
-            if quote_level == 0 and cls.is_header(line, first_id):
+            if quote_level == 0 and cls.extract_identifier(line) == first_id:
                 return lineno
         return None
 
@@ -354,7 +354,7 @@ class SubArticleElementParser(ABC):
         next_element_identifier = cls.first_identifier()
         # The only way this is not true is a programming error,
         # it is the callers job to assure this.
-        assert cls.is_header(lines[0], next_element_identifier)
+        assert cls.extract_identifier(lines[0]) == next_element_identifier
 
         current_lines = []
         header_indentation = None
@@ -366,10 +366,10 @@ class SubArticleElementParser(ABC):
                 #  (9)
                 # (10)
                 (header_indentation is None or similar_indent(header_indentation, line.indent) or line.indent < header_indentation) and
-                cls.is_header(line, next_element_identifier)
+                cls.extract_identifier(line) == next_element_identifier
             ):
                 if current_element_identifier is not None:
-                    element = cls.parse(current_lines, current_element_identifier)
+                    element = cls.parse(current_lines)
                     elements.append(element)
 
                 header_indentation = line.indent
@@ -392,7 +392,7 @@ class SubArticleElementParser(ABC):
                 while len(current_lines) > 1 and similar_indent(current_lines[-1].indent, header_indent):
                     wrap_up = current_lines.pop().content + " " + wrap_up
 
-        element = cls.parse(current_lines, current_element_identifier)
+        element = cls.parse(current_lines)
         elements.append(element)
         return elements, wrap_up
 
@@ -405,15 +405,11 @@ class AlphabeticSubpointParser(SubArticleElementParser):
     PARENT_CAN_HAVE_WRAPUP = True
 
     PREFIX = ''
+    HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\)')
 
     @classmethod
     def first_identifier(cls):
         return cls.PREFIX + 'a'
-
-    @classmethod
-    def is_header(cls, line, identifier):
-        prefix = cls.PARSED_TYPE.header_prefix(identifier)
-        return line.content.startswith(prefix)
 
     @classmethod
     def get_subelement_parsers(cls, parent_identifier):
@@ -426,6 +422,7 @@ def get_prefixed_alphabetic_subpoint_parser(prefix):
     # Thank 48. § (3) for this.
     class PrefixedAlphabeticSubpointParser(AlphabeticSubpointParser):
         PREFIX = prefix
+        HEADER_REGEX = re.compile(r'({}[a-z]|ny|sz)\)'.format(prefix))
     return PrefixedAlphabeticSubpointParser
 
 
@@ -440,6 +437,8 @@ class NumericPointParser(SubArticleElementParser):
     # blballabalvblbla, lbblaa.
     # 2. Element: saddsadasdsadsa, adsdsadas
     # adsasddas.
+
+    HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\.')
 
     @classmethod
     def first_identifier(cls):
@@ -462,6 +461,8 @@ class NumericSubpointParser(SubArticleElementParser):
     # 2. Element: saddsadasdsadsa, adsdsadas
     # adsasddas.
 
+    HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\.')
+
     @classmethod
     def first_identifier(cls):
         return '1'
@@ -478,6 +479,8 @@ class AlphabeticPointParser(SubArticleElementParser):
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
     PARENT_CAN_HAVE_WRAPUP = True
 
+    HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\)')
+
     @classmethod
     def first_identifier(cls):
         return 'a'
@@ -490,6 +493,8 @@ class AlphabeticPointParser(SubArticleElementParser):
 
 class ParagraphParser(SubArticleElementParser):
     PARSED_TYPE = Paragraph
+
+    HEADER_REGEX = re.compile(r'\(([0-9]+[a-z]?)\)')
 
     @classmethod
     def first_identifier(cls):
@@ -577,39 +582,29 @@ class ArticleParsingError(StructureParsingError):
 class ArticleParser:
     PARSED_TYPE = Article
 
-    HEADER_RE = re.compile("^([0-9]+:)?([0-9]+(/[A-Z])?)\\. ?§ *(.*)$")
+    HEADER_REGEX = re.compile("^(([0-9]+:)?([0-9]+(/[A-Z])?))\\. ?§ *(.*)$")
 
     @classmethod
     def parse(cls, lines, extenally_determined_identifier=None):
-        # lines parameter includes the line with the '§'
-        header_matches = cls.HEADER_RE.match(lines[0].content)
-        if header_matches.group(1):
-            # group(1) already has the ":"
-            identifier = header_matches.group(1) + header_matches.group(2)
-        else:
-            identifier = header_matches.group(2)
+        identifier = cls.extract_identifier(lines[0])
 
         if extenally_determined_identifier and extenally_determined_identifier != identifier:
             raise ArticleParsingError(
                 "Externally determined identifier wrong: '{}'".format(extenally_determined_identifier),
                 Article
             )
-
-        truncated_first_line = lines[0].slice(header_matches.start(4), header_matches.end(4))
+        # Space intentionally left after the sign.
+        position_of_article_sign = lines[0].content.index('§ ')
+        truncated_first_line = lines[0].slice(position_of_article_sign + 2)
         try:
             return cls.parse_body(identifier, [truncated_first_line] + lines[1:])
         except Exception as e:
             raise ArticleParsingError(str(e), Article, identifier) from e
 
     @classmethod
-    def is_header(cls, line, extenally_determined_identifier=None):
-        # TODO: check indentation
-        if extenally_determined_identifier is None:
-            return cls.HEADER_RE.match(line.content)
-        else:
-            prefix1 = extenally_determined_identifier + '. §'
-            prefix2 = extenally_determined_identifier + '.§'
-            return line.content.startswith(prefix1) or line.content.startswith(prefix2)
+    def extract_identifier(cls, line):
+        result = cls.HEADER_REGEX.match(line.content)
+        return None if result is None else result.group(1)
 
     @classmethod
     def parse_body(cls, identifier, lines):
@@ -638,8 +633,8 @@ class ArticleParser:
             # preprocessing in the PDF extractor.
             lines = lines[1:]
 
-        if not ParagraphParser.is_header(lines[0], ParagraphParser.first_identifier()):
-            paragraphs = [ParagraphParser.parse(lines, None)]
+        if not ParagraphParser.extract_identifier(lines[0]) == ParagraphParser.first_identifier():
+            paragraphs = [ParagraphParser.parse(lines)]
         else:
             paragraphs, wrap_up = ParagraphParser.extract_multiple_from_text(lines)
             if wrap_up is not None:
@@ -671,7 +666,7 @@ class ActStructureParser:
         elements = []
         last_structural_element_parser = {}
         for quote_level, line in iterate_with_quote_level(lines):
-            if quote_level == 0 and ArticleParser.is_header(line):
+            if quote_level == 0 and ArticleParser.extract_identifier(line) is not None:
                 # TODO: Let's hope article numbers are always left-justified
                 if article_header_indent is None:
                     article_header_indent = line.indent
@@ -758,13 +753,13 @@ class BlockAmendmentStructureParser:
         current_lines = []
         next_id = parser.PARSED_TYPE.next_identifier(expected_id)
         for quote_level, line in iterate_with_quote_level(lines):
-            if current_lines and quote_level == 0 and parser.is_header(line, next_id):
-                yield parser.parse(current_lines, expected_id)
+            if current_lines and quote_level == 0 and parser.extract_identifier(line) == next_id:
+                yield parser.parse(current_lines)
                 expected_id = next_id
                 next_id = parser.PARSED_TYPE.next_identifier(expected_id)
                 current_lines = []
             current_lines.append(line)
-        yield parser.parse(current_lines, expected_id)
+        yield parser.parse(current_lines)
 
     @classmethod
     def get_parser_and_id(cls, expected_reference):
