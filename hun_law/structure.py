@@ -448,7 +448,7 @@ class Article:
         return Reference(article=self.identifier)
 
 
-BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint)
+BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint)
 
 
 @attr.s(slots=True, frozen=True)
@@ -535,6 +535,10 @@ class Reference:
         # Thanks pylint, but this is the simplest form of this function.
         # pylint: disable=too-many-return-statements
         if self.subpoint is not None:
+            first_subpoint_id = self.subpoint[0] if isinstance(self.subpoint, tuple) else self.subpoint
+            if first_subpoint_id[0].isdigit():
+                # Both 1, 12, and 3a are NumericSubpoints.
+                return self.subpoint, NumericSubpoint
             return self.subpoint, AlphabeticSubpoint
         if self.point is not None:
             first_point_id = self.point[0] if isinstance(self.point, tuple) else self.point

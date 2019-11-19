@@ -734,6 +734,7 @@ class BlockAmendmentStructureParser:
         AlphabeticPoint: AlphabeticPointParser,
         NumericPoint: NumericPointParser,
         AlphabeticSubpoint: AlphabeticSubpointParser,  # In the default case at least
+        NumericSubpoint: NumericSubpointParser,
     }
 
     @classmethod

@@ -18,7 +18,9 @@
 from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
 
 
-from hun_law.structure import Reference, OutgoingReference, Article, Paragraph, AlphabeticPoint, AlphabeticSubpoint, NumericPoint
+from hun_law.structure import \
+    Reference, OutgoingReference, \
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActBlockAmendmentParser
 
@@ -359,3 +361,19 @@ def test_alphabetic_alphabetic_subpoint():
     amended_structure = resulting_structure.article("75").paragraph("3").block_amendment()
     assert amended_structure.children_type is AlphabeticSubpoint
     assert amended_structure.children[0].identifier == 'af'
+
+
+def test_numeric_subpoint():
+    act_text = """
+        29. § (1) A Magyar Fejlesztési Bank Részvénytársaságról szóló 2001. évi XX. törvény (a továbbiakban: MFB törvény) 3. §
+                  (2) bekezdés d) pont 1. alpontja helyébe a következő rendelkezés lép:
+                  [Az MFB Zrt. – az (1) bekezdésben meghatározott körben – az alábbi pénzügyi szolgáltatási tevékenységeket végezheti:
+                  d) a 2. § b) és c) pontjában szereplő feladatához közvetlenül kapcsolódóan]
+                  „1. pénzforgalmi szolgáltatások nyújtása – a pénzforgalmi számlavezetés kivételével – kizárólag jogi személy, egyéni
+                  cég és egyéni vállalkozó részére,”
+    """
+    resulting_structure = quick_parse_structure(act_text)
+
+    amended_structure = resulting_structure.article("29").paragraph("1").block_amendment()
+    assert amended_structure.children_type is NumericSubpoint
+    assert amended_structure.children[0].identifier == '1'
