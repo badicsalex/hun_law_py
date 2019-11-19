@@ -314,6 +314,9 @@ def test_weird_amended_ids_2():
                     elhelyezte, vagy akinél a bíróság a gyermeket elhelyezte, vagy aki a gyermeket a gyámhatóság hozzájárulásával
                     családba fogadta, kivéve ha a gyermeket ideiglenes hatállyal nevelőszülőnél, gyermekotthonban vagy más
                     bentlakásos intézményben helyezték el,”
+                (3) Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:
+                    (E törvény alkalmazásában:)
+                    „31/a. Gazdálkodó szervezet: a polgári perrendtartásról szóló törvény szerinti gazdálkodó szervezet.”
 """
     resulting_structure = quick_parse_structure(act_text)
 
@@ -324,6 +327,10 @@ def test_weird_amended_ids_2():
     amended_structure = resulting_structure.article("1").paragraph("2").block_amendment()
     assert amended_structure.children_type is AlphabeticPoint
     assert amended_structure.children[0].identifier == 'sz'
+
+    amended_structure = resulting_structure.article("1").paragraph("3").block_amendment()
+    assert amended_structure.children_type is NumericPoint
+    assert amended_structure.children[0].identifier == '31/a'
 
 
 def test_alphabetic_alphabetic_subpoint():
