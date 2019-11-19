@@ -289,9 +289,9 @@ class SubArticleElementParser(ABC):
         assert lines[0].content.startswith(prefix)
 
         indented_first_line = lines[0].slice(len(prefix))
-        lines = [indented_first_line] + lines[1:]
+        lines = (indented_first_line, ) + tuple(lines[1:])
         try:
-            intro, children, wrap_up = cls.try_parse_subelements(lines, identifier)
+            intro, children, wrap_up = cls.parse_children_and_wrapup(lines, identifier)
         except NoSubelementsError:
             text = " ".join([l.content for l in lines if l != EMPTY_LINE])
         except Exception as e:
@@ -299,10 +299,10 @@ class SubArticleElementParser(ABC):
         return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
 
     @classmethod
-    def try_parse_subelements(cls, lines, parent_identifier):
+    def parse_children_and_wrapup(cls, lines, parent_identifier):
         parsers_with_first_header = []
         for parser in cls.get_subelement_parsers(parent_identifier):
-            first_header = parser.first_header_lineno(lines)
+            first_header = parser.find_first_header(lines)
             if first_header is None:
                 continue
             if first_header == 0 and parser.PARENT_MUST_HAVE_INTRO:
@@ -339,26 +339,15 @@ class SubArticleElementParser(ABC):
         return None if result is None else result.group(1)
 
     @classmethod
-    def first_header_lineno(cls, lines):
-        first_id = cls.first_identifier()
-        for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
-            if quote_level == 0 and cls.extract_identifier(line) == first_id:
-                return lineno
-        return None
+    def find_first_header(cls, lines):
+        return next(cls.find_header_lines(lines), None)
 
     @classmethod
-    def extract_multiple_from_text(cls, lines):
-        elements = []
-        wrap_up = None
-        current_element_identifier = None
-        next_element_identifier = cls.first_identifier()
-        # The only way this is not true is a programming error,
-        # it is the callers job to assure this.
-        assert cls.extract_identifier(lines[0]) == next_element_identifier
-
-        current_lines = []
+    def find_header_lines(cls, lines, expected_identifier=None):
+        if expected_identifier is None:
+            expected_identifier = cls.first_identifier()
         header_indentation = None
-        for quote_level, line in iterate_with_quote_level(lines):
+        for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
             if (
                 quote_level == 0 and
                 # The last or is a must, because e.g. Paragraph headers are not right-justified, but left.
@@ -366,33 +355,49 @@ class SubArticleElementParser(ABC):
                 #  (9)
                 # (10)
                 (header_indentation is None or similar_indent(header_indentation, line.indent) or line.indent < header_indentation) and
-                cls.extract_identifier(line) == next_element_identifier
+                cls.extract_identifier(line) == expected_identifier
             ):
-                if current_element_identifier is not None:
-                    element = cls.parse(current_lines)
-                    elements.append(element)
-
+                yield lineno
+                expected_identifier = cls.PARSED_TYPE.next_identifier(expected_identifier)
                 header_indentation = line.indent
-                current_element_identifier = next_element_identifier
-                next_element_identifier = cls.PARSED_TYPE.next_identifier(next_element_identifier)
-                current_lines = []
-            current_lines.append(line)
 
-        # There is one element in current_lines, and if no other elements have been found,
-        # there is a total of one. That's not valid for a list of points or subpoints
-        if not elements and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
-            raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
-
+    @classmethod
+    def split_last_item_and_wrapup(cls, lines):
+        wrap_up = None
         if cls.PARENT_CAN_HAVE_WRAPUP:
+            lines = list(lines)
             # TODO: This is a stupid heuristic: we hope line-broken points are indented, while
             # the wrapup will be at the same level as the headers.
-            header_indent = current_lines[0].indent
-            if len(current_lines) > 1 and similar_indent(current_lines[-1].indent, header_indent):
-                wrap_up = current_lines.pop().content
-                while len(current_lines) > 1 and similar_indent(current_lines[-1].indent, header_indent):
-                    wrap_up = current_lines.pop().content + " " + wrap_up
+            header_indent = lines[0].indent
+            wrap_up = None
+            while len(lines) > 1 and (lines[-1] == EMPTY_LINE or similar_indent(lines[-1].indent, header_indent)):
+                line = lines.pop()
+                if line == EMPTY_LINE:
+                    continue
+                if wrap_up is None:
+                    wrap_up = line.content
+                else:
+                    wrap_up = line.content + " " + wrap_up
+        return tuple(lines), wrap_up
 
-        element = cls.parse(current_lines)
+    @classmethod
+    def extract_multiple_from_text(cls, lines):
+        header_lines = tuple(cls.find_header_lines(lines))
+        # The only way this is not true is a programming error,
+        # it is the callers job to assure this.
+        assert header_lines[0] == 0
+        assert cls.extract_identifier(lines[0]) == cls.first_identifier()
+
+        if len(header_lines) < 2 and cls.PARENT_MUST_HAVE_MULTIPLE_OF_THIS:
+            raise SubArticleElementNotFoundError("Not enough elements of type {} found in text.".format(cls.__name__))
+
+        elements = []
+        for start, stop in zip(header_lines[:-1], header_lines[1:]):
+            element = cls.parse(lines[start:stop])
+            elements.append(element)
+
+        remaining_lines, wrap_up = cls.split_last_item_and_wrapup(lines[header_lines[-1]:])
+        element = cls.parse(remaining_lines)
         elements.append(element)
         return elements, wrap_up
 
@@ -509,7 +514,7 @@ class QuotedBlockParser:
     ParseStates = Enum('ParseStates', ('START', 'QUOTED_BLOCK', 'WRAP_UP_MAYBE', 'WRAP_UP'))
 
     @classmethod
-    def first_header_lineno(cls, lines):
+    def find_first_header(cls, lines):
         for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
             if quote_level == 0 and line != EMPTY_LINE and line.content[0] in ("„", "“"):
                 return lineno

@@ -1,0 +1,41 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Article",
+            "identifier": "192",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "intro": "E törvény",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "text": "38. §-a az Alaptörvény 38. cikk (1) és (2) bekezdése,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "66. § (2) bekezdés a) pontja az Alaptörvény 38. cikk (1) bekezdése"
+                        }
+                    ],
+                    "wrap_up": "alapján sarkalatosnak minősül."
+                }
+            ]
+        },
+        {
+            "__type__": "Article",
+            "identifier": "193",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Ures sor, hogy hiba legyen"
+                }
+            ]
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}
