@@ -18,7 +18,11 @@ import json
 import pytest
 import gzip
 
-from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, dict_to_object_recursive, object_to_dict_recursive
+from hun_law.utils import \
+    IndentedLine, IndentedLinePart, EMPTY_LINE, \
+    dict_to_object_recursive, object_to_dict_recursive, \
+    text_to_int_hun, int_to_text_hun, \
+    text_to_int_roman, int_to_text_roman
 from hun_law.cache import CacheObject, init_cache
 from .data.example_content import compression_test_parts
 
@@ -230,3 +234,26 @@ def test_indented_line_bold(parts, should_be_bold):
     )
 
     assert line.bold == should_be_bold
+
+
+def test_text_to_int_hun():
+    assert text_to_int_hun("Nyolcvankilencedik") == 89
+    assert text_to_int_hun("tizenegyedik") == 11
+    assert text_to_int_hun("HETEDIK") == 7
+
+    assert int_to_text_hun(1) == "első"
+    assert int_to_text_hun(25) == "huszonötödik"
+    for i in range(1, 100):
+        assert i == text_to_int_hun(int_to_text_hun(i))
+
+
+def test_text_to_int_roman():
+    assert text_to_int_roman("MCMXCVIII") == 1998
+    assert int_to_text_roman(1998) == "MCMXCVIII"
+    for i in range(1, 2000):
+        assert i == text_to_int_roman(int_to_text_roman(i))
+
+    with pytest.raises(ValueError):
+        text_to_int_roman("Invalid")
+    with pytest.raises(ValueError):
+        text_to_int_roman("XIX/A")
