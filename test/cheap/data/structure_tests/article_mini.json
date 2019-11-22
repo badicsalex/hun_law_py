@@ -1,0 +1,25 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Subtitle",
+            "identifier": "1",
+            "title": "A foglalkoztatás elősegítéséről és a munkanélküliek ellátásáról szóló 1991. évi IV. törvény módosítása"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "text": "A foglalkoztatás elősegítéséről és a munkanélküliek ellátásáról szóló 1991. évi IV. törvény (a továbbiakban: Flt.) 4. § (1) bekezdése helyébe a következő rendelkezés lép:"
+                }
+            ],
+            "identifier": "1"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}
+

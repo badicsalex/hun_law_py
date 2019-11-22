@@ -1,0 +1,93 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Part",
+            "identifier": "1",
+            "title": ""
+        },
+        {
+            "__type__": "Chapter",
+            "identifier": "1",
+            "title": "ALAPVETŐ RENDELKEZÉSEK"
+        },
+        {
+            "__type__": "Subtitle",
+            "identifier": "",
+            "title": "A törvényesség elve"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "text": "Az elkövető büntetőjogi felelősségét csak olyan cselekmény miatt lehet megállapítani, amelyet – a nemzetközi jog általánosan elismert szabályai alapján büntetendő cselekmények kivételével – törvény az elkövetés idején büntetni rendelt."
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "__type__": "Part",
+            "identifier": "2",
+            "title": ""
+        },
+        {
+            "__type__": "Chapter",
+            "identifier": "2",
+            "title": "AZ EMBERIESSÉG ELLENI BŰNCSELEKMÉNYEK"
+        },
+        {
+            "__type__": "Subtitle",
+            "identifier": "",
+            "title": "Népirtás"
+        },
+        {
+            "__type__": "Article",
+            "identifier": "2",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "intro": "Aki valamely nemzeti, etnikai, faji vagy vallási csoport teljes vagy részleges megsemmisítése céljából",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "text": "a csoport tagjait megöli,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "text": "a csoport tagjainak súlyos testi vagy lelki sérelmet okoz,"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "__type__": "Part",
+            "identifier": "3",
+            "title": ""
+        },
+        {
+            "__type__": "Subtitle",
+            "identifier": "",
+            "title": "Értelmező rendelkezések"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "identifier": "1",
+                    "text": "E törvény alkalmazásában"
+                }
+            ],
+            "identifier": "3"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "Preamble preamble.",
+    "subject": "A tesztelésről"
+}

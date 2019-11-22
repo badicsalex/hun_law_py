@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from hun_law.utils import \
-    IndentedLine, EMPTY_LINE, int_to_text_hun, int_to_text_roman, \
+    IndentedLine, EMPTY_LINE, text_to_int_hun, text_to_int_roman, \
     is_uppercase_hun, iterate_with_quote_level, quote_level_diff
 from hun_law.structure import \
     Act, Article, QuotedBlock, BlockAmendment,\
@@ -81,25 +81,28 @@ class StructureParsingError(ValueError):
 class StructuralElementParser(ABC):
     PARSED_TYPE = None
 
-    def __init__(self, sibling_before=None, lines=None):
-        # TODO: Assert first line is correct with is_line_...
-        if sibling_before is None:
-            self.number = 1
+    def __init__(self):
+        self.expected_number = 1
+
+    @abstractmethod
+    def extract_number(self, line):
+        pass
+
+    def step_to_next_number(self, line):
+        extracted = self.extract_number(line)
+        if extracted is None:
+            self.expected_number = 1
         else:
-            self.number = sibling_before.number + 1
-        self.title = " ".join([l.content for l in lines[1:]])
+            self.expected_number = extracted + 1
 
-    @classmethod
-    @abstractmethod
-    def is_header_of_first(cls, line):
-        pass
+    def is_header(self, line, previous_line):
+        number = self.extract_number(line)
+        return number in (1, self.expected_number)
 
-    @abstractmethod
-    def is_header_of_next(self, line):
-        pass
-
-    def get_parsed_element(self):
-        return self.PARSED_TYPE(self.number, self.title)
+    def parse(self, lines):
+        number = self.extract_number(lines[0])
+        title = " ".join(l.content for l in lines[1:] if l != EMPTY_LINE)
+        return self.PARSED_TYPE(number, title)
 
 
 class BookParser(StructuralElementParser):
@@ -108,17 +111,16 @@ class BookParser(StructuralElementParser):
     # Example:
     # NYOLCADIK KÖNYV
     PARSED_TYPE = Book
+    HEADER_REGEX = re.compile(r'(.*) KÖNYV$')
 
-    def __init__(self, sibling_before=None, lines=None):
-        super().__init__(sibling_before, lines)
-        self.header_of_next = int_to_text_hun(self.number + 1).upper() + ' KÖNYV'
-
-    @classmethod
-    def is_header_of_first(cls, line):
-        return line.content == 'ELSŐ KÖNYV'
-
-    def is_header_of_next(self, line):
-        return line.content == self.header_of_next
+    def extract_number(self, line):
+        result = self.HEADER_REGEX.match(line.content)
+        if result is None:
+            return None
+        try:
+            return text_to_int_hun(result.group(1))
+        except ValueError:
+            return None
 
 
 class PartParser(StructuralElementParser):
@@ -130,25 +132,25 @@ class PartParser(StructuralElementParser):
     PARSED_TYPE = Part
 
     # 39. § (5)
-    SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ', None)
+    SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ')
 
-    def __init__(self, sibling_before=None, lines=None):
-        super().__init__(sibling_before, lines)
-        if sibling_before is None:
-            self.special = lines == self.SPECIAL_PARTS[0]
-        else:
-            self.special = sibling_before.special
-        if self.special:
-            self.header_of_next = self.SPECIAL_PARTS[self.number]  # remember that numbers are indexed from 1
-        else:
-            self.header_of_next = int_to_text_hun(self.number + 1).upper() + ' RÉSZ'
+    HEADER_REGEX = re.compile(r'(.*) RÉSZ$')
 
-    @classmethod
-    def is_header_of_first(cls, line):
-        return line.content == 'ELSŐ RÉSZ' or line.content == cls.SPECIAL_PARTS[0]
+    def __init__(self):
+        super().__init__()
+        self.is_special = False
 
-    def is_header_of_next(self, line):
-        return line.content == self.header_of_next
+    def extract_number(self, line):
+        if line.content in self.SPECIAL_PARTS:
+            return self.SPECIAL_PARTS.index(line.content) + 1
+
+        result = self.HEADER_REGEX.match(line.content)
+        if result is None:
+            return None
+        try:
+            return text_to_int_hun(result.group(1))
+        except ValueError:
+            return None
 
 
 class TitleParser(StructuralElementParser):
@@ -158,16 +160,16 @@ class TitleParser(StructuralElementParser):
     # XXI. CÍM
     PARSED_TYPE = Title
 
-    def __init__(self, sibling_before=None, lines=None):
-        super().__init__(sibling_before, lines)
-        self.header_of_next = int_to_text_roman(self.number + 1) + '. CÍM'
+    HEADER_REGEX = re.compile(r'(.*)\. CÍM$')
 
-    @classmethod
-    def is_header_of_first(cls, line):
-        return line.content == 'I. CÍM'
-
-    def is_header_of_next(self, line):
-        return line.content == self.header_of_next
+    def extract_number(self, line):
+        result = self.HEADER_REGEX.match(line.content)
+        if result is None:
+            return None
+        try:
+            return text_to_int_roman(result.group(1))
+        except ValueError:
+            return None
 
 
 class ChapterParser(StructuralElementParser):
@@ -178,16 +180,16 @@ class ChapterParser(StructuralElementParser):
     # XXIII. fejezet  <=  not conformant, but present in e.g. PTK
     PARSED_TYPE = Chapter
 
-    def __init__(self, sibling_before=None, lines=None):
-        super().__init__(sibling_before, lines)
-        self.header_of_next = int_to_text_roman(self.number + 1) + '. FEJEZET'
+    HEADER_REGEX = re.compile(r'(.*)\. fejezet$', flags=re.IGNORECASE)
 
-    @classmethod
-    def is_header_of_first(cls, line):
-        return line.content.upper() == 'I. FEJEZET'
-
-    def is_header_of_next(self, line):
-        return line.content.upper() == self.header_of_next
+    def extract_number(self, line):
+        result = self.HEADER_REGEX.match(line.content)
+        if result is None:
+            return None
+        try:
+            return text_to_int_roman(result.group(1))
+        except ValueError:
+            return None
 
 
 class SubtitleParser(StructuralElementParser):
@@ -199,56 +201,56 @@ class SubtitleParser(StructuralElementParser):
 
     PARSED_TYPE = Subtitle
 
-    def __init__(self, sibling_before=None, lines=None):
-        super().__init__(sibling_before, lines)
-        prefix_of_current = '{}. '.format(self.number)
-        full_title = " ".join([l.content for l in lines])
-        if prefix_of_current in full_title:
-            self.title = full_title.split(prefix_of_current, maxsplit=1)[1]
-            self.no_number = False
-        else:
-            # We got called most probably because of the "bold" condition
-            # in is_header... Or something's wrong in the code.
-            assert lines[0].bold
-            self.title = full_title
-            self.no_number = True
+    HEADER_REGEX = re.compile(r'([0-9]+)\. ')
 
-        self.prefix_of_next = '{}. '.format(self.number + 1)
+    def extract_number(self, line):
+        result = self.HEADER_REGEX.match(line.content)
+        if result is None:
+            return None
+        try:
+            return int(result.group(1))
+        except ValueError:
+            return None
 
-    @classmethod
-    def is_line_correct(cls, prefix, line):
-        # Huge hack: most subtitles are bold.
-        # We also depend on only getting called when we are probably a
-        # subtitle, i.e. there was an empty line above this one, and probably
-        # another one below it.
-        # Also see __init__
-        if line.bold and is_uppercase_hun(line.content[0]):
+    def is_header(self, line, previous_line):
+        if not line.bold:
+            return False
+        if previous_line == EMPTY_LINE and is_uppercase_hun(line.content[0]):
             return True
+        number = self.extract_number(line)
+        return number in (1, self.expected_number)
 
-        # Checks for the default, numbered case
-        if len(line.content) < len(prefix) + 1:
+    def parse(self, lines):
+        title = " ".join(l.content for l in lines if l != EMPTY_LINE)
+        number = self.extract_number(lines[0])
+        if number is None:
+            return self.PARSED_TYPE("", title)
+        title = title.split('. ', 1)[1]
+        return self.PARSED_TYPE(number, title)
+
+
+class ArticleStructuralParser:
+    # This class is mostly a fake StructuralParser, so that Act and
+    # BlockAmendment parsers can use it as structural parser.
+    PARSED_TYPE = None
+
+    def __init__(self):
+        self.indent = None
+
+    def step_to_next_number(self, line):
+        self.indent = line.indent
+
+    def is_header(self, line, previous_line):
+        if self.indent is not None and not similar_indent(line.indent, self.indent):
             return False
-        if not line.content.startswith(prefix):
-            return False
-        if not is_uppercase_hun(line.content[len(prefix)]):
-            return False
-        return True
+        return ArticleParser.extract_identifier(line) is not None
 
-    @classmethod
-    def is_header_of_first(cls, line):
-        return cls.is_line_correct('1. ', line)
-
-    def is_header_of_next(self, line):
-        return self.is_line_correct(self.prefix_of_next, line)
-
-    def get_parsed_element(self):
-        return self.PARSED_TYPE(
-            identifier="" if self.no_number else self.number,
-            title=self.title
-        )
+    def parse(self, lines):
+        return ArticleParser.parse(lines)
 
 
 STRUCTURE_ELEMENT_PARSERS = (
+    ArticleStructuralParser,
     BookParser,
     PartParser,
     TitleParser,
@@ -657,79 +659,67 @@ class ActStructureParser:
     @classmethod
     def parse(cls, identifier, subject, lines):
         try:
-            preamble, elements = cls.parse_text(lines)
+            preamble, lines = cls.parse_preamble(lines)
+            elements = cls.parse_elements(lines)
         except Exception as e:
             raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
 
         return Act(identifier, subject, preamble, elements)
 
     @classmethod
-    def parse_text(cls, lines):
-        current_lines = []
-        article_header_indent = None
-        preamble = None
-        elements = []
-        last_structural_element_parser = {}
-        for quote_level, line in iterate_with_quote_level(lines):
-            if quote_level == 0 and ArticleParser.extract_identifier(line) is not None:
-                # TODO: Let's hope article numbers are always left-justified
-                if article_header_indent is None:
-                    article_header_indent = line.indent
-                if similar_indent(line.indent, article_header_indent):
-                    preamble, new_elements = cls.parse_text_block(current_lines, preamble, last_structural_element_parser)
-                    elements.extend(new_elements)
-                    current_lines = []
-            current_lines.append(line)
-        preamble, new_elements = cls.parse_text_block(current_lines, preamble, last_structural_element_parser)
-        elements.extend(new_elements)
-        return preamble, elements
-
-    @classmethod
-    def parse_text_block(cls, lines, preamble, last_structural_element_parser):
-        lines, elements_to_append = cls.parse_structural_elements(lines, last_structural_element_parser)
-        if preamble is None:
-            preamble = " ".join([l.content for l in lines if l != EMPTY_LINE])
-        else:
-            elements_to_append.insert(0, ArticleParser.parse(lines))
-        return preamble, elements_to_append
-
-    @classmethod
-    def parse_structural_elements(cls, lines, last_structural_element_parser):
-        result = []
-        while lines and lines[-1] == EMPTY_LINE:
-            lines.pop()
-            if EMPTY_LINE not in lines:
-                break
-            possible_title_index = len(lines) - lines[::-1].index(EMPTY_LINE)
-            possible_text = " ".join([l.content for l in lines[possible_title_index:]])
-            if quote_level_diff(possible_text):
-                # There is some unclosed quoting, most probably we would parse into
-                # a quoted text. Don't to anything.
-                # E.g.
-                # ...
-                # 5. Some title in aquoted text
-                # 6. Some other thing"
-                break
-            element_parser = cls.parse_single_structural_element(lines[possible_title_index:], last_structural_element_parser)
-            if not element_parser:
-                break
-            result.insert(0, element_parser.get_parsed_element())
-            last_structural_element_parser[element_parser.__class__] = element_parser
-            lines = lines[:possible_title_index]
-        return lines, result
-
-    @classmethod
-    def parse_single_structural_element(cls, lines, last_structural_element_parser):
-        for se_type in STRUCTURE_ELEMENT_PARSERS:
-            # TODO: we do not impose ANY rules about restarting numbering here
-            # this is by design for now, as many laws are pretty much malformed.
-            if se_type.is_header_of_first(lines[0]):
-                return se_type(None, lines)
-            if se_type in last_structural_element_parser:
-                last_se = last_structural_element_parser[se_type]
-                if last_se.is_header_of_next(lines[0]):
-                    return se_type(last_se, lines)
+    def get_parser_for_header_line(cls, line, previous_line, parsers):
+        for p in parsers:
+            if p.is_header(line, previous_line):
+                return p
         return None
+
+    @classmethod
+    def create_parsers(cls):
+        return [parser() for parser in STRUCTURE_ELEMENT_PARSERS]
+
+    @classmethod
+    def parse_preamble(cls, lines):
+        parsers = cls.create_parsers()
+        split_point = len(lines)
+
+        previous_line = EMPTY_LINE
+        # No quote parsing, because we REALLY hope preambles don't
+        # contain quoted article or strucutral headers.
+        for line_number, line in enumerate(lines):
+            if cls.get_parser_for_header_line(line, previous_line, parsers) is not None:
+                split_point = line_number
+                break
+            previous_line = line
+        preamble = " ".join(l.content for l in lines[:split_point] if l != EMPTY_LINE)
+        rest_of_lines = lines[split_point:]
+        return preamble, rest_of_lines
+
+    @classmethod
+    def parse_elements(cls, lines):
+        parsers = cls.create_parsers()
+
+        elements = []
+        current_element_parser = cls.get_parser_for_header_line(lines[0], EMPTY_LINE, parsers)
+        assert current_element_parser is not None
+
+        current_lines = [lines[0]]
+        previous_line = lines[0]
+        current_element_parser.step_to_next_number(current_lines[0])
+        for quote_level, line in iterate_with_quote_level(lines[1:]):
+            if quote_level != 0:
+                current_lines.append(line)
+                continue
+            new_header_parser = cls.get_parser_for_header_line(line, previous_line, parsers)
+            previous_line = line
+            if new_header_parser is None:
+                current_lines.append(line)
+                continue
+            elements.append(current_element_parser.parse(current_lines))
+            current_element_parser = new_header_parser
+            current_lines = [line]
+            current_element_parser.step_to_next_number(current_lines[0])
+        elements.append(current_element_parser.parse(current_lines))
+        return elements
 
 
 class BlockAmendmentStructureParser:

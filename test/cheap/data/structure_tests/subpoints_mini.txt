@@ -1,0 +1,10 @@
+<BOLD>Alcim 1
+1. § Ajj, mehet.
+
+<BOLD>Alcim 2
+2. § A szamozott pontok azert meg mukodnek:
+    1. Pont
+    2. Pont
+
+3. § Sot, nem kell felni a
+<BOLD> felkover dolgoktol sem.

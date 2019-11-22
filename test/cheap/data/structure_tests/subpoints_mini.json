@@ -1,0 +1,61 @@
+{
+    "__type__": "Act",
+    "children": [
+        {
+            "__type__": "Subtitle",
+            "identifier": "",
+            "title": "Alcim 1"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Ajj, mehet."
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "__type__": "Subtitle",
+            "identifier": "",
+            "title": "Alcim 2"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "children": [
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "1",
+                            "text": "Pont"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "2",
+                            "text": "Pont"
+                        }
+                    ],
+                    "intro": "A szamozott pontok azert meg mukodnek:"
+                }
+            ],
+            "identifier": "2"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "__type__": "Paragraph",
+                    "text": "Sot, nem kell felni a felkover dolgoktol sem."
+                }
+            ],
+            "identifier": "3"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "subject": "A tesztelésről"
+}
+
