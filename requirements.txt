@@ -8,4 +8,5 @@ tatsu==4.3.0
 autopep8
 pylint
 pytest
+pytest-parallel
 colorama
