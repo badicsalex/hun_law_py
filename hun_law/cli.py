@@ -19,6 +19,7 @@ import argparse
 import sys
 import os
 
+from hun_law.extractors.act import BlockAmendmentOnlyAct
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
 from hun_law.extractors.magyar_kozlony import MagyarKozlonyLawRawText
 from hun_law.extractors.all import do_extraction
@@ -38,6 +39,7 @@ Downloads Magyar Közlöny issues as PDFs and converts the Acts in them to machi
 class GenerateCommand:
     EXTRACTION_STEP_TO_CLASS = {
         'full': Act,
+        'ba_only': BlockAmendmentOnlyAct,
         'raw_act': MagyarKozlonyLawRawText,
     }
 
@@ -84,6 +86,8 @@ class GenerateCommand:
         output_fn = getattr(self, "output_" + parsed_args.output_format)
         output_class = self.EXTRACTION_STEP_TO_CLASS[parsed_args.extraction_step]
         for extracted in do_extraction(parsed_args.issues, (output_class,)):
+            if output_class == BlockAmendmentOnlyAct:
+                extracted = extracted.act
             if output_class in (Act, MagyarKozlonyLawRawText):
                 if parsed_args.single_act is not None and extracted.identifier != parsed_args.single_act:
                     print("Not outputting {}".format(extracted.identifier), file=sys.stderr)
