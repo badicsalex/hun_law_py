@@ -6,7 +6,8 @@ tatsu==4.3.0
 
 # Development
 autopep8
+colorama
+jedi
 pylint
 pytest
 pytest-parallel
-colorama
