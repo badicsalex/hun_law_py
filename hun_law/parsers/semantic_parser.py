@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-import attr
 import re
-from collections import namedtuple
+import attr
 
 from hun_law.structure import Article, QuotedBlock, BlockAmendment, OutgoingReference, BlockAmendmentMetadata
 from .structure_parser import BlockAmendmentStructureParser, SubArticleParsingError
@@ -190,6 +189,7 @@ class ActBlockAmendmentParser:
             starting_reference = analysis_result.amended_reference
             if starting_reference is None:
                 starting_reference = analysis_result.inserted_reference
+            assert starting_reference is not None
 
             block_amendment = BlockAmendmentStructureParser.parse(
                 starting_reference,

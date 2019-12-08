@@ -19,12 +19,15 @@
 # The whole module is a bunch of fixups to existing Acts, that aren't
 # well-formed enough to be parsed by the parser out-of-the-box
 import re
+from typing import Dict, Callable, List
 
 from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE
-all_fixups = {}
+
+FixupFn = Callable[[List[IndentedLine]], List[IndentedLine]]
+all_fixups: Dict[str, List[FixupFn]] = {}
 
 
-def add_fixup(law_id, fixup_cb):
+def add_fixup(law_id: str, fixup_cb: FixupFn):
     global all_fixups
     if law_id in all_fixups:
         all_fixups[law_id].append(fixup_cb)
@@ -94,8 +97,8 @@ def replace_line_content(needle, replacement, *, needle_prev_lines=None):
         common_postfix_len += 1
     common_postfix_len = common_postfix_len - 1
 
-    def line_content_replacer(body):
-        result = []
+    def line_content_replacer(body: List[IndentedLine]) -> List[IndentedLine]:
+        result: List[IndentedLine] = []
         needle_count = 0
         for l in body:
             needle_prev_lines_are_same = (
@@ -111,20 +114,20 @@ def replace_line_content(needle, replacement, *, needle_prev_lines=None):
                 replacement_indent = l.slice(common_prefix_len).indent
                 if common_postfix_len != 0:
                     common_postfix = l.slice(-common_postfix_len)
-                    replacement_part = IndentedLine([
+                    replacement_part = IndentedLine((
                         IndentedLinePart(
                             replacement_indent,
                             replacement[common_prefix_len: -common_postfix_len]
-                        )
-                    ])
+                        ),
+                    ))
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part, common_postfix)
                 else:
-                    replacement_part = IndentedLine([
+                    replacement_part = IndentedLine((
                         IndentedLinePart(
                             replacement_indent,
                             replacement[common_prefix_len:]
-                        )
-                    ])
+                        ),
+                    ))
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part)
                 result.append(to_append)
                 needle_count = needle_count + 1

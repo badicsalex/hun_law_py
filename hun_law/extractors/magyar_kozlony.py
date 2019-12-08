@@ -17,8 +17,9 @@
 
 import re
 from collections import namedtuple
+from typing import List, Dict, Optional, Type
 
-from hun_law.utils import EMPTY_LINE
+from hun_law.utils import EMPTY_LINE, IndentedLine
 from . import Extractor
 from .pdf import PdfOfLines
 
@@ -60,7 +61,7 @@ def MagyarKozlonyHeaderExtractor(pdf_file):
 
 MagyarKozlonyLawsSection = namedtuple('MagyarKozlonyLawsSection', ['lines'])
 
-SECTION_TYPES = {
+SECTION_TYPES: Dict[str, Optional[Type]] = {
     'Tartalomjegyzék': None,
     'II. Törvények': MagyarKozlonyLawsSection,
     'III. Kormányrendeletek': None,
@@ -77,7 +78,7 @@ SECTION_TYPES = {
 @Extractor(KozlonyPagesWithHeaderAndFooter)
 def MagyarKozlonySectionExtractor(kozlony):
     current_section_type = None
-    content_of_current_section = []
+    content_of_current_section: List[IndentedLine] = []
 
     # Don't parse the last page, as that's just a note from the editor and publisher
     # TODO: assert for this
@@ -105,8 +106,10 @@ def MagyarKozlonySectionExtractor(kozlony):
         # This is where we do away with the "Page" abstraction, and further processing
         # can only use EMPTY_LINE to have some separation info.
         content_of_current_section.append(EMPTY_LINE)
-    if SECTION_TYPES[current_section_type] is not None:
-        yield SECTION_TYPES[current_section_type](content_of_current_section)
+    assert current_section_type is not None
+    the_type = SECTION_TYPES[current_section_type]
+    if the_type is not None:
+        yield the_type(content_of_current_section)
 
 
 MagyarKozlonyLawRawText = namedtuple('MagyarKozlonyLawRawText', ['identifier', 'subject', 'body'])

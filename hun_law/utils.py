@@ -17,22 +17,24 @@
 
 import textwrap
 from string import ascii_uppercase
+from typing import Tuple, List, Iterable, TypeVar, Optional, Dict
+
 import attr
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class IndentedLinePart:
-    dx = attr.ib(converter=float)
-    content = attr.ib(converter=str)
-    bold = attr.ib(converter=bool, default=False)
+    dx: float
+    content: str
+    bold: bool = False
 
 
 @attr.s(slots=True, frozen=True)
 class IndentedLine:
-    _parts = attr.ib(factory=tuple, converter=tuple)
-    content = attr.ib(init=False)
-    indent = attr.ib(init=False)
-    bold = attr.ib(init=False)
+    _parts: Tuple[IndentedLinePart, ...] = attr.ib(factory=tuple)
+    content: str = attr.ib(init=False)
+    indent: float = attr.ib(init=False)
+    bold: bool = attr.ib(init=False)
 
     @_parts.validator
     def _parts_validator(self, _attribute, parts):
@@ -61,7 +63,7 @@ class IndentedLine:
                 bold_len += len(p.content)
         return bold_len * 2 > sum_len
 
-    def slice(self, start, end=None):
+    def slice(self, start, end=None) -> 'IndentedLine':
         if start < 0:
             start = len(self.content) + start
         if end is None:
@@ -75,7 +77,7 @@ class IndentedLine:
         if end <= start:
             return EMPTY_LINE
 
-        skipped_x = 0
+        skipped_x = 0.0
         skipped_len = 0
         skipped_parts_index = 0
         while skipped_len < start and skipped_parts_index < len(self._parts):
@@ -127,15 +129,17 @@ class IndentedLine:
                 else:
                     parts.append(p)
                     x += p.dx
-        return IndentedLine(parts)
+        return IndentedLine(tuple(parts))
 
 
 EMPTY_LINE = IndentedLine()
 
+T = TypeVar('T')
 
-def split_list(haystack, needle):
+
+def split_list(haystack: Iterable[T], needle: T) -> Iterable[List[T]]:
     # Thanks, stackoverflow
-    result = []
+    result: List[T] = []
     for e in haystack:
         if e == needle:
             if result != []:
@@ -146,8 +150,8 @@ def split_list(haystack, needle):
         yield result
 
 
-TEXT_TO_INT_HUN_DICT_ORDINAL = None
-INT_TO_TEXT_HUN_DICT_ORDINAL = None
+TEXT_TO_INT_HUN_DICT_ORDINAL: Optional[Dict[str, int]] = None
+INT_TO_TEXT_HUN_DICT_ORDINAL: Optional[Dict[int, str]] = None
 
 
 def init_text_to_int_dict():
@@ -207,19 +211,21 @@ def init_text_to_int_dict():
         INT_TO_TEXT_HUN_DICT_ORDINAL[value] = text
 
 
-def text_to_int_hun(s):
+def text_to_int_hun(s: str) -> int:
     global TEXT_TO_INT_HUN_DICT_ORDINAL
     if TEXT_TO_INT_HUN_DICT_ORDINAL is None:
         init_text_to_int_dict()
+    assert TEXT_TO_INT_HUN_DICT_ORDINAL is not None
     if s.lower() not in TEXT_TO_INT_HUN_DICT_ORDINAL:
         raise ValueError("{} is not a number in written form".format(s))
     return TEXT_TO_INT_HUN_DICT_ORDINAL[s.lower()]
 
 
-def int_to_text_hun(i):
+def int_to_text_hun(i: int) -> str:
     global INT_TO_TEXT_HUN_DICT_ORDINAL
     if INT_TO_TEXT_HUN_DICT_ORDINAL is None:
         init_text_to_int_dict()
+    assert INT_TO_TEXT_HUN_DICT_ORDINAL is not None
     if i not in INT_TO_TEXT_HUN_DICT_ORDINAL:
         raise ValueError("{} is out of range for conversion into text form".format(i))
     return INT_TO_TEXT_HUN_DICT_ORDINAL[i]
@@ -323,12 +329,12 @@ def dict_to_object_recursive(dct, types_to_use, *, types_dict=None):
         return dct
     if isinstance(dct, (list, tuple)):
         return tuple(dict_to_object_recursive(v, types_to_use, types_dict=types_dict) for v in dct)
-    T = types_dict[dct['__type__']]
-    args_for_T = {}
+    the_type = types_dict[dct['__type__']]
+    args_for_the_type = {}
     for k, v in dct.items():
         if k == '__type__':
             continue
         if k[0] == '_':
             k = k[1:]
-        args_for_T[k] = dict_to_object_recursive(v, types_to_use, types_dict=types_dict)
-    return T(**args_for_T)
+        args_for_the_type[k] = dict_to_object_recursive(v, types_to_use, types_dict=types_dict)
+    return the_type(**args_for_the_type)

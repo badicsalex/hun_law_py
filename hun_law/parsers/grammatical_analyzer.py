@@ -15,18 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Dict, Union, List, Type
+
 import attr
-import os
-import collections
 import tatsu
 import tatsu.model
-from enum import Enum
+
+from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
+    SubArticleElement
 
 from .grammar import model
 from .grammar.parser import ActGrammarParser
-
-from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint
 
 
 def iterate_depth_first(node, filter_class=None):
@@ -55,7 +55,7 @@ class ReferenceCollectorDeferredItem:
 
 
 class ReferenceCollector:
-    NAME_TO_STRUCTURE = {
+    NAME_TO_STRUCTURE: Dict[str, Type[Union[SubArticleElement, Article]]] = {
         'article': Article,
         'paragraph': Paragraph,
         'alphabeticpoint': AlphabeticPoint,
@@ -96,6 +96,7 @@ class ReferenceCollector:
         return next_id == ref_data
 
     def merge_to_deferred(self, ref_data, end_pos):
+        assert self.deferred_item is not None
         self.deferred_item.ref_data = (self.deferred_item.ref_data, ref_data)
         self.deferred_item.end_pos = end_pos
 
@@ -118,7 +119,6 @@ class ReferenceCollector:
         self.commit_deferred_item()
         ref_args = [self.act, None, None, None, None]
         levels = ("articles", "paragraphs", "points", "subpoints")
-        last_end = 0
         for arg_pos, level in enumerate(levels, start=1):
             level_vals = getattr(self, level)
             if len(level_vals) == 1:
@@ -165,7 +165,7 @@ class GrammaticalAnalysisResult:
                 continue
             refs_to_parse.append((None, ref))
 
-        result = []
+        result: List[InTextReference] = []
         for act_id, parsed_ref in refs_to_parse:
             result.extend(self._convert_single_reference(act_id, parsed_ref))
         return tuple(result)

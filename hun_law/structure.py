@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
+from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable
 
 import attr
 
-from hun_law.utils import int_to_text_hun, int_to_text_roman
+from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -77,8 +78,8 @@ from hun_law.utils import int_to_text_hun, int_to_text_roman
 
 @attr.s(slots=True, frozen=True)
 class StructuralElement(ABC):
-    identifier = attr.ib(converter=str)
-    title = attr.ib(converter=str)
+    identifier: str = attr.ib()
+    title: str = attr.ib()
 
     @property
     @abstractmethod
@@ -166,61 +167,61 @@ STRUCTURE_ELEMENT_TYPES = (
 @attr.s(slots=True, frozen=True)
 class InTextReference:
     # Start and end pos are python range, i.e. end_pos is after the last character
-    start_pos = attr.ib(converter=int)
-    end_pos = attr.ib(converter=int)
-    reference = attr.ib()
+    start_pos: int = attr.ib()
+    end_pos: int = attr.ib()
+    reference: "Reference" = attr.ib()
 
 
 @attr.s(slots=True, frozen=True)
 class OutgoingReference:
-    from_reference = attr.ib()
+    from_reference: "Reference" = attr.ib()
     # Start and end pos are python range, i.e. end_pos is after the last character
-    start_pos = attr.ib(converter=int)
-    end_pos = attr.ib(converter=int)
-    to_reference = attr.ib()
+    start_pos: int = attr.ib()
+    end_pos: int = attr.ib()
+    to_reference: "Reference" = attr.ib()
 
 
 @attr.s(slots=True, frozen=True)
 class QuotedBlock:
-    lines = attr.ib(converter=tuple)
+    lines: Tuple[IndentedLine, ...] = attr.ib()
+    identifier: ClassVar = None
 
-    identifier = attr.ib(default=None, init=False)
 
-
+SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock']
 @attr.s(slots=True, frozen=True)
 class SubArticleElement(ABC):
-    ALLOWED_CHILDREN_TYPE = ()
+    ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()
 
-    identifier = attr.ib(converter=attr.converters.optional(str), default=None)
-    text = attr.ib(converter=attr.converters.optional(str), default=None)
-    intro = attr.ib(converter=attr.converters.optional(str), default=None)
-    children = attr.ib(converter=attr.converters.optional(tuple), default=None)
-    wrap_up = attr.ib(converter=attr.converters.optional(str), default=None)
+    identifier: Optional[str] = attr.ib(default=None)
+    text: Optional[str] = attr.ib(default=None)
+    intro: Optional[str] = attr.ib(default=None)
+    children: Optional[Tuple[SubArticleChildType, ...]] = attr.ib(default=None)
+    wrap_up: Optional[str] = attr.ib(default=None)
 
-    children_type = attr.ib(init=False)
-    children_map = attr.ib(init=False)
+    children_type: Optional[Type[SubArticleChildType]] = attr.ib(init=False)
+    children_map: Optional[Mapping[Optional[str], SubArticleChildType]] = attr.ib(init=False)
 
     @children_type.default
-    def _children_type_default(self):
+    def _children_type_default(self) -> Optional[Type[SubArticleChildType]]:
         if self.children is None:
             return None
         return type(self.children[0])
 
     @children_map.default
-    def _children_map_default(self):
+    def _children_map_default(self) -> Optional[Mapping[Optional[str], SubArticleChildType]]:
         if self.children is None:
             return None
         return {c.identifier: c for c in self.children}
 
     @text.validator
-    def _content_validator_if_text(self, _attribute, text):
+    def _content_validator_if_text(self, _attribute, text: Optional[str]):
         if text is not None:
             if self.intro is not None or self.wrap_up is not None or self.children is not None:
                 raise ValueError("SAE can contain either text or intro/wrap-up/children")
 
     @children.validator
-    def _content_validator_if_children(self, _attribute, children):
-        if self.children_type is None:
+    def _content_validator_if_children(self, _attribute, children: Optional[Tuple['SubArticleElement', ...]]):
+        if children is None:
             return
         if self.children_type not in self.ALLOWED_CHILDREN_TYPE:
             raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.children_type))
@@ -233,35 +234,35 @@ class SubArticleElement(ABC):
                     .format(type(c), self.children_type)
                 )
 
-    def child(self, child_id):
-        if self.children is None:
+    def child(self, child_id: str) -> SubArticleChildType:
+        if self.children_map is None:
             raise KeyError("There are no children of this element")
-        return self.children_map[str(child_id)]
+        return self.children_map[child_id]
 
     @classmethod
     @abstractmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         pass
 
     @classmethod
     @abstractmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         pass
 
     @property
     @abstractmethod
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         pass
 
 
 @attr.s(slots=True, frozen=True)
 class AlphabeticSubpoint(SubArticleElement):
     @classmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         return "{}) ".format(identifier)
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         if len(identifier) == 1:
             return chr(ord(identifier) + 1)
         if len(identifier) == 2:
@@ -269,18 +270,18 @@ class AlphabeticSubpoint(SubArticleElement):
         raise ValueError("Invalid identifier for subpoint '{}'".format(identifier))
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         return Reference(subpoint=self.identifier)
 
 
 @attr.s(slots=True, frozen=True)
 class NumericSubpoint(SubArticleElement):
     @classmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         return "{}. ".format(identifier)
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         if identifier.isdigit():
             return str(int(identifier) + 1)
         number = identifier[:-1]
@@ -288,7 +289,7 @@ class NumericSubpoint(SubArticleElement):
         return number + chr(ord(postfix) + 1)
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         return Reference(subpoint=self.identifier)
 
 
@@ -297,14 +298,16 @@ class NumericPoint(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
 
     @classmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         return "{}. ".format(identifier)
 
-    def subpoint(self, sp_id):
-        return self.child(sp_id)
+    def subpoint(self, sp_id: str) -> AlphabeticSubpoint:
+        result = self.child(sp_id)
+        assert isinstance(result, AlphabeticSubpoint)
+        return result
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         if identifier.isdigit():
             return str(int(identifier) + 1)
         number = identifier[:-1]
@@ -312,7 +315,7 @@ class NumericPoint(SubArticleElement):
         return number + chr(ord(postfix) + 1)
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         return Reference(point=self.identifier)
 
 
@@ -321,14 +324,16 @@ class AlphabeticPoint(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, NumericSubpoint, )
 
     @classmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         return "{}) ".format(identifier)
 
-    def subpoint(self, sp_id):
-        return self.child(sp_id)
+    def subpoint(self, sp_id: str) -> Union[AlphabeticSubpoint, NumericSubpoint]:
+        result = self.child(sp_id)
+        assert isinstance(result, (AlphabeticSubpoint, NumericSubpoint))
+        return result
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         if identifier == 'ny':
             return 'o'
         if identifier == 'sz':
@@ -336,24 +341,24 @@ class AlphabeticPoint(SubArticleElement):
         return chr(ord(identifier) + 1)
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         return Reference(point=self.identifier)
 
 
 @attr.s(slots=True, frozen=True)
 class BlockAmendment(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = None  # Will be defined later in this file, since it uses classes defined later.
+    ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()  # Will be defined later in this file, since it uses classes defined later.
 
     @classmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         raise TypeError("Block Amendments do not have header")
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         raise TypeError("Block Amendments do not have identifiers")
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         raise TypeError("Block Amendments cannot be referred to.")
 
 
@@ -362,31 +367,38 @@ class Paragraph(SubArticleElement):
     ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock, BlockAmendment)
 
     @classmethod
-    def header_prefix(cls, identifier):
+    def header_prefix(cls, identifier: Optional[str]) -> str:
         if identifier is None:
             # Happens in special cases when no header was found, e.g.
             # Came from an article with a single paragraph.
             return ''
         return "({}) ".format(identifier)
 
-    def point(self, point_id):
-        if self.children_type not in (AlphabeticPoint, NumericPoint):
-            raise KeyError("There are no points in this paragraph")
-        return self.child(point_id)
+    def point(self, point_id: str) -> Union[AlphabeticPoint, NumericPoint]:
+        result = self.child(point_id)
+        if not isinstance(result, (AlphabeticPoint, NumericPoint)):
+            raise KeyError("Selected child is not a Point")
+        return result
 
-    def quoted_block(self, block_num):
-        if self.children_type not in (QuotedBlock,):
-            raise KeyError("There are no quoted blocks in this paragraph")
-        return self.children[block_num]
+    def quoted_block(self, block_num) -> QuotedBlock:
+        if self.children is None:
+            raise KeyError("There are no children")
+        result = self.children[block_num]
+        if not isinstance(result, QuotedBlock):
+            raise KeyError("Selected child is not a QuotedBlock")
+        return result
 
-    def block_amendment(self):
-        if self.children_type not in (BlockAmendment,):
-            raise KeyError("There are no block amendments in this paragraph")
+    def block_amendment(self) -> BlockAmendment:
+        if self.children is None or len(self.children) == 0:
+            raise KeyError("There are no children")
+        result = self.children[0]
+        if not isinstance(result, BlockAmendment):
+            raise KeyError("Selected child is not a BlockAmendment")
         assert len(self.children) == 1, "There should be exactly one block amendment per paragraph"
-        return self.children[0]
+        return result
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         if identifier.isdigit():
             return str(int(identifier) + 1)
         number = identifier[:-1]
@@ -394,46 +406,43 @@ class Paragraph(SubArticleElement):
         return number + chr(ord(postfix) + 1)
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         return Reference(paragraph=self.identifier)
 
 
 @attr.s(slots=True, frozen=True)
 class Article:
-    identifier = attr.ib(converter=str)
-    children = attr.ib(converter=tuple)
-    title = attr.ib(converter=attr.converters.optional(str), default=None)
+    identifier: str = attr.ib()
+    children: Tuple[Paragraph, ...] = attr.ib()
+    title: Optional[str] = attr.ib(default=None)
 
-    paragraph_map = attr.ib(init=False)
+    paragraph_map: Mapping[Optional[str], Paragraph] = attr.ib(init=False)
 
     @children.validator
-    def _children_validator(self, _attribute, children):
+    def _children_validator(self, _attribute, children: Tuple[Paragraph, ...]):
         # Attrs validators as decorators are what they are, it cannot be a function.
         # pylint: disable=no-self-use
         for c in children:
-            if not isinstance(c, Paragraph):
-                # Always wrap everything in Pragraphs, pls.
-                raise ValueError("Articles have to have Paragraphs as children")
             if c.identifier is None:
                 if len(children) != 1:
                     raise ValueError("Unnamed paragraphs cannot have siblings.")
 
     @paragraph_map.default
-    def _paragraph_map_default(self):
+    def _paragraph_map_default(self) -> Mapping[Optional[str], Paragraph]:
         return {c.identifier: c for c in self.children}
 
     @property
-    def paragraphs(self):
+    def paragraphs(self) -> Tuple[Paragraph, ...]:
         # Children are always paragraphs (see constructor)
         return self.children
 
-    def paragraph(self, paragraph_id=None):
+    def paragraph(self, paragraph_id: Optional[str] = None):
         if paragraph_id is not None:
-            return self.paragraph_map[str(paragraph_id)]
+            return self.paragraph_map[paragraph_id]
         return self.paragraph_map[None]
 
     @classmethod
-    def next_identifier(cls, identifier):
+    def next_identifier(cls, identifier: str) -> str:
         if "/" in identifier:
             prefix, letter = identifier.split('/')
             return "{}/{}".format(prefix, chr(ord(letter) + 1))
@@ -444,7 +453,7 @@ class Article:
         return str(int(identifier) + 1)
 
     @property
-    def relative_reference(self):
+    def relative_reference(self) -> 'Reference':
         return Reference(article=self.identifier)
 
 
@@ -453,45 +462,48 @@ BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, Num
 
 @attr.s(slots=True, frozen=True)
 class Act:
-    identifier = attr.ib(converter=str)
-    subject = attr.ib(converter=str)
-    preamble = attr.ib(converter=str)
-    children = attr.ib(converter=tuple)
+    identifier: str = attr.ib()
+    subject: str = attr.ib()
+    preamble: str = attr.ib()
+    children: Tuple[Union['StructuralElement', 'Article'], ...] = attr.ib()
 
-    act_id_abbreviations = attr.ib(converter=attr.converters.optional(tuple), default=None)
-    outgoing_references = attr.ib(converter=attr.converters.optional(tuple), default=None)
+    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation']] = attr.ib(default=None)
+    outgoing_references: Optional[Tuple['OutgoingReference', ...]] = attr.ib(default=None)
 
-    articles = attr.ib(init=False)
-    articles_map = attr.ib(init=False)
+    articles: Tuple[Article, ...] = attr.ib(init=False)
+    articles_map: Mapping[str, Article] = attr.ib(init=False)
 
     @articles.default
-    def _articles_default(self):
+    def _articles_default(self) -> Tuple[Article, ...]:
         return tuple(c for c in self.children if isinstance(c, Article))
 
     @articles_map.default
     def _articles_map_default(self):
         return {c.identifier: c for c in self.articles}
 
-    def article(self, article_id):
+    def article(self, article_id: str) -> Article:
         assert self.articles_map[str(article_id)].identifier == str(article_id)
         return self.articles_map[str(article_id)]
 
-    def outgoing_references_from(self, reference):
+    def outgoing_references_from(self, reference: 'Reference') -> Iterable['OutgoingReference']:
+        if self.outgoing_references is None:
+            return ()
         return (r for r in self.outgoing_references if r.from_reference == reference)
 
 
+ReferencePartType = Union[None, str, Tuple[str, str]]
 @attr.s(slots=True, frozen=True)
 class Reference:
-    act = attr.ib(default=None)
-    article = attr.ib(default=None)
-    paragraph = attr.ib(default=None)
-    point = attr.ib(default=None)
-    subpoint = attr.ib(default=None)
+    act: Optional[str] = attr.ib(default=None)
+    article: ReferencePartType = attr.ib(default=None)
+    paragraph: ReferencePartType = attr.ib(default=None)
+    point: ReferencePartType = attr.ib(default=None)
+    subpoint: ReferencePartType = attr.ib(default=None)
 
-    def is_relative(self):
+    def is_relative(self) -> bool:
         return self.act is None
 
-    def is_range(self):
+    def is_range(self) -> bool:
         return (
             isinstance(self.article, tuple) or
             isinstance(self.paragraph, tuple) or
@@ -499,7 +511,7 @@ class Reference:
             isinstance(self.subpoint, tuple)
         )
 
-    def relative_to(self, other):
+    def relative_to(self, other: 'Reference') -> 'Reference':
         params = []
         my_part = False
         for key in ("act", "article", "paragraph", "point", "subpoint"):
@@ -509,7 +521,7 @@ class Reference:
         return Reference(*params)
 
     @property
-    def relative_id_string(self):
+    def relative_id_string(self) -> str:
         result = "ref"
         for key, id_key in (("article", "a"), ("paragraph", "p"), ("point", "pt"), ("subpoint", "sp")):
             val = getattr(self, key)
@@ -519,7 +531,7 @@ class Reference:
                 result = "{}_{}{}".format(result, id_key, val)
         return result
 
-    def first_in_range(self):
+    def first_in_range(self) -> 'Reference':
         result = self
         if isinstance(result.article, tuple):
             result = attr.evolve(result, article=result.article[0])
@@ -531,7 +543,7 @@ class Reference:
             result = attr.evolve(result, subpoint=result.subpoint[0])
         return result
 
-    def last_component_with_type(self):
+    def last_component_with_type(self) -> Tuple[ReferencePartType, Optional[Type]]:
         # Thanks pylint, but this is the simplest form of this function.
         # pylint: disable=too-many-return-statements
         if self.subpoint is not None:
@@ -557,14 +569,14 @@ class Reference:
 
 @attr.s(slots=True, frozen=True)
 class ActIdAbbreviation:
-    abbreviation = attr.ib(converter=str)
-    act = attr.ib(converter=str)
+    abbreviation: str = attr.ib()
+    act: str = attr.ib()
 
 
 @attr.s(slots=True, frozen=True)
 class BlockAmendmentMetadata:
-    amended_reference = attr.ib(kw_only=True, default=None)
-    inserted_reference = attr.ib(kw_only=True, default=None)
+    amended_reference: Optional[Reference] = attr.ib(kw_only=True, default=None)
+    inserted_reference: Optional[Reference] = attr.ib(kw_only=True, default=None)
 
     def __attrs_post_init__(self):
         if self.amended_reference is None and self.inserted_reference is None:

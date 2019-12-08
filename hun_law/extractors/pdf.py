@@ -17,7 +17,7 @@
 
 import unicodedata
 
-from collections import namedtuple
+from typing import List, Dict
 
 import attr
 
@@ -43,8 +43,14 @@ class TextBox:
     bold = attr.ib(converter=bool)
 
 
-PageOfTextBoxes = namedtuple('PageOfTextBoxes', ['textboxes'])
-PdfOfTextBoxes = namedtuple('PdfOfTextBoxes', ['pages'])
+@attr.s(slots=True, auto_attribs=True)
+class PageOfTextBoxes:
+    textboxes: List[TextBox]
+
+
+@attr.s(slots=True, auto_attribs=True)
+class PdfOfTextBoxes:
+    pages: List[PageOfTextBoxes]
 
 
 class PDFMinerAdapter(PDFTextDevice):
@@ -126,6 +132,7 @@ class PDFMinerAdapter(PDFTextDevice):
                 content=text,
                 bold=self.is_font_bold(font),
             )
+            assert self.current_page is not None
             self.current_page.textboxes.append(textbox)
         return textwidth
 
@@ -158,7 +165,7 @@ def extract_textboxes(f):
 
 
 def sort_textboxes_into_dicts(textboxes):
-    textboxes_as_dicts = {}
+    textboxes_as_dicts: Dict[float, Dict[float, TextBox]] = {}
     for tb in textboxes:
         if tb.y not in textboxes_as_dicts:
             # TODO: quantize y if needed. We are only lucky that
@@ -201,7 +208,7 @@ def convert_textbox_dict_to_line(textbox_dict):
     prev_x = 0
     for x in sorted(textbox_dict):
         box = textbox_dict[x]
-        if threshold_to_space is not None and x > threshold_to_space or box.content == '„':
+        if threshold_to_space is not None and (x > threshold_to_space or box.content == '„'):
             if parts and parts[-1].content[-1] != ' ':
                 parts.append(IndentedLinePart(threshold_to_space - prev_x, ' '))
                 prev_x = threshold_to_space
@@ -209,7 +216,7 @@ def convert_textbox_dict_to_line(textbox_dict):
         prev_x = box.x
         threshold_to_space = x + box.width + box.width_of_space * 0.5
 
-    return IndentedLine(parts)
+    return IndentedLine(tuple(parts))
 
 
 def extract_single_page(page):

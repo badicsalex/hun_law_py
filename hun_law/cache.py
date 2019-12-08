@@ -26,7 +26,7 @@ class CacheObject:
     def __init__(self, name):
         if cache_dir_path is None:
             raise RuntimeError("Cache not initialized yet")
-        self.filename = os.path.join(cache_dir_path, name)
+        self.filename: str = os.path.join(cache_dir_path, name)
 
     def exists(self):
         return os.path.exists(self.filename)
