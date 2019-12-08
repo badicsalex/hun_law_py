@@ -61,7 +61,7 @@ class IndentedLine:
                 bold_len += len(p.content)
         return bold_len * 2 > sum_len
 
-    def slice(self, start, end=None):
+    def slice(self, start, end=None) -> 'IndentedLine':
         if start < 0:
             start = len(self.content) + start
         if end is None:

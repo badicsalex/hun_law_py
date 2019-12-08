@@ -2,6 +2,7 @@
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": true,
   "python.formatting.provider": "autopep8",
+  "python.linting.mypyEnabled": true,
   "coc.preferences.formatOnSaveFiletypes": [
     "python",
     "json"
