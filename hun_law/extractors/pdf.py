@@ -17,14 +17,14 @@
 
 import unicodedata
 
-from typing import List, Dict
+from typing import List, Dict, Sequence, Any, Iterable
 
 import attr
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfdevice import PDFTextDevice
-from pdfminer.pdffont import PDFUnicodeNotDefined
+from pdfminer.pdffont import PDFUnicodeNotDefined, PDFFont
 
 from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2, object_to_dict_recursive, dict_to_object_recursive
 from hun_law.cache import CacheObject
@@ -33,14 +33,14 @@ from . import Extractor
 from .file import PDFFileDescriptor
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class TextBox:
-    x = attr.ib(converter=float)
-    y = attr.ib(converter=float)
-    width = attr.ib(converter=float)
-    width_of_space = attr.ib(converter=float)
-    content = attr.ib(converter=str)
-    bold = attr.ib(converter=bool)
+    x: float
+    y: float
+    width: float
+    width_of_space: float
+    content: str
+    bold: bool
 
 
 @attr.s(slots=True, auto_attribs=True)
@@ -54,10 +54,10 @@ class PdfOfTextBoxes:
 
 
 class PDFMinerAdapter(PDFTextDevice):
-    def __init__(self, rsrcmgr):
+    def __init__(self, rsrcmgr: PDFResourceManager):
         super().__init__(rsrcmgr)
-        self.pages = []
-        self.current_page = None
+        self.pages: List[PageOfTextBoxes] = []
+        self.current_page = PageOfTextBoxes([])
 
     def begin_page(self, page, ctm):
         self.current_page = PageOfTextBoxes([])
@@ -67,13 +67,13 @@ class PDFMinerAdapter(PDFTextDevice):
         pass
 
     @classmethod
-    def is_font_bold(cls, font):
+    def is_font_bold(cls, font: PDFFont) -> bool:
         if not hasattr(font, 'is_bold'):
             font.is_bold = 'bold' in font.fontname or 'Bold' in font.fontname
         return font.is_bold
 
     @classmethod
-    def cid_to_string(cls, font, cid):
+    def cid_to_string(cls, font: PDFFont, cid: int) -> str:
         try:
             text = font.to_unichr(cid)
             # Keep in mind that 'text' can be multiple characters, like 'ffi'
@@ -101,7 +101,7 @@ class PDFMinerAdapter(PDFTextDevice):
         text = text.replace("û", "ű")  # note the ^ on top of the first ű
         return text
 
-    def render_char(self, matrix, font, fontsize, scaling, rise, cid, *_args):
+    def render_char(self, matrix: Sequence[float], font: PDFFont, fontsize: float, scaling: float, rise: float, cid: int, *_args: Any) -> float:
         # We need to support multiple pdfminer versions simultaneously.
         # Hence the *args
         # pylint: disable=arguments-differ,too-many-arguments
@@ -143,7 +143,7 @@ class PDFMinerAdapter(PDFTextDevice):
 class PageOfLines:
     lines: List[IndentedLine] = attr.ib(factory=list, converter=list)
 
-    def add_line(self, line):
+    def add_line(self, line: IndentedLine):
         self.lines.append(line)
 
 
@@ -151,11 +151,11 @@ class PageOfLines:
 class PdfOfLines:
     pages: List[PageOfLines] = attr.ib(factory=list, converter=list)
 
-    def add_page(self, page):
+    def add_page(self, page: PageOfLines):
         self.pages.append(page)
 
 
-def extract_textboxes(f):
+def extract_textboxes(f: PDFFileDescriptor) -> PdfOfTextBoxes:
     rsrcmgr = PDFResourceManager()
     device = PDFMinerAdapter(rsrcmgr)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
@@ -164,7 +164,7 @@ def extract_textboxes(f):
     return PdfOfTextBoxes(device.pages)
 
 
-def sort_textboxes_into_dicts(textboxes):
+def sort_textboxes_into_dicts(textboxes: Iterable[TextBox]) -> Dict[float, Dict[float, TextBox]]:
     textboxes_as_dicts: Dict[float, Dict[float, TextBox]] = {}
     for tb in textboxes:
         if tb.y not in textboxes_as_dicts:
@@ -202,10 +202,10 @@ def sort_textboxes_into_dicts(textboxes):
     return textboxes_as_dicts
 
 
-def convert_textbox_dict_to_line(textbox_dict):
+def convert_textbox_dict_to_line(textbox_dict: Dict[float, TextBox]) -> IndentedLine:
     parts = []
     threshold_to_space = None
-    prev_x = 0
+    prev_x = 0.0
     for x in sorted(textbox_dict):
         box = textbox_dict[x]
         if threshold_to_space is not None and (x > threshold_to_space or box.content == '„'):
@@ -219,10 +219,10 @@ def convert_textbox_dict_to_line(textbox_dict):
     return IndentedLine(tuple(parts))
 
 
-def extract_single_page(page):
+def extract_single_page(page: PageOfTextBoxes) -> PageOfLines:
     processed_page = PageOfLines()
     textboxes_as_dicts = sort_textboxes_into_dicts(page.textboxes)
-    prev_y = 0
+    prev_y = 0.0
     for y in sorted(textboxes_as_dicts, reverse=True):
         # TODO: don't hardcode the 18, but use actual textbox dimensions
         if prev_y != 0 and (prev_y - y) > 18:
@@ -232,7 +232,7 @@ def extract_single_page(page):
     return processed_page
 
 
-def extract_lines(potb):
+def extract_lines(potb: PdfOfTextBoxes) -> PdfOfLines:
     result = PdfOfLines()
     for page in potb.pages:
         result.add_page(extract_single_page(page))
