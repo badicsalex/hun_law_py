@@ -15,15 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import namedtuple
-from typing import Dict, Callable, List, Type, Any
+from typing import Dict, Callable, List, Type, Any, TypeVar, Iterable
 
-ExtractorFn = Callable[[Any], Any]
+GenericExtractorFn = Callable[[Any], Iterable[Any]]
 
-extractors_for_class: Dict[Type, List[ExtractorFn]] = {}
+extractors_for_class: Dict[Type, List[GenericExtractorFn]] = {}
 
 
-def Extractor(extractable_class: Type) -> Callable:
+ExtractedType = TypeVar('ExtractedType')
+ExtractorFn = Callable[[ExtractedType], Iterable[Any]]
+
+
+def Extractor(extractable_class: Type[ExtractedType]) -> Callable[[ExtractorFn], ExtractorFn]:
     """Decorator that registers an extractor function.
 
     Extractor functions can accept a parameter of type 'can_extract_from', and

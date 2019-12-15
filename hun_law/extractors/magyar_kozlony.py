@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from typing import List, Dict, Optional, Type, Tuple
+from typing import List, Dict, Optional, Type, Tuple, Iterable, Union
 import attr
 
 from hun_law.utils import EMPTY_LINE, IndentedLine
@@ -44,7 +44,7 @@ class KozlonyPagesWithHeaderAndFooter:
 
 
 @Extractor(PdfOfLines)
-def MagyarKozlonyHeaderExtractor(pdf_file):
+def MagyarKozlonyHeaderExtractor(pdf_file: PdfOfLines) -> Iterable[KozlonyPagesWithHeaderAndFooter]:
     if not is_magyar_kozlony(pdf_file):
         return
     # TODO: assert the header.
@@ -71,7 +71,9 @@ class MagyarKozlonyLawsSection:
     lines: Tuple[IndentedLine, ...]
 
 
-SECTION_TYPES: Dict[str, Optional[Type[MagyarKozlonyLawsSection]]] = {
+SectionType = Union[MagyarKozlonyLawsSection]
+
+SECTION_TYPES: Dict[str, Optional[Type[SectionType]]] = {
     'Tartalomjegyzék': None,
     'II. Törvények': MagyarKozlonyLawsSection,
     'III. Kormányrendeletek': None,
@@ -86,7 +88,7 @@ SECTION_TYPES: Dict[str, Optional[Type[MagyarKozlonyLawsSection]]] = {
 
 
 @Extractor(KozlonyPagesWithHeaderAndFooter)
-def MagyarKozlonySectionExtractor(kozlony):
+def MagyarKozlonySectionExtractor(kozlony: KozlonyPagesWithHeaderAndFooter) -> Iterable[SectionType]:
     current_section_type = None
     content_of_current_section: List[IndentedLine] = []
 
@@ -214,7 +216,7 @@ class LawExtractorStateMachine:
 
 
 @Extractor(MagyarKozlonyLawsSection)
-def MagyarKozlonyLawExtractor(laws_section):
+def MagyarKozlonyLawExtractor(laws_section: MagyarKozlonyLawsSection) -> Iterable[MagyarKozlonyLawRawText]:
     state_machine = LawExtractorStateMachine()
     for line in laws_section.lines:
         result = state_machine.feed_line(line)

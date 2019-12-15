@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Iterable
 
 import attr
 
@@ -40,7 +41,7 @@ class BlockAmendmentOnlyAct:
 
 
 @Extractor(MagyarKozlonyLawRawText)
-def MagyarKozlonyToStructureOnlyAct(raw):
+def MagyarKozlonyToStructureOnlyAct(raw: MagyarKozlonyLawRawText) -> Iterable[StructureOnlyAct]:
     # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
     fixupped_body = do_all_fixups(raw.identifier, raw.body)
     act = ActStructureParser.parse(raw.identifier, raw.subject, fixupped_body)
@@ -48,12 +49,12 @@ def MagyarKozlonyToStructureOnlyAct(raw):
 
 
 @Extractor(StructureOnlyAct)
-def EnrichActWithBlockAmendments(structure_only):
+def EnrichActWithBlockAmendments(structure_only: StructureOnlyAct) -> Iterable[BlockAmendmentOnlyAct]:
     act = ActBlockAmendmentParser.parse(structure_only.act)
     yield BlockAmendmentOnlyAct(act)
 
 
 @Extractor(BlockAmendmentOnlyAct)
-def EnrichActWithOtherSemanticData(block_amendment_only):
+def EnrichActWithOtherSemanticData(block_amendment_only: BlockAmendmentOnlyAct) -> Iterable[Act]:
     act = ActSemanticsParser.parse(block_amendment_only.act)
     yield act

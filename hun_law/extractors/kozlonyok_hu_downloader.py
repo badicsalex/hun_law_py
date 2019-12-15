@@ -17,6 +17,7 @@
 
 import sys
 from urllib import request
+from typing import Iterable
 
 from hun_law.cache import CacheObject
 from . import Extractor
@@ -36,7 +37,7 @@ class KozlonyToDownload:
 
 
 @Extractor(KozlonyToDownload)
-def MagyarKozlonyHeaderExtractor(descriptor):
+def MagyarKozlonyHeaderExtractor(descriptor: KozlonyToDownload) -> Iterable[PDFFileDescriptor]:
     cache_id = "MK/{}/{}.pdf".format(descriptor.year, descriptor.issue)
     cache_object = CacheObject(cache_id)
     if not cache_object.exists():

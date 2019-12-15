@@ -141,7 +141,7 @@ class PDFMinerAdapter(PDFTextDevice):
 
 @attr.s(slots=True)
 class PageOfLines:
-    lines = attr.ib(factory=list, converter=list)
+    lines: List[IndentedLine] = attr.ib(factory=list, converter=list)
 
     def add_line(self, line):
         self.lines.append(line)
@@ -149,7 +149,7 @@ class PageOfLines:
 
 @attr.s(slots=True)
 class PdfOfLines:
-    pages = attr.ib(factory=list, converter=list)
+    pages: List[PageOfLines] = attr.ib(factory=list, converter=list)
 
     def add_page(self, page):
         self.pages.append(page)
@@ -240,7 +240,7 @@ def extract_lines(potb):
 
 
 @Extractor(PDFFileDescriptor)
-def CachedPdfParser(f):
+def CachedPdfParser(f: PDFFileDescriptor) -> Iterable[PdfOfLines]:
     cache_object = CacheObject(f.cache_id + ".parsed_v3.gz")
     if cache_object.exists():
         result = dict_to_object_recursive(
