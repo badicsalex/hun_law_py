@@ -43,8 +43,8 @@ class ActSemanticsParser:
                 cls.recursive_parse(paragraph, article.relative_reference, "", "", state)
         return attr.evolve(
             act,
-            act_id_abbreviations=state.act_id_abbreviations,
-            outgoing_references=state.outgoing_references
+            act_id_abbreviations=tuple(state.act_id_abbreviations),
+            outgoing_references=tuple(state.outgoing_references)
         )
 
     @classmethod
@@ -148,14 +148,14 @@ class ActBlockAmendmentParser:
             if isinstance(child, Article):
                 child = cls.parse_article(child)
             new_children.append(child)
-        return attr.evolve(act, children=new_children)
+        return attr.evolve(act, children=tuple(new_children))
 
     @classmethod
     def parse_article(cls, article):
         new_children = []
         for paragraph in article.paragraphs:
             new_children.append(cls.parse_paragraph(paragraph))
-        return attr.evolve(article, children=new_children)
+        return attr.evolve(article, children=tuple(new_children))
 
     @classmethod
     def parse_paragraph(cls, paragraph):
