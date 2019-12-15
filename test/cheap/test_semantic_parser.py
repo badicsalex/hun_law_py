@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+import pytest
+
 from hun_law.utils import IndentedLine, IndentedLinePart
 from hun_law.structure import Reference, OutgoingReference
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActSemanticsParser
-
-import pytest
 
 
 def absref(act=None, article=None, paragraph=None, point=None, subpoint=None):
@@ -158,7 +158,7 @@ CASES_WITH_POSITIONS = [
                 absref("2345. évi I. törvény", "8", "5")
             ),
             OutgoingReference(
-                ref("1",  None, "a", "ab"),
+                ref("1", None, "a", "ab"),
                 0, 22,
                 absref("2345. évi I. törvény", "8", "6", "a")
             ),
@@ -187,7 +187,7 @@ def quick_parse_structure(act_text):
                 continue
             skip_spaces = char == ' '
             parts.append(IndentedLinePart(5, char))
-        lines.append(IndentedLine(parts))
+        lines.append(IndentedLine(tuple(parts)))
     act = ActStructureParser.parse("2345 évi 1. törvény", "About testing", lines)
     return ActSemanticsParser.parse(act)
 

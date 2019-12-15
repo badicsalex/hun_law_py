@@ -15,17 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
-
 
 from hun_law.structure import \
-    Reference, OutgoingReference, \
+    Reference, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint
-from hun_law.parsers.structure_parser import ActStructureParser
-from hun_law.parsers.semantic_parser import ActBlockAmendmentParser
 
-import pytest
-import json
+from .utils import quick_parse_structure
 
 
 def absref(act=None, article=None, paragraph=None, point=None, subpoint=None):
@@ -34,28 +29,6 @@ def absref(act=None, article=None, paragraph=None, point=None, subpoint=None):
 
 def ref(article=None, paragraph=None, point=None, subpoint=None):
     return Reference(None, article, paragraph, point, subpoint)
-
-
-def quick_parse_structure(act_text):
-    lines = []
-    for l in act_text.split('\n'):
-        parts = []
-        spaces_num = 1
-        bold = '<BOLD>' in l
-        l = l.replace("<BOLD>", "      ")
-        for char in l:
-            if char == ' ':
-                if spaces_num == 0:
-                    parts.append(IndentedLinePart(5, char, bold=bold))
-                spaces_num += 1
-            else:
-                parts.append(IndentedLinePart(5 + spaces_num * 5, char, bold=bold))
-                spaces_num = 0
-        lines.append(IndentedLine(parts))
-    act = ActStructureParser.parse("2345 évi I. törvény", "A tesztelésről", lines)
-    act = ActBlockAmendmentParser.parse(act)
-    print(json.dumps(object_to_dict_recursive(act), indent='  ', ensure_ascii=False))
-    return act
 
 
 def test_simple_block_amendment_1():
@@ -78,7 +51,7 @@ def test_simple_block_amendment_1():
                        2005. évi költségvetéséről szóló 2004. évi CXXXV. törvény 44. §-a alapján vállalt állami készfizető kezesség fedezete
                        mellett a rögzített árfolyam alkalmazásának időszaka alatt folyósított kölcsön;”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
 
     assert resulting_structure.article("1").paragraph("1").intro.endswith("a következő rendelkezés lép:"), \
         "Intro is correctly split into 'actual intro' and 'context for amendment'"
@@ -108,7 +81,7 @@ def test_simple_block_amendment_2():
                kérelmére összevont engedélyt, előzetes típusengedélyt, valamint atomerőmű esetén az eltérő fűtőelemkötegek
                alkalmazását célzó átalakításhoz előzetes elvi átalakítási engedélyt, vagy átalakítási engedélyt adhat ki.”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("4").paragraph("1").block_amendment()
     assert amended_structure.children_type is Paragraph
     assert amended_structure.children[0].identifier == "1"
@@ -131,14 +104,14 @@ def test_complex_block_amendment_1():
                körűen nyújt be független szakértői véleményt, akkor az atomenergia felügyeleti szerv azt hivatalból készítteti el,
                amelynek költsége a kérelmezőt terheli.”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("3").paragraph().block_amendment()
 
     assert amended_structure.children_type is Article
     assert len(amended_structure.children) == 1
-    assert amended_structure.children[0].paragraph(2).text.startswith("A nukleáris létesítmény")
-    assert amended_structure.children[0].paragraph(3).text.startswith("A (2) bekezdéstől eltérően")
-    assert amended_structure.children[0].paragraph(3).text.endswith("a kérelmezőt terheli.")
+    assert amended_structure.children[0].paragraph("2").text.startswith("A nukleáris létesítmény")
+    assert amended_structure.children[0].paragraph("3").text.startswith("A (2) bekezdéstől eltérően")
+    assert amended_structure.children[0].paragraph("3").text.endswith("a kérelmezőt terheli.")
 
 
 def test_complex_block_amendment_2():
@@ -155,7 +128,7 @@ def test_complex_block_amendment_2():
                     állampolgár szakértőitől eltérő szabályait;
                     sb) műszaki szakértő szervezet minősítésének, nyilvántartásának, működésének és alkalmazásának szabályait.”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is AlphabeticPoint
@@ -199,7 +172,7 @@ def test_complex_block_amendment_ptk1():
                     indokolatlanul a jogosult hátrányára kikötött olyan határidőt, amely a hatvan napot nem haladja meg – mint
                     tisztességtelen kikötést –, a jogosult megtámadhatja.”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Article
@@ -233,7 +206,7 @@ def test_complex_block_amendment_ptk2():
                 vételre és a részvény kiadására, jóváírására vonatkozó rendelkezéseket megfelelően alkalmazni kell.”
     """
 
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Article
@@ -257,7 +230,7 @@ def test_block_amendment_range():
                 kell megállapítani, hogy annak összege gondnokoltanként – a gondnoki feladatok mértéke alapján – az öregségi
                 nyugdíj mindenkori legkisebb összegének legalább 10%-át elérje.”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Paragraph
@@ -279,7 +252,7 @@ def test_block_amend_pair():
                 értesíti az örökbefogadásra való alkalmasságot megállapító, valamint az örökbefogadás engedélyezésére illetékes
                 gyámhatóságot.”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Paragraph
@@ -298,7 +271,7 @@ def test_weird_amended_ids_1():
                 (A törvény alkalmazásában)
                 „3a. gazdálkodó szervezet: a polgári perrendtartásról szóló törvény szerinti gazdálkodó szervezet;”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("25").paragraph().block_amendment()
     assert amended_structure.children_type is NumericPoint
     assert len(amended_structure.children) == 1
@@ -320,7 +293,7 @@ def test_weird_amended_ids_2():
                     (E törvény alkalmazásában:)
                     „31/a. Gazdálkodó szervezet: a polgári perrendtartásról szóló törvény szerinti gazdálkodó szervezet.”
 """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
 
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
     assert amended_structure.children_type is AlphabeticPoint
@@ -353,7 +326,7 @@ def test_alphabetic_alphabetic_subpoint():
                        „af) szárított dohány, fermentált dohány vagy vágott dohány esetén az 5 kilogrammot,”
                        (meghaladja.)
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("75").paragraph("1").block_amendment()
     assert amended_structure.children_type is Paragraph
     assert amended_structure.children[0].identifier == '1a'
@@ -372,7 +345,7 @@ def test_numeric_subpoint():
                   „1. pénzforgalmi szolgáltatások nyújtása – a pénzforgalmi számlavezetés kivételével – kizárólag jogi személy, egyéni
                   cég és egyéni vállalkozó részére,”
     """
-    resulting_structure = quick_parse_structure(act_text)
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
 
     amended_structure = resulting_structure.article("29").paragraph("1").block_amendment()
     assert amended_structure.children_type is NumericSubpoint

@@ -16,7 +16,6 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import pytest
-import gzip
 
 from hun_law.utils import \
     IndentedLine, IndentedLinePart, EMPTY_LINE, \
@@ -30,17 +29,17 @@ from .data.example_content import compression_test_parts
 def test_indented_line_construction():
     assert IndentedLine() == IndentedLine()
     assert IndentedLine() == EMPTY_LINE
-    assert IndentedLine([]) == EMPTY_LINE
+    assert IndentedLine(tuple()) == EMPTY_LINE
 
 
 def test_indented_line_slice():
-    parts = [
+    parts = (
         IndentedLinePart(5, 'a'),
         IndentedLinePart(5, 'b'),
         IndentedLinePart(5, 'cde'),
         IndentedLinePart(5, ' '),
         IndentedLinePart(5, 'f')
-    ]
+    )
     line = IndentedLine(parts)
     assert line.content == 'abcde f'
     assert line.indent == 5
@@ -54,7 +53,7 @@ def test_indented_line_slice():
     assert line.slice(2).indent == 15
 
     with pytest.raises(Exception):
-        invalid_slice = line.slice(3)
+        _invalid_slice = line.slice(3)
 
     assert line.slice(5).content == ' f'
     assert line.slice(5).indent == 20
@@ -79,17 +78,17 @@ def test_indented_line_slice():
     assert line.slice(5, 3) == EMPTY_LINE
 
     with pytest.raises(Exception):
-        invalid_slice = line.slice(0, 4)
+        _invalid_slice = line.slice(0, 4)
 
 
 def test_indented_line_serialization():
-    parts = [
+    parts = (
         IndentedLinePart(5, 'a'),
         IndentedLinePart(5, 'b'),
         IndentedLinePart(5, 'cde'),
         IndentedLinePart(5, ' '),
         IndentedLinePart(5, 'f')
-    ]
+    )
     line = IndentedLine(parts)
     serialized_form = object_to_dict_recursive(line)
     # test transformability to json
@@ -114,7 +113,7 @@ def test_indented_line_serialization_compactness(tmpdir):
         parts.append(IndentedLinePart(x-prev_x, c))
         prev_x = x
 
-    line = IndentedLine(parts)
+    line = IndentedLine(tuple(parts))
 
     # This is a test for an older scheme, where X coordinates were not stored exactly,
     # to save on digits in the JSON. It is not really relevant right now, but might
@@ -141,15 +140,15 @@ def test_indented_line_serialization_compactness(tmpdir):
 
 
 def test_indented_line_concat():
-    parts1 = [
+    parts1 = (
         IndentedLinePart(5, 'a'),
         IndentedLinePart(5, 'b'),
         IndentedLinePart(5, 'cde'),
-    ]
-    parts2 = [
+    )
+    parts2 = (
         IndentedLinePart(20, ' '),
         IndentedLinePart(5, 'f'),
-    ]
+    )
 
     line1 = IndentedLine(parts1)
     line2 = IndentedLine(parts2)
@@ -164,7 +163,7 @@ def test_indented_line_concat():
     assert line.slice(2).indent == 15
 
     with pytest.raises(Exception):
-        invalid_slice = line.slice(3)
+        _invalid_slice = line.slice(3)
 
     assert line.slice(-2, -1).content == ' '
     assert line.slice(-2, -1).indent == 20
@@ -230,7 +229,7 @@ BOLDNESS_TESTS = [
 @pytest.mark.parametrize("parts,should_be_bold", BOLDNESS_TESTS)
 def test_indented_line_bold(parts, should_be_bold):
     line = IndentedLine(
-        IndentedLinePart(5, s, bold) for s, bold in parts
+        tuple(IndentedLinePart(5, s, bold) for s, bold in parts)
     )
 
     assert line.bold == should_be_bold

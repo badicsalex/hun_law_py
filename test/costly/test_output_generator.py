@@ -16,7 +16,6 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
-import os
 from html.parser import HTMLParser
 
 from hun_law.cli import GenerateCommand
@@ -50,12 +49,19 @@ def test_json_output(tmpdir):
 
 
 class AFindingHTMLParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.a_tag_count = 0
+
     def reset_count(self):
         self.a_tag_count = 0
 
-    def handle_starttag(self, tag, attributes):
+    def handle_starttag(self, tag, attrs):
         if tag == 'a':
             self.a_tag_count = self.a_tag_count + 1
+
+    def error(self, message):
+        pass
 
 
 def test_html_output_ptk(tmpdir):

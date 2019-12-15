@@ -24,20 +24,20 @@ TEST_STRUCTURE = Act(
     identifier="2345. évi XD. törvény",
     subject="A tesztelésről",
     preamble="A tesztelés nagyon fontos, és egyben kötelező",
-    children=[
-        Book(identifier=1, title="Egyszerű dolgok"),
+    children=(
+        Book(identifier="1", title="Egyszerű dolgok"),
         Article(
             identifier="1:1",
             title="Az egyetlen cikk, aminek cime van.",
-            children=[
+            children=(
                 Paragraph(
                     text="Meg szövege",
-                )
-            ]
+                ),
+            )
         ),
         Article(
             identifier="1:2",
-            children=[
+            children=(
                 Paragraph(
                     identifier="1",
                     text="Valami valami"
@@ -46,7 +46,7 @@ TEST_STRUCTURE = Act(
                     identifier="2",
                     intro="Egy felsorolás legyen",
                     wrap_up="minden esetben.",
-                    children=[
+                    children=(
                         AlphabeticPoint(
                             identifier="a",
                             text="többelemű"
@@ -54,7 +54,7 @@ TEST_STRUCTURE = Act(
                         AlphabeticPoint(
                             identifier="b",
                             intro="kellően",
-                            children=[
+                            children=(
                                 AlphabeticSubpoint(
                                     identifier="ba",
                                     text="átláthatatlan"
@@ -63,37 +63,37 @@ TEST_STRUCTURE = Act(
                                     identifier="bb",
                                     text="komplex"
                                 ),
-                            ]
+                            )
                         )
-                    ]
+                    )
                 ),
-            ]
+            )
         ),
-        Book(identifier=2, title="Amended stuff in english"),
+        Book(identifier="2", title="Amended stuff in english"),
         Article(
             identifier="2:1",
-            children=[
+            children=(
                 Paragraph(
                     text="Nothing fancy yet"
                 ),
-            ]
+            )
         ),
         Article(
             identifier="2:1/A",
-            children=[
+            children=(
                 Paragraph(
                     text="Added after the fact"
                 ),
-            ]
+            )
         ),
         Article(
             identifier="2:2",
-            children=[
+            children=(
                 Paragraph(
                     identifier="1",
                     intro="This can legally be after 2:1/A. Also, ",
                     wrap_up="Can also be amended",
-                    children=[
+                    children=(
                         NumericPoint(
                             identifier="1",
                             text="Paragraphs",
@@ -106,11 +106,11 @@ TEST_STRUCTURE = Act(
                             identifier="2",
                             text="Alphabetic points",
                         ),
-                    ]
+                    )
                 ),
-            ]
+            )
         ),
-    ]
+    )
 )
 
 
@@ -149,9 +149,9 @@ def test_reference_ranges():
     range1 = Reference("2345. évi XD. törvény", "1:2", ("2", "3"))
     range2 = Reference(None, None, "2", ("a", "b"))
 
-    assert not_range.is_range() == False
-    assert range1.is_range() == True
-    assert range2.is_range() == True
+    assert not not_range.is_range()
+    assert range1.is_range()
+    assert range2.is_range()
 
     assert not_range.first_in_range() == not_range
     assert range1.first_in_range() == Reference("2345. évi XD. törvény", "1:2", "2")

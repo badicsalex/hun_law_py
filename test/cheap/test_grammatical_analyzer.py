@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Tuple
+import pytest
+
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
 from hun_law.structure import Reference, ActIdAbbreviation, BlockAmendmentMetadata
-
-
-import pytest
 
 
 def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
@@ -463,25 +463,25 @@ def test_parse_results_are_correct(s, positions, refs, act_refs):
     parsed.indented_print()
     parsed_refs = []
     parsed_act_refs = []
-    parsed_pos_string = [" "] * len(s)
+    parsed_pos_chars = [" "] * len(s)
     for reference in parsed.element_references:
-        parsed_pos_string[reference.start_pos] = '<'
-        parsed_pos_string[reference.end_pos - 1] = '>'
+        parsed_pos_chars[reference.start_pos] = '<'
+        parsed_pos_chars[reference.end_pos - 1] = '>'
         parsed_refs.append(reference.reference)
 
     for reference in parsed.act_references:
-        parsed_pos_string[reference.start_pos] = '['
-        parsed_pos_string[reference.end_pos - 1] = ']'
+        parsed_pos_chars[reference.start_pos] = '['
+        parsed_pos_chars[reference.end_pos - 1] = ']'
         parsed_act_refs.append(reference.reference.act)
 
-    parsed_pos_string = "".join(parsed_pos_string)
+    parsed_pos_string = "".join(parsed_pos_chars)
     assert refs == parsed_refs
     assert act_refs == parsed_act_refs
     if positions is not None:
         assert positions == parsed_pos_string
 
 
-ABBREVIATION_CASES = (
+ABBREVIATION_CASES: Tuple = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
         [ActIdAbbreviation('Hktv.', '2012. évi CCXIX. törvény')]

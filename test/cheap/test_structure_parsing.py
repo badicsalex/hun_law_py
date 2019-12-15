@@ -15,34 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
 import json
 import os
 import sys
+import pytest
 
-from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
-from hun_law.parsers.structure_parser import ActStructureParser
-from hun_law.structure import QuotedBlock
+from hun_law.utils import object_to_dict_recursive
 
-
-def quick_parse_structure(act_text):
-    lines = []
-    for l in act_text.split('\n'):
-        parts = []
-        spaces_num = 1
-        bold = '<BOLD>' in l
-        l = l.replace("<BOLD>", "      ")
-        for char in l:
-            if char == ' ':
-                if spaces_num == 0:
-                    parts.append(IndentedLinePart(5, char, bold=bold))
-                spaces_num += 1
-            else:
-                parts.append(IndentedLinePart(5 + spaces_num * 5, char, bold=bold))
-                spaces_num = 0
-        lines.append(IndentedLine(parts))
-    act = ActStructureParser.parse("2345 évi I. törvény", "A tesztelésről", lines)
-    return act
+from .utils import quick_parse_structure
 
 
 def structure_testcase_provider():
