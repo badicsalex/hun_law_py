@@ -49,7 +49,9 @@ class ActSemanticsParser:
 
     @classmethod
     def recursive_parse(cls, element, parent_reference, prefix, postfix, state):
-        if type(element) in (QuotedBlock, BlockAmendment):
+        # TODO: pylint is right here, should refactor.
+        #pylint: disable=too-many-arguments
+        if isinstance(element, (QuotedBlock, BlockAmendment)):
             return
         element_reference = element.relative_reference.relative_to(parent_reference)
         if element.text is not None:
@@ -76,7 +78,6 @@ class ActSemanticsParser:
         if element.intro is not None:
             prefix = prefix + element.intro + " "
 
-        postfix = postfix
         if element.wrap_up is not None:
             postfix = " " + element.wrap_up + postfix
 
@@ -85,6 +86,8 @@ class ActSemanticsParser:
 
     @classmethod
     def parse_text(cls, middle, prefix, postfix, element_reference, state):
+        # TODO: pylint is right here, should refactor.
+        #pylint: disable=too-many-arguments
         text = prefix + middle + postfix
         if len(text) > 10000:
             return None
@@ -106,6 +109,8 @@ class ActSemanticsParser:
 
     @classmethod
     def convert_parsed_references(cls, parsed_references, element_reference, prefixlen, textlen, state):
+        # TODO: pylint is right here, should refactor.
+        #pylint: disable=too-many-arguments
         result = []
         abbreviations_map = {a.abbreviation: a.act for a in state.act_id_abbreviations}
         for in_text_reference in parsed_references:

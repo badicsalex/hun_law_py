@@ -3,3 +3,6 @@ disable=missing-docstring,invalid-name,fixme,line-too-long,too-few-public-method
 
 [DESIGN]
 max-attributes=15
+
+[MASTER]
+ignore=hun_law/parsers/grammar
