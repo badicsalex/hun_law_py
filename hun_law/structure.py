@@ -76,10 +76,10 @@ from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine
 # All classes are immutable by design
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class StructuralElement(ABC):
-    identifier: str = attr.ib()
-    title: str = attr.ib()
+    identifier: str
+    title: str
 
     @property
     @abstractmethod
@@ -164,39 +164,39 @@ STRUCTURE_ELEMENT_TYPES = (
 )
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class InTextReference:
     # Start and end pos are python range, i.e. end_pos is after the last character
-    start_pos: int = attr.ib()
-    end_pos: int = attr.ib()
-    reference: "Reference" = attr.ib()
+    start_pos: int
+    end_pos: int
+    reference: "Reference"
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class OutgoingReference:
-    from_reference: "Reference" = attr.ib()
+    from_reference: "Reference"
     # Start and end pos are python range, i.e. end_pos is after the last character
-    start_pos: int = attr.ib()
-    end_pos: int = attr.ib()
-    to_reference: "Reference" = attr.ib()
+    start_pos: int
+    end_pos: int
+    to_reference: "Reference"
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class QuotedBlock:
-    lines: Tuple[IndentedLine, ...] = attr.ib()
+    lines: Tuple[IndentedLine, ...]
     identifier: ClassVar = None
 
 
 SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock']
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()
 
-    identifier: Optional[str] = attr.ib(default=None)
+    identifier: Optional[str] = None
     text: Optional[str] = attr.ib(default=None)
-    intro: Optional[str] = attr.ib(default=None)
+    intro: Optional[str] = None
     children: Optional[Tuple[SubArticleChildType, ...]] = attr.ib(default=None)
-    wrap_up: Optional[str] = attr.ib(default=None)
+    wrap_up: Optional[str] = None
 
     children_type: Optional[Type[SubArticleChildType]] = attr.ib(init=False)
     children_map: Optional[Mapping[Optional[str], SubArticleChildType]] = attr.ib(init=False)
@@ -410,11 +410,11 @@ class Paragraph(SubArticleElement):
         return Reference(paragraph=self.identifier)
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class Article:
-    identifier: str = attr.ib()
+    identifier: str
     children: Tuple[Paragraph, ...] = attr.ib()
-    title: Optional[str] = attr.ib(default=None)
+    title: Optional[str] = None
 
     paragraph_map: Mapping[Optional[str], Paragraph] = attr.ib(init=False)
 
@@ -460,14 +460,14 @@ class Article:
 BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint)
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class Act:
-    identifier: str = attr.ib()
-    subject: str = attr.ib()
-    preamble: str = attr.ib()
-    children: Tuple[Union['StructuralElement', 'Article'], ...] = attr.ib()
+    identifier: str
+    subject: str
+    preamble: str
+    children: Tuple[Union['StructuralElement', 'Article'], ...]
 
-    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation']] = attr.ib(default=None)
+    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation']] = None
     outgoing_references: Optional[Tuple['OutgoingReference', ...]] = attr.ib(default=None)
 
     articles: Tuple[Article, ...] = attr.ib(init=False)
@@ -492,13 +492,13 @@ class Act:
 
 
 ReferencePartType = Union[None, str, Tuple[str, str]]
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class Reference:
-    act: Optional[str] = attr.ib(default=None)
-    article: ReferencePartType = attr.ib(default=None)
-    paragraph: ReferencePartType = attr.ib(default=None)
-    point: ReferencePartType = attr.ib(default=None)
-    subpoint: ReferencePartType = attr.ib(default=None)
+    act: Optional[str] = None
+    article: ReferencePartType = None
+    paragraph: ReferencePartType = None
+    point: ReferencePartType = None
+    subpoint: ReferencePartType = None
 
     def is_relative(self) -> bool:
         return self.act is None
@@ -567,16 +567,16 @@ class Reference:
         return None, None
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class ActIdAbbreviation:
-    abbreviation: str = attr.ib()
-    act: str = attr.ib()
+    abbreviation: str
+    act: str
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class BlockAmendmentMetadata:
-    amended_reference: Optional[Reference] = attr.ib(kw_only=True, default=None)
-    inserted_reference: Optional[Reference] = attr.ib(kw_only=True, default=None)
+    amended_reference: Optional[Reference] = None
+    inserted_reference: Optional[Reference] = None
 
     def __attrs_post_init__(self):
         if self.amended_reference is None and self.inserted_reference is None:

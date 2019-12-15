@@ -18,6 +18,7 @@ from typing import Iterable
 
 import attr
 
+from hun_law.structure import Act
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActSemanticsParser, ActBlockAmendmentParser
 from hun_law.fixups.common import do_all_fixups
@@ -30,14 +31,14 @@ from . import Extractor
 from .magyar_kozlony import MagyarKozlonyLawRawText
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, auto_attribs=True)
 class StructureOnlyAct:
-    act = attr.ib()
+    act: Act
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, auto_attribs=True)
 class BlockAmendmentOnlyAct:
-    act = attr.ib()
+    act: Act
 
 
 @Extractor(MagyarKozlonyLawRawText)
