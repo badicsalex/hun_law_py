@@ -18,6 +18,7 @@
 import argparse
 import sys
 import os
+from typing import Sequence, TextIO, Union
 
 from hun_law.extractors.act import BlockAmendmentOnlyAct
 from hun_law.extractors.kozlonyok_hu_downloader import KozlonyToDownload
@@ -43,7 +44,7 @@ class GenerateCommand:
         'raw_act': MagyarKozlonyLawRawText,
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.argparser = argparse.ArgumentParser(description=GENERATOR_DESCRIPTION)
         self.argparser.add_argument(
             'output_format', choices=('txt', 'json', 'html'), metavar='output_format',
@@ -52,8 +53,10 @@ class GenerateCommand:
         # Declared as a separate function to have nice help messages when
         # the suppied argument is invalid
 
-        def issue(s):
-            return KozlonyToDownload(*s.split('/', 1))
+        def issue(s: str) -> KozlonyToDownload:
+            year, act = s.split('/', 1)
+            return KozlonyToDownload(int(year), int(act))
+
         self.argparser.add_argument(
             'issues', nargs='+', metavar='issue', type=issue,
             help="The  Magyar Közlöny issue to download in YEAR/ISSUE format. Example: '2013/31'"
@@ -76,7 +79,7 @@ class GenerateCommand:
             help="Stop at a specific extraction/parsing step, instead of doing a full parse."
         )
 
-    def run(self, argv):
+    def run(self, argv: Sequence[str]) -> None:
         init_cache(os.path.join(os.path.dirname(__file__), '..', 'cache'))
         parsed_args = self.argparser.parse_args(argv)
         if parsed_args.output_dir is not None:
@@ -104,15 +107,15 @@ class GenerateCommand:
                 output_fn(extracted, sys.stdout)
 
     @classmethod
-    def output_txt(cls, extracted, output_file):
+    def output_txt(cls, extracted: Union[Act, MagyarKozlonyLawRawText], output_file: TextIO) -> None:
         write_txt(output_file, extracted)
 
     @classmethod
-    def output_json(cls, extracted, output_file):
+    def output_json(cls, extracted: Union[Act, MagyarKozlonyLawRawText], output_file: TextIO) -> None:
         serialize_to_json_file(extracted, output_file)
 
     @classmethod
-    def output_html(cls, extracted, output_file):
+    def output_html(cls, extracted: Union[Act, MagyarKozlonyLawRawText], output_file: TextIO) -> None:
         if not isinstance(extracted, Act):
             raise TypeError("Html output is only supported for Acts")
         generate_html_for_act(extracted, output_file)

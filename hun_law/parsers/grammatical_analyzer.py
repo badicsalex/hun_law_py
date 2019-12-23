@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, Union, List, Type
+from typing import Dict, Union, List, Type, Any, Optional, Iterable, Tuple
 
 import attr
 import tatsu
@@ -23,13 +23,14 @@ import tatsu.model
 
 from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
-    SubArticleElement
+    SubArticleElement, \
+    ReferencePartType
 
 from .grammar import model
-from .grammar.parser import ActGrammarParser
+from .grammar.parser import ActGrammarParser  # type: ignore
 
 
-def iterate_depth_first(node, filter_class=None):
+def iterate_depth_first(node: Any, filter_class: Optional[Type] = None) -> Iterable[Any]:
     if isinstance(node, tatsu.model.Node):
         to_iter = node.ast
     else:
@@ -46,12 +47,12 @@ def iterate_depth_first(node, filter_class=None):
         yield node
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, auto_attribs=True)
 class ReferenceCollectorDeferredItem:
-    ref_type = attr.ib()
-    ref_data = attr.ib()
-    start_pos = attr.ib()
-    end_pos = attr.ib()
+    ref_type: str
+    ref_data: ReferencePartType
+    start_pos: int
+    end_pos: int
 
 
 class ReferenceCollector:
@@ -63,8 +64,8 @@ class ReferenceCollector:
         'alphabeticsubpoint': AlphabeticSubpoint,
     }
 
-    def __init__(self):
-        self.act = None
+    def __init__(self) -> None:
+        self.act: Optional[str] = None
         self.articles = [(None, 0, 0)]
         self.paragraphs = [(None, 0, 0)]
         self.points = [(None, 0, 0)]
@@ -73,17 +74,18 @@ class ReferenceCollector:
         self.subpoints = [(None, 0, 0)]
         self.alphabeticsubpoints = self.subpoints  # alias
         self.numericsubpoints = self.subpoints  # alias
-        self.deferred_item = None
+        self.deferred_item: Optional[ReferenceCollectorDeferredItem] = None
 
-    def add_item(self, ref_type, ref_data, start_pos, end_pos):
+    def add_item(self, ref_type: str, ref_data: ReferencePartType, start_pos: int, end_pos: int) -> None:
         if self.mergeable_into_deferred(ref_type, ref_data):
+            assert isinstance(ref_data, str)
             self.merge_to_deferred(ref_data, end_pos)
             self.commit_deferred_item()
         else:
             self.commit_deferred_item()
             self.deferred_item = ReferenceCollectorDeferredItem(ref_type, ref_data, start_pos, end_pos)
 
-    def mergeable_into_deferred(self, ref_type, ref_data):
+    def mergeable_into_deferred(self, ref_type: str, ref_data: ReferencePartType) -> bool:
         if self.deferred_item is None:
             return False
         if self.deferred_item.ref_type != ref_type:
@@ -92,15 +94,17 @@ class ReferenceCollector:
             return False
         if ref_type not in self.NAME_TO_STRUCTURE:
             return False
+        assert self.deferred_item.ref_data is not None
         next_id = self.NAME_TO_STRUCTURE[ref_type].next_identifier(self.deferred_item.ref_data)
         return next_id == ref_data
 
-    def merge_to_deferred(self, ref_data, end_pos):
+    def merge_to_deferred(self, ref_data: str, end_pos: int) -> None:
         assert self.deferred_item is not None
+        assert isinstance(self.deferred_item.ref_data, str)
         self.deferred_item.ref_data = (self.deferred_item.ref_data, ref_data)
         self.deferred_item.end_pos = end_pos
 
-    def commit_deferred_item(self):
+    def commit_deferred_item(self) -> None:
         if self.deferred_item is None:
             return
         ref_list = getattr(self, self.deferred_item.ref_type + 's')
@@ -115,7 +119,7 @@ class ReferenceCollector:
             ref_list.append(item_to_add)
         self.deferred_item = None
 
-    def iter(self, start_override, end_override):
+    def iter(self, start_override: Optional[int], end_override: int) -> Iterable[InTextReference]:
         self.commit_deferred_item()
         ref_args = [self.act, None, None, None, None]
         levels = ("articles", "paragraphs", "points", "subpoints")
@@ -134,24 +138,25 @@ class ReferenceCollector:
                 ref_args[arg_pos] = level_vals[-1][0]
             if start_override is None:
                 start_override = level_vals[-1][1]
+        assert start_override is not None
         yield InTextReference(start_override, end_override, Reference(*ref_args))
 
 
 @attr.s(slots=True, frozen=True)
 class GrammaticalAnalysisResult:
-    tree = attr.ib()
+    tree: Any = attr.ib()
 
-    act_references = attr.ib(init=False)
-    element_references = attr.ib(init=False)
-    act_id_abbreviations = attr.ib(init=False)
-    special_expression = attr.ib(init=False)
+    act_references: Tuple[InTextReference, ...] = attr.ib(init=False)
+    element_references: Tuple[InTextReference, ...] = attr.ib(init=False)
+    act_id_abbreviations: Tuple[ActIdAbbreviation, ...] = attr.ib(init=False)
+    special_expression: Union[None, BlockAmendmentMetadata] = attr.ib(init=False)
 
     @property
-    def all_references(self):
+    def all_references(self) -> Tuple[InTextReference, ...]:
         return self.act_references + self.element_references
 
     @element_references.default
-    def _element_references_default(self):
+    def _element_references_default(self) -> Tuple[InTextReference, ...]:
         if isinstance(self.tree, model.BlockAmendment):
             refs_to_parse = list(self._iterate_references_in_block_amendment())
         else:
@@ -170,7 +175,7 @@ class GrammaticalAnalysisResult:
             result.extend(self._convert_single_reference(act_id, parsed_ref))
         return tuple(result)
 
-    def _iterate_references_in_compound_references(self):
+    def _iterate_references_in_compound_references(self) -> Iterable[Tuple[Optional[str], model.Reference]]:
         for ref_container in iterate_depth_first(self.tree, model.CompoundReference):
             if not ref_container.references:
                 continue
@@ -178,17 +183,20 @@ class GrammaticalAnalysisResult:
             if ref_container.act_reference is not None:
                 act_id = self._get_act_id_from_parse_result(ref_container.act_reference)
             for reference in ref_container.references:
+                assert isinstance(reference, model.Reference)
                 yield act_id, reference
 
-    def _iterate_references_in_block_amendment(self):
+    def _iterate_references_in_block_amendment(self) -> Iterable[Tuple[Optional[str], model.Reference]]:
         act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
         if self.tree.amended_reference:
+            assert isinstance(self.tree.amended_reference, model.Reference)
             yield act_id, self.tree.amended_reference
         if self.tree.inserted_reference:
+            assert isinstance(self.tree.inserted_reference, model.Reference)
             yield act_id, self.tree.inserted_reference
 
     @classmethod
-    def _convert_single_reference(cls, act_id, parsed_ref):
+    def _convert_single_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[InTextReference]:
         reference_collector = ReferenceCollector()
         if act_id is not None:
             reference_collector.act = act_id
@@ -198,7 +206,7 @@ class GrammaticalAnalysisResult:
         yield from reference_collector.iter(full_start_pos, full_end_pos)
 
     @classmethod
-    def _fill_reference_collector(cls, parsed_ref, reference_collector):
+    def _fill_reference_collector(cls, parsed_ref: model.Reference, reference_collector: ReferenceCollector) -> None:
         assert isinstance(parsed_ref, model.Reference), parsed_ref
         for ref_part in parsed_ref.children():
             assert isinstance(ref_part, model.ReferencePart), ref_part
@@ -214,7 +222,7 @@ class GrammaticalAnalysisResult:
                 reference_collector.add_item(ref_type_name, (start_id_as_string, end_id_as_string), start_pos, end_pos)
 
     @act_references.default
-    def _act_references_default(self):
+    def _act_references_default(self) -> Tuple[InTextReference, ...]:
         result = []
         for act_ref in iterate_depth_first(self.tree, model.ActReference):
             if act_ref.abbreviation is not None:
@@ -233,7 +241,7 @@ class GrammaticalAnalysisResult:
         return tuple(result)
 
     @classmethod
-    def _get_act_id_from_parse_result(cls, act_ref):
+    def _get_act_id_from_parse_result(cls, act_ref: model.ActReference) -> str:
         if act_ref.act_id is not None:
             return "{}. évi {}. törvény".format(act_ref.act_id.year, act_ref.act_id.number)
         if act_ref.abbreviation is not None:
@@ -241,11 +249,11 @@ class GrammaticalAnalysisResult:
         raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
     @classmethod
-    def _get_subtree_start_and_end_pos(cls, subtree):
+    def _get_subtree_start_and_end_pos(cls, subtree: model.ModelBase) -> Tuple[int, int]:
         return subtree.parseinfo.pos, subtree.parseinfo.endpos
 
     @act_id_abbreviations.default
-    def _act_id_abbreviations_default(self):
+    def _act_id_abbreviations_default(self) -> Tuple[ActIdAbbreviation, ...]:
         result = []
         for act_ref in iterate_depth_first(self.tree, model.ActReference):
             if act_ref.from_now_on is None:
@@ -259,14 +267,15 @@ class GrammaticalAnalysisResult:
         return tuple(result)
 
     @special_expression.default
-    def _special_expression_default(self):
+    def _special_expression_default(self) -> Union[None, BlockAmendmentMetadata]:
         if isinstance(self.tree, model.BlockAmendment):
             return self._convert_block_amendment()
         return None
 
-    def _convert_block_amendment(self):
+    def _convert_block_amendment(self) -> Optional[BlockAmendmentMetadata]:
         if not isinstance(self.tree, model.BlockAmendment):
             return None
+        assert isinstance(self.tree.act_reference, model.ActReference)
         act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
 
         amended_reference = None
@@ -303,7 +312,7 @@ class GrammaticalAnalysisResult:
         )
 
     @classmethod
-    def _indented_print(cls, node=None, indent=''):
+    def _indented_print(cls, node: Any = None, indent: str = '') -> None:
         if isinstance(node, tatsu.model.Node):
             print('<Node:{}>'.format(node.__class__.__name__), end='')
             node = node.ast
@@ -322,18 +331,18 @@ class GrammaticalAnalysisResult:
         else:
             print(node)
 
-    def indented_print(self, indent=''):
+    def indented_print(self, indent: str = '') -> None:
         self._indented_print(self.tree, indent)
 
 
 class GrammaticalAnalyzer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.parser = ActGrammarParser(
-            semantics=model.ActGrammarModelBuilderSemantics(),
+            semantics=model.ActGrammarModelBuilderSemantics(),  # type: ignore
             parseinfo=True
         )
 
-    def analyze(self, s, *, debug=False):
+    def analyze(self, s: str, *, debug: bool = False) -> GrammaticalAnalysisResult:
         parse_result = self.parser.parse(
             s,
             rule_name='start_default',

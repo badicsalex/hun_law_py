@@ -17,7 +17,7 @@
 
 import textwrap
 from string import ascii_uppercase
-from typing import Tuple, List, Iterable, TypeVar, Optional, Dict
+from typing import Tuple, List, Iterable, TypeVar, Optional, Dict, Any, TextIO, Type
 
 import attr
 
@@ -37,24 +37,24 @@ class IndentedLine:
     bold: bool = attr.ib(init=False)
 
     @_parts.validator
-    def _parts_validator(self, _attribute, parts):
+    def _parts_validator(self, _attribute: Any, parts: Tuple[IndentedLinePart, ...]) -> None:
         # pylint: disable=no-self-use
         for p in parts:
             if not isinstance(p, IndentedLinePart):
                 raise TypeError("IndentedLine must be initialized with IndentedLineParts")
 
     @content.default
-    def _content_default(self):
+    def _content_default(self) -> str:
         return ''.join(t.content for t in self._parts)
 
     @indent.default
-    def _indent_default(self):
+    def _indent_default(self) -> float:
         if not self._parts:
-            return 0
+            return 0.0
         return self._parts[0].dx
 
     @bold.default
-    def _bold_default(self):
+    def _bold_default(self) -> bool:
         sum_len = 0
         bold_len = 0
         for p in self._parts:
@@ -63,7 +63,7 @@ class IndentedLine:
                 bold_len += len(p.content)
         return bold_len * 2 > sum_len
 
-    def slice(self, start, end=None) -> 'IndentedLine':
+    def slice(self, start: int, end: Optional[int] = None) -> 'IndentedLine':
         if start < 0:
             start = len(self.content) + start
         if end is None:
@@ -113,9 +113,9 @@ class IndentedLine:
         return IndentedLine((first_part,) + self._parts[skipped_parts_index+1:included_parts_index])
 
     @classmethod
-    def from_multiple(cls, *others):
+    def from_multiple(cls, *others: 'IndentedLine') -> 'IndentedLine':
         parts = []
-        x = 0
+        x = 0.0
         for o in others:
             first = True
             # Accessing protected properties is literally the point of
@@ -154,7 +154,7 @@ TEXT_TO_INT_HUN_DICT_ORDINAL: Optional[Dict[str, int]] = None
 INT_TO_TEXT_HUN_DICT_ORDINAL: Optional[Dict[int, str]] = None
 
 
-def init_text_to_int_dict():
+def init_text_to_int_dict() -> None:
     # "Good enough for the demo, 1o1"
     global TEXT_TO_INT_HUN_DICT_ORDINAL
     global INT_TO_TEXT_HUN_DICT_ORDINAL
@@ -239,7 +239,7 @@ ROMAN_NUMERALS = (
 )
 
 
-def int_to_text_roman(i):
+def int_to_text_roman(i: int) -> str:
     # TODO: assert for i is int, and is not tooo big.
     result = ''
     while i > 0:
@@ -251,7 +251,7 @@ def int_to_text_roman(i):
     return result
 
 
-def text_to_int_roman(s):
+def text_to_int_roman(s: str) -> int:
     result = 0
     while s:
         for text, val in ROMAN_NUMERALS:
@@ -267,14 +267,14 @@ def text_to_int_roman(s):
 HUNGARIAN_UPPERCASE_CHARS = set(ascii_uppercase + 'ÉÁŐÚŰÖÜÓÍ')
 
 
-def is_uppercase_hun(s):
+def is_uppercase_hun(s: str) -> bool:
     for c in s:
         if c not in HUNGARIAN_UPPERCASE_CHARS:
             return False
     return True
 
 
-def indented_line_wrapped_print(s, indent_string="", width=120, file=None):
+def indented_line_wrapped_print(s: str, indent_string: str = "", width: int = 120, file: Optional[TextIO] = None) -> None:
     for l in textwrap.wrap(s, width-len(indent_string)):
         if file is not None:
             print(indent_string + l, file=file)
@@ -283,17 +283,17 @@ def indented_line_wrapped_print(s, indent_string="", width=120, file=None):
         indent_string = " "*len(indent_string)
 
 
-def chr_latin2(num):
+def chr_latin2(num: int) -> str:
     if num > 255 or num < 0:
         raise ValueError("Code point {} not present in latin-2".format(num))
     return bytes([num]).decode('latin2')
 
 
-def quote_level_diff(s):
+def quote_level_diff(s: str) -> int:
     return s.count("„") + s.count("“") - s.count("”")
 
 
-def iterate_with_quote_level(lines, *, throw_exceptions=True):
+def iterate_with_quote_level(lines: Iterable[IndentedLine], *, throw_exceptions: bool = True) -> Iterable[Tuple[int, IndentedLine]]:
     quote_level = 0
     for line in lines:
         yield quote_level, line
@@ -305,7 +305,7 @@ def iterate_with_quote_level(lines, *, throw_exceptions=True):
         raise ValueError("Malformed quoting. (Quote_level = {})".format(quote_level))
 
 
-def object_to_dict_recursive(obj):
+def object_to_dict_recursive(obj: Any) -> Any:
     if isinstance(obj, (int, float, str, type(None))):
         return obj
     if isinstance(obj, (list, tuple)):
@@ -322,7 +322,7 @@ def object_to_dict_recursive(obj):
     return dct
 
 
-def dict_to_object_recursive(dct, types_to_use, *, types_dict=None):
+def dict_to_object_recursive(dct: Any, types_to_use: Iterable[Type], *, types_dict: Optional[Dict[str, Type]] = None) -> Any:
     if types_dict is None:
         types_dict = {cls.__name__: cls for cls in types_to_use}
     if isinstance(dct, (int, float, str)):

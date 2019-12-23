@@ -16,13 +16,25 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
+from typing import Optional
 
 from hun_law.utils import IndentedLine, IndentedLinePart, object_to_dict_recursive
+from hun_law.structure import Act, Reference, ReferencePartType
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActBlockAmendmentParser
 
 
-def quick_parse_structure(act_text, *, parse_block_amendments=False):
+def ref(
+        act: Optional[str] = None,
+        article: ReferencePartType = None,
+        paragraph: ReferencePartType = None,
+        point: ReferencePartType = None,
+        subpoint: ReferencePartType = None
+) -> Reference:
+    return Reference(act, article, paragraph, point, subpoint)
+
+
+def quick_parse_structure(act_text: str, *, parse_block_amendments: bool = False) -> Act:
     lines = []
     for l in act_text.split('\n'):
         parts = []

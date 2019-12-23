@@ -15,18 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple
+from typing import Tuple, List, Optional
 import pytest
 
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
 from hun_law.structure import Reference, ActIdAbbreviation, BlockAmendmentMetadata
 
+from .utils import ref
 
-def ref(act=None, article=None, paragraph=None, point=None, subpoint=None):
-    return Reference(act, article, paragraph, point, subpoint)
-
-
-CASES = [
+CASES: List[Tuple[
+    str,  # Text
+    Optional[str],  # Reference positions in string form
+    Optional[List[Reference]],  # Expected references
+    Optional[List[str]]  # Expected act references
+]] = [
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
         "                        [                      ]                         <     >                                     ",
@@ -455,8 +457,8 @@ CASES = [
 ]
 
 
-@pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
-def test_parse_results_are_correct(s, positions, refs, act_refs):
+@pytest.mark.parametrize("s,positions,refs,act_refs", CASES)  # type: ignore
+def test_parse_results_are_correct(s: str, positions: Optional[str], refs: Optional[List[Reference]], act_refs: Optional[List[str]]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s)
     if refs is None:
         return
@@ -481,7 +483,7 @@ def test_parse_results_are_correct(s, positions, refs, act_refs):
         assert positions == parsed_pos_string
 
 
-ABBREVIATION_CASES: Tuple = (
+ABBREVIATION_CASES: Tuple[Tuple[str, List[ActIdAbbreviation]], ...] = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
         [ActIdAbbreviation('Hktv.', '2012. évi CCXIX. törvény')]
@@ -528,15 +530,15 @@ ABBREVIATION_CASES: Tuple = (
 )
 
 
-@pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)
-def test_new_abbreviations(s, abbrevs):
+@pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)  # type: ignore
+def test_new_abbreviations(s: str, abbrevs: List[ActIdAbbreviation]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s)
     parsed.indented_print()
     new_abbrevs = list(parsed.act_id_abbreviations)
     assert new_abbrevs == abbrevs
 
 
-BLOCK_AMENDMENT_CASES = (
+BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
         BlockAmendmentMetadata(amended_reference=ref("2012. évi CCXIX. törvény", '28'))
@@ -664,8 +666,8 @@ BLOCK_AMENDMENT_CASES = (
 )
 
 
-@pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
-def test_block_amendment_parsing(s, correct_metadata):
+@pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)  # type: ignore
+def test_block_amendment_parsing(s: str, correct_metadata: BlockAmendmentMetadata) -> None:
     parsed = GrammaticalAnalyzer().analyze(s)
     parsed.indented_print()
     parsed_metadata = parsed.special_expression

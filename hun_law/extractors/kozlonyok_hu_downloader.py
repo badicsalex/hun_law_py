@@ -27,12 +27,11 @@ from .file import PDFFileDescriptor
 class KozlonyToDownload:
     URL_TEMPLATE = "http://www.kozlonyok.hu/nkonline/MKPDF/hiteles/MK{:02d}{:03d}.pdf"
 
-    def __init__(self, year, issue):
-        # TODO: check params
-        self.year = int(year)
-        self.issue = int(issue)
+    def __init__(self, year: int, issue: int) -> None:
+        self.year = year
+        self.issue = issue
 
-    def get_url(self):
+    def get_url(self) -> str:
         return self.URL_TEMPLATE.format(self.year % 100, self.issue)
 
 

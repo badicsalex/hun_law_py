@@ -48,4 +48,6 @@ add_fixup("2011. évi CLXIX. törvény", replace_line_content(
 
 for act_id, replacements in replacement_fixups.items():
     for replace_args in replacements:
-        add_fixup(act_id, replace_line_content(**replace_args))
+        # TODO: correct typing for this call. Replacements will probably need to
+        # be an attrs class instead of the current dict hack.
+        add_fixup(act_id, replace_line_content(**replace_args))  # type: ignore

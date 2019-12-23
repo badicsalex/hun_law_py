@@ -18,6 +18,8 @@
 import json
 import os
 import sys
+from typing import Iterable, Any
+
 import pytest
 
 from hun_law.utils import object_to_dict_recursive
@@ -25,7 +27,7 @@ from hun_law.utils import object_to_dict_recursive
 from .utils import quick_parse_structure
 
 
-def structure_testcase_provider():
+def structure_testcase_provider() -> Iterable[Any]:
     data_dir = os.path.join(os.path.dirname(__file__), 'data/structure_tests')
     for fname in sorted(os.listdir(data_dir)):
         if not fname.endswith('.txt'):
@@ -40,8 +42,8 @@ def structure_testcase_provider():
             )
 
 
-@pytest.mark.parametrize("text,expected_structure", structure_testcase_provider())
-def test_structure_parsing_exact(text, expected_structure):
+@pytest.mark.parametrize("text,expected_structure", structure_testcase_provider())  # type: ignore
+def test_structure_parsing_exact(text: str, expected_structure: Any) -> None:
     resulting_structure = quick_parse_structure(text)
     result_as_dict = object_to_dict_recursive(resulting_structure)
 
@@ -50,7 +52,7 @@ def test_structure_parsing_exact(text, expected_structure):
     assert result_as_dict == expected_structure
 
 
-def test_quoting_parsing():
+def test_quoting_parsing() -> None:
     text = """
          1. § Az Önkéntes Kölcsönös Biztosító Pénztárakról szóló 1993. évi XCVI. törvény 40/A. § (1) bekezdésében
               az „a Ptk. 2:47. § (1) bekezdésében” szövegrész helyébe az „az üzleti titok védelméről szóló 2018. évi LIV. törvény
@@ -74,12 +76,16 @@ def test_quoting_parsing():
     resulting_structure = quick_parse_structure(text)
     assert resulting_structure.article("1").paragraph().text is not None
 
-    assert resulting_structure.article("2").paragraph().children_type is not None
-    assert len(resulting_structure.article("2").paragraph().children) == 1
-    assert resulting_structure.article("2").paragraph().intro is not None
-    assert resulting_structure.article("2").paragraph().wrap_up is not None
+    paragraph = resulting_structure.article("2").paragraph()
+    assert paragraph.children_type is not None
+    assert paragraph.children is not None
+    assert len(paragraph.children) == 1
+    assert paragraph.intro is not None
+    assert paragraph.wrap_up is not None
 
-    assert resulting_structure.article("3").paragraph().children_type is not None
-    assert len(resulting_structure.article("3").paragraph().children) == 3
-    assert resulting_structure.article("3").paragraph().intro is not None
-    assert resulting_structure.article("3").paragraph().wrap_up is not None
+    paragraph = resulting_structure.article("3").paragraph()
+    assert paragraph.children_type is not None
+    assert paragraph.children is not None
+    assert len(paragraph.children) == 3
+    assert paragraph.intro is not None
+    assert paragraph.wrap_up is not None

@@ -19,15 +19,15 @@
 # The whole module is a bunch of fixups to existing Acts, that aren't
 # well-formed enough to be parsed by the parser out-of-the-box
 import re
-from typing import Dict, Callable, List
+from typing import Dict, Callable, List, Optional, Sequence, Iterable
 
 from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE
 
-FixupFn = Callable[[List[IndentedLine]], List[IndentedLine]]
+FixupFn = Callable[[Iterable[IndentedLine]], Iterable[IndentedLine]]
 all_fixups: Dict[str, List[FixupFn]] = {}
 
 
-def add_fixup(law_id: str, fixup_cb: FixupFn):
+def add_fixup(law_id: str, fixup_cb: FixupFn) -> None:
     global all_fixups
     if law_id in all_fixups:
         all_fixups[law_id].append(fixup_cb)
@@ -35,7 +35,7 @@ def add_fixup(law_id: str, fixup_cb: FixupFn):
         all_fixups[law_id] = [fixup_cb]
 
 
-def do_all_fixups(law_id, body):
+def do_all_fixups(law_id: str, body: Iterable[IndentedLine]) -> Iterable[IndentedLine]:
     global all_fixups
     if law_id not in all_fixups:
         return body
@@ -49,8 +49,8 @@ def do_all_fixups(law_id, body):
     return body
 
 
-def add_empty_line_after(needle):
-    def empty_line_adder(body):
+def add_empty_line_after(needle: str) -> FixupFn:
+    def empty_line_adder(body: Iterable[IndentedLine]) -> Iterable[IndentedLine]:
         result = []
         needle_count = 0
         for l in body:
@@ -66,8 +66,8 @@ def add_empty_line_after(needle):
     return empty_line_adder
 
 
-def delete_line(needle):
-    def line_deleter(body):
+def delete_line(needle: str) -> FixupFn:
+    def line_deleter(body: Iterable[IndentedLine]) -> Iterable[IndentedLine]:
         result = []
         needle_count = 0
         for l in body:
@@ -83,7 +83,7 @@ def delete_line(needle):
     return line_deleter
 
 
-def replace_line_content(needle, replacement, *, needle_prev_lines=None):
+def replace_line_content(needle: str, replacement: str, *, needle_prev_lines: Optional[Sequence[IndentedLine]] = None) -> FixupFn:
     common_prefix_len = 0
     while common_prefix_len < len(needle) and \
             common_prefix_len < len(replacement) and \
@@ -97,7 +97,7 @@ def replace_line_content(needle, replacement, *, needle_prev_lines=None):
         common_postfix_len += 1
     common_postfix_len = common_postfix_len - 1
 
-    def line_content_replacer(body: List[IndentedLine]) -> List[IndentedLine]:
+    def line_content_replacer(body: Iterable[IndentedLine]) -> Iterable[IndentedLine]:
         result: List[IndentedLine] = []
         needle_count = 0
         for l in body:
@@ -140,7 +140,7 @@ def replace_line_content(needle, replacement, *, needle_prev_lines=None):
     return line_content_replacer
 
 
-def ptke_article_header_fixer(body):
+def ptke_article_header_fixer(body: Iterable[IndentedLine]) -> Iterable[IndentedLine]:
     # BEFORE:
     #            (A Ptk. 2:18. §-ához)
     #    2. §    A Ptk. hatálybalépésekor a tize
@@ -184,6 +184,6 @@ def ptke_article_header_fixer(body):
 
         result.append(prev_line)
         prev_line = line
-
-    result.append(prev_line)
+    if prev_line is not None:
+        result.append(prev_line)
     return result

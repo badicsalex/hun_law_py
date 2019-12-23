@@ -17,7 +17,7 @@
 
 import unicodedata
 
-from typing import List, Dict, Sequence, Any, Iterable
+from typing import cast, List, Dict, Sequence, Any, Iterable
 
 import attr
 
@@ -59,21 +59,22 @@ class PDFMinerAdapter(PDFTextDevice):
         self.pages: List[PageOfTextBoxes] = []
         self.current_page = PageOfTextBoxes([])
 
-    def begin_page(self, page, ctm):
+    def begin_page(self, page: Any, ctm: Any) -> None:
         self.current_page = PageOfTextBoxes([])
         self.pages.append(self.current_page)
 
-    def end_page(self, page):
+    def end_page(self, page: Any) -> None:
         pass
 
     @classmethod
     def is_font_bold(cls, font: PDFFont) -> bool:
         if not hasattr(font, 'is_bold'):
             font.is_bold = 'bold' in font.fontname or 'Bold' in font.fontname
-        return font.is_bold
+        return cast(bool, font.is_bold)
 
     @classmethod
     def cid_to_string(cls, font: PDFFont, cid: int) -> str:
+        text: str
         try:
             text = font.to_unichr(cid)
             # Keep in mind that 'text' can be multiple characters, like 'ffi'
@@ -107,7 +108,7 @@ class PDFMinerAdapter(PDFTextDevice):
         # pylint: disable=arguments-differ,too-many-arguments
         text = self.cid_to_string(font, cid)
 
-        textwidth = font.char_width(cid) * fontsize * scaling
+        textwidth: float = font.char_width(cid) * fontsize * scaling
 
         # Workaround for some malformed texts, such as the 2018 L. Act about the budget
         # in it, these weird "private" characters denote | signs, for constructing
@@ -143,7 +144,7 @@ class PDFMinerAdapter(PDFTextDevice):
 class PageOfLines:
     lines: List[IndentedLine] = attr.ib(factory=list, converter=list)
 
-    def add_line(self, line: IndentedLine):
+    def add_line(self, line: IndentedLine) -> None:
         self.lines.append(line)
 
 
@@ -151,7 +152,7 @@ class PageOfLines:
 class PdfOfLines:
     pages: List[PageOfLines] = attr.ib(factory=list, converter=list)
 
-    def add_page(self, page: PageOfLines):
+    def add_page(self, page: PageOfLines) -> None:
         self.pages.append(page)
 
 

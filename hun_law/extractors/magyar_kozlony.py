@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from typing import List, Dict, Optional, Type, Tuple, Iterable, Union
+from typing import List, Dict, Optional, Type, Tuple, Iterable, Union, Callable
 import attr
 
 from hun_law.utils import EMPTY_LINE, IndentedLine
@@ -24,7 +24,7 @@ from . import Extractor
 from .pdf import PdfOfLines
 
 
-def is_magyar_kozlony(pdf_file):
+def is_magyar_kozlony(pdf_file: PdfOfLines) -> bool:
     # TODO: Lets hope justified text detector works, and it's not something like
     # 'M A G Y A R K O Z L O N Y
     if 'MAGYAR KÖZLÖNY' in pdf_file.pages[0].lines[0].content:
@@ -131,35 +131,38 @@ class MagyarKozlonyLawRawText:
     body: Tuple[IndentedLine, ...]
 
 
+LawExtractorStateFn = Callable[[IndentedLine], None]
+
+
 class LawExtractorStateMachine:
     HEADER_STARTING_RE = re.compile('^[12][09][0-9][0-9]. évi [IVXLC]+. törvény')
     ACT_FOOTER_RE = re.compile('köztársasági elnök az Országgyűlés (al)?elnöke')
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.identifier = ''
         self.subject = ''
-        self.body = []
-        self.state = self.WAITING_FOR_HEADER_NEWLINE
-        self.pending_result = None
+        self.body: List[IndentedLine] = []
+        self.state: LawExtractorStateFn = self.WAITING_FOR_HEADER_NEWLINE
+        self.pending_result: Optional[MagyarKozlonyLawRawText] = None
 
-    def feed_line(self, line):
+    def feed_line(self, line: IndentedLine) -> Optional[MagyarKozlonyLawRawText]:
         self.pending_result = None
         self.state(line)
         return self.pending_result
 
-    def WAITING_FOR_HEADER_NEWLINE(self, line):
+    def WAITING_FOR_HEADER_NEWLINE(self, line: IndentedLine) -> None:
         if line != EMPTY_LINE:
             return
         self.state = self.WAITING_FOR_HEADER
 
-    def WAITING_FOR_HEADER(self, line):
+    def WAITING_FOR_HEADER(self, line: IndentedLine) -> None:
         if not self.HEADER_STARTING_RE.match(line.content):
             self.state = self.WAITING_FOR_HEADER_NEWLINE
             return
         self.identifier = line.content
         self.state = self.HEADER
 
-    def HEADER(self, line):
+    def HEADER(self, line: IndentedLine) -> None:
         if self.subject != '':
             self.subject = self.subject + ' ' + line.content
         else:
@@ -171,7 +174,7 @@ class LawExtractorStateMachine:
             self.subject = self.subject[:-1]
             self.state = self.BODY_BEFORE_ASTERISK_FOOTER
 
-    def BODY_BEFORE_ASTERISK_FOOTER(self, line):
+    def BODY_BEFORE_ASTERISK_FOOTER(self, line: IndentedLine) -> None:
         # State to swallow the following footer:
         # "* A törvényt az Országgyûlés a 2010. november 22-i ülésnapján fogadta el."
 
@@ -191,7 +194,7 @@ class LawExtractorStateMachine:
         self.body.pop()
         self.BODY_AFTER_ASTERISK_FOOTER(line)
 
-    def BODY_AFTER_ASTERISK_FOOTER(self, line):
+    def BODY_AFTER_ASTERISK_FOOTER(self, line: IndentedLine) -> None:
         self.body.append(line)
 
         if len(self.body) < 4:

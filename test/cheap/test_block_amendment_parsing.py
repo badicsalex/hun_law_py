@@ -17,21 +17,12 @@
 
 
 from hun_law.structure import \
-    Reference, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint
 
 from .utils import quick_parse_structure
 
 
-def absref(act=None, article=None, paragraph=None, point=None, subpoint=None):
-    return Reference(act, article, paragraph, point, subpoint)
-
-
-def ref(article=None, paragraph=None, point=None, subpoint=None):
-    return Reference(None, article, paragraph, point, subpoint)
-
-
-def test_simple_block_amendment_1():
+def test_simple_block_amendment_1() -> None:
     act_text = """
         1. §      (1)  A devizakölcsönök törlesztési árfolyamának rögzítéséről és a lakóingatlanok kényszerértékesítésének
                        rendjéről szóló 2011. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja
@@ -53,28 +44,37 @@ def test_simple_block_amendment_1():
     """
     resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
 
-    assert resulting_structure.article("1").paragraph("1").intro.endswith("a következő rendelkezés lép:"), \
+    intro = resulting_structure.article("1").paragraph("1").intro
+    assert intro is not None
+    assert intro.endswith("a következő rendelkezés lép:"), \
         "Intro is correctly split into 'actual intro' and 'context for amendment'"
 
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
+    assert amended_structure.intro is not None
     assert amended_structure.intro.startswith("E törvényben és")
     assert amended_structure.intro.endswith("tartozás, amelynél")
 
     assert amended_structure.children_type is AlphabeticSubpoint
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], AlphabeticSubpoint)
     assert amended_structure.children[0].identifier == "c"
+    assert amended_structure.children[0].text is not None
     assert amended_structure.children[0].text.startswith("a kölcsön fedezete")
     assert amended_structure.children[0].text.endswith("készfizető kezesség;")
 
     amended_structure = resulting_structure.article("1").paragraph("2").block_amendment()
     assert amended_structure.children_type is NumericPoint
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], NumericPoint)
     assert amended_structure.children[0].identifier == "4"
+    assert amended_structure.children[0].text is not None
     assert amended_structure.children[0].text.startswith("gyűjtőszámlahitel:")
     assert amended_structure.children[0].text.endswith("folyósított kölcsön;")
 
 
-def test_simple_block_amendment_2():
+def test_simple_block_amendment_2() -> None:
     act_text = """
     4. §  (1)  Az Atv. 14. § (1) bekezdése helyébe a következő rendelkezés lép:
                „(1) Az atomenergia-felügyeleti szerv jogszabályban meghatározott esetekben és feltételek szerint az engedélyes
@@ -84,10 +84,13 @@ def test_simple_block_amendment_2():
     resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("4").paragraph("1").block_amendment()
     assert amended_structure.children_type is Paragraph
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], Paragraph)
     assert amended_structure.children[0].identifier == "1"
 
 
-def test_complex_block_amendment_1():
+def test_complex_block_amendment_1() -> None:
     act_text = """
     3. §      Az Atv. 13. § helyébe a következő rendelkezés lép:
                „13. § (1) A nukleáris létesítménnyel összefüggő hatósági engedélyezési eljárás során biztosítani kell a szakértőként
@@ -108,13 +111,20 @@ def test_complex_block_amendment_1():
     amended_structure = resulting_structure.article("3").paragraph().block_amendment()
 
     assert amended_structure.children_type is Article
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
-    assert amended_structure.children[0].paragraph("2").text.startswith("A nukleáris létesítmény")
-    assert amended_structure.children[0].paragraph("3").text.startswith("A (2) bekezdéstől eltérően")
-    assert amended_structure.children[0].paragraph("3").text.endswith("a kérelmezőt terheli.")
+    assert isinstance(amended_structure.children[0], Article)
+    text = amended_structure.children[0].paragraph("2").text
+    assert text is not None
+    assert text.startswith("A nukleáris létesítmény")
+
+    text = amended_structure.children[0].paragraph("3").text
+    assert text is not None
+    assert text.startswith("A (2) bekezdéstől eltérően")
+    assert text.endswith("a kérelmezőt terheli.")
 
 
-def test_complex_block_amendment_2():
+def test_complex_block_amendment_2() -> None:
     act_text = """
     8. §      (1)  Az Atv. 67. § s) pontja helyébe a következő rendelkezés lép: (Felhatalmazást kap a Kormány, hogy
                rendeletben szabályozza)
@@ -132,14 +142,22 @@ def test_complex_block_amendment_2():
     amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is AlphabeticPoint
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], AlphabeticPoint)
     assert amended_structure.children[0].intro == "az atomenergia alkalmazása körében eljáró"
-    assert amended_structure.children[0].subpoint("sa").text.startswith("független műszaki szakértői")
-    assert amended_structure.children[0].subpoint("sa").text.endswith("eltérő szabályait;")
-    assert amended_structure.children[0].subpoint("sb").text.endswith("működésének és alkalmazásának szabályait.")
+
+    text = amended_structure.children[0].subpoint("sa").text
+    assert text is not None
+    assert text.startswith("független műszaki szakértői")
+    assert text.endswith("eltérő szabályait;")
+
+    text = amended_structure.children[0].subpoint("sb").text
+    assert text is not None
+    assert text.endswith("működésének és alkalmazásának szabályait.")
 
 
-def test_complex_block_amendment_ptk1():
+def test_complex_block_amendment_ptk1() -> None:
     act_text = """
     8. §       (1)  A Ptk. 6:130. §-a a következő szöveggel lép hatályba:
                     „6:130. § [Pénztartozás teljesítésének ideje]
@@ -176,18 +194,29 @@ def test_complex_block_amendment_ptk1():
     amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Article
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], Article)
     article = amended_structure.children[0]
 
     assert article.title == "Pénztartozás teljesítésének ideje"
     assert len(article.children) == 4
-    assert article.paragraph("2").point("b").text.startswith("nem állapítható meg")
-    assert article.paragraph("3").text.startswith("Vállalkozások közötti szerződés")
-    assert "(1)–(2)" in article.paragraph("3").text
-    assert article.paragraph("3").text.endswith("részében semmis.")
+
+    text = article.paragraph("2").point("b").text
+    assert text is not None
+    assert text.startswith("nem állapítható meg")
+
+    text = article.paragraph("3").text
+    assert text is not None
+    assert text.startswith("Vállalkozások közötti szerződés")
+
+    text = article.paragraph("3").text
+    assert text is not None
+    assert "(1)–(2)" in text
+    assert text.endswith("részében semmis.")
 
 
-def test_complex_block_amendment_ptk2():
+def test_complex_block_amendment_ptk2() -> None:
     # The main part here is the "junk" EMPTY line between the article header and
     # its contents.
     act_text = """
@@ -210,11 +239,14 @@ def test_complex_block_amendment_ptk2():
     amended_structure = resulting_structure.article("8").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Article
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], Article)
+    assert amended_structure.children[0].children is not None
     assert len(amended_structure.children[0].children) == 3
 
 
-def test_block_amendment_range():
+def test_block_amendment_range() -> None:
     # Note that this is modified text, the paragraph ids are different in the original
     act_text = """
     1. §  (1)   A Gyvt. 102. §-a a következő (5)–(8) bekezdéssel egészül ki:
@@ -234,13 +266,18 @@ def test_block_amendment_range():
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Paragraph
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 4
+    assert isinstance(amended_structure.children[0], Paragraph)
+
+    assert amended_structure.children[0].children is not None
     assert len(amended_structure.children[0].children) == 2
+
     assert amended_structure.children[0].identifier == "5"
     assert amended_structure.children[3].identifier == "8"
 
 
-def test_block_amend_pair():
+def test_block_amend_pair() -> None:
     act_text = """
     1. §  (1)   A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:
                 „(1a) A közhasznú szervezet – a (3) bekezdésben foglalt kivétellel – azzal a vér szerinti szülővel és örökbe fogadni
@@ -256,16 +293,21 @@ def test_block_amend_pair():
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
 
     assert amended_structure.children_type is Paragraph
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 2
+    assert isinstance(amended_structure.children[0], Paragraph)
+
     assert amended_structure.children[0].identifier == '1a'
     # TODO: point wrap-up detection is based on indentation. I don't know how to handle this case.
     # Maybe detect 'és' or 'vagy' in the previous point.
     # assert amended_structure.children[0].point('b').text.endswith('igénybe vehető.')
+    assert isinstance(amended_structure.children[1], Paragraph)
     assert amended_structure.children[1].identifier == '1b'
+    assert amended_structure.children[1].text is not None
     assert amended_structure.children[1].text.startswith('Ha a közhasznú szervezet a (3)')
 
 
-def test_weird_amended_ids_1():
+def test_weird_amended_ids_1() -> None:
     act_text = """
         25. §   A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:
                 (A törvény alkalmazásában)
@@ -274,11 +316,12 @@ def test_weird_amended_ids_1():
     resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("25").paragraph().block_amendment()
     assert amended_structure.children_type is NumericPoint
+    assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
     assert amended_structure.children[0].identifier == '3a'
 
 
-def test_weird_amended_ids_2():
+def test_weird_amended_ids_2() -> None:
     act_text = """
         1. §    (1) A Gyvt. 5. §-a a következő ny) ponttal egészül ki:
                     (E törvény alkalmazásában)
@@ -297,18 +340,21 @@ def test_weird_amended_ids_2():
 
     amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
     assert amended_structure.children_type is AlphabeticPoint
+    assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == 'ny'
 
     amended_structure = resulting_structure.article("1").paragraph("2").block_amendment()
     assert amended_structure.children_type is AlphabeticPoint
+    assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == 'sz'
 
     amended_structure = resulting_structure.article("1").paragraph("3").block_amendment()
     assert amended_structure.children_type is NumericPoint
+    assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == '31/a'
 
 
-def test_alphabetic_alphabetic_subpoint():
+def test_alphabetic_alphabetic_subpoint() -> None:
     act_text = """
         75. §     (1)  A Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: Btk.) 28. §-a a következő (1a)
                        bekezdéssel egészül ki:
@@ -329,14 +375,16 @@ def test_alphabetic_alphabetic_subpoint():
     resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
     amended_structure = resulting_structure.article("75").paragraph("1").block_amendment()
     assert amended_structure.children_type is Paragraph
+    assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == '1a'
 
     amended_structure = resulting_structure.article("75").paragraph("3").block_amendment()
     assert amended_structure.children_type is AlphabeticSubpoint
+    assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == 'af'
 
 
-def test_numeric_subpoint():
+def test_numeric_subpoint() -> None:
     act_text = """
         29. § (1) A Magyar Fejlesztési Bank Részvénytársaságról szóló 2001. évi XX. törvény (a továbbiakban: MFB törvény) 3. §
                   (2) bekezdés d) pont 1. alpontja helyébe a következő rendelkezés lép:
@@ -349,4 +397,5 @@ def test_numeric_subpoint():
 
     amended_structure = resulting_structure.article("29").paragraph("1").block_amendment()
     assert amended_structure.children_type is NumericSubpoint
+    assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == '1'

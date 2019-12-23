@@ -17,11 +17,12 @@
 
 import json
 from html.parser import HTMLParser
+from typing import Any
 
 from hun_law.cli import GenerateCommand
 
 
-def test_json_output(tmpdir):
+def test_json_output(tmpdir: Any) -> None:
     generator = GenerateCommand()
     generator.run(["json", "2013/185", "--output-dir", str(tmpdir)])
     body = json.load(tmpdir.join("2013. évi CLXXV. törvény.json").open())
@@ -49,22 +50,22 @@ def test_json_output(tmpdir):
 
 
 class AFindingHTMLParser(HTMLParser):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.a_tag_count = 0
 
-    def reset_count(self):
+    def reset_count(self) -> None:
         self.a_tag_count = 0
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag: str, attrs: Any) -> None:
         if tag == 'a':
             self.a_tag_count = self.a_tag_count + 1
 
-    def error(self, message):
+    def error(self, message: str) -> None:
         pass
 
 
-def test_html_output_ptk(tmpdir):
+def test_html_output_ptk(tmpdir: Any) -> None:
 
     # Just simply test if html output works.
     generator = GenerateCommand()
@@ -76,7 +77,7 @@ def test_html_output_ptk(tmpdir):
     assert parser.a_tag_count > 50
 
 
-def test_html_output_2018_123(tmpdir):
+def test_html_output_2018_123(tmpdir: Any) -> None:
     # Just simply test if html output works on modern MK issues
     generator = GenerateCommand()
     generator.run(["html", "2018/123", "--output-dir", str(tmpdir)])

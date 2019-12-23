@@ -16,25 +16,31 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
+from typing import List, Iterable
+
 import attr
 
-from hun_law.structure import Article, QuotedBlock, BlockAmendment, OutgoingReference, BlockAmendmentMetadata
+from hun_law.structure import \
+    Act, Article, Paragraph, QuotedBlock, BlockAmendment, \
+    Reference, OutgoingReference, InTextReference,\
+    BlockAmendmentMetadata, \
+    ActIdAbbreviation, SubArticleChildType
 from .structure_parser import BlockAmendmentStructureParser, SubArticleParsingError
 from .grammatical_analyzer import GrammaticalAnalyzer
 
 
 @attr.s(slots=True)
 class SemanticParseState:
-    analyzer = attr.ib(factory=GrammaticalAnalyzer)
-    act_id_abbreviations = attr.ib(factory=list)
-    outgoing_references = attr.ib(factory=list)
+    analyzer: GrammaticalAnalyzer = attr.ib(factory=GrammaticalAnalyzer)
+    act_id_abbreviations: List[ActIdAbbreviation] = attr.ib(factory=list)
+    outgoing_references: List[OutgoingReference] = attr.ib(factory=list)
 
 
 class ActSemanticsParser:
     INTERESTING_SUBSTRINGS = (")", "§", "törvén")
 
     @classmethod
-    def parse(cls, act):
+    def parse(cls, act: Act) -> Act:
         # TODO: Rewrite this to be more functional instead of passing
         # a mutable state
         state = SemanticParseState()
@@ -48,10 +54,16 @@ class ActSemanticsParser:
         )
 
     @classmethod
-    def recursive_parse(cls, element, parent_reference, prefix, postfix, state):
+    def recursive_parse(
+            cls,
+            element: SubArticleChildType,
+            parent_reference: Reference,
+            prefix: str, postfix: str,
+            state: SemanticParseState
+    ) -> None:
         # TODO: pylint is right here, should refactor.
         #pylint: disable=too-many-arguments
-        if isinstance(element, (QuotedBlock, BlockAmendment)):
+        if isinstance(element, (QuotedBlock, BlockAmendment, Article)):
             return
         element_reference = element.relative_reference.relative_to(parent_reference)
         if element.text is not None:
@@ -71,6 +83,7 @@ class ActSemanticsParser:
         #
         # In this case, we hope that the string "From now on" can be parsed without
         # the second part of the sentence.
+        assert element.intro is not None
         cls.parse_text(element.intro, prefix, '', element_reference, state)
 
         # TODO: Parse the wrap up of "this element"
@@ -81,18 +94,19 @@ class ActSemanticsParser:
         if element.wrap_up is not None:
             postfix = " " + element.wrap_up + postfix
 
+        assert element.children is not None
         for child in element.children:
             cls.recursive_parse(child, element_reference, prefix, postfix, state)
 
     @classmethod
-    def parse_text(cls, middle, prefix, postfix, element_reference, state):
+    def parse_text(cls, middle: str, prefix: str, postfix: str, element_reference: Reference, state: SemanticParseState) -> None:
         # TODO: pylint is right here, should refactor.
         #pylint: disable=too-many-arguments
         text = prefix + middle + postfix
         if len(text) > 10000:
-            return None
+            return
         if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
-            return None
+            return
 
         analysis_result = state.analyzer.analyze(text)
 
@@ -105,10 +119,17 @@ class ActSemanticsParser:
             state
         ))
         # TODO: parse block amendments, and return interesting results
-        return None
+        return
 
     @classmethod
-    def convert_parsed_references(cls, parsed_references, element_reference, prefixlen, textlen, state):
+    def convert_parsed_references(
+            cls,
+            parsed_references: Iterable[InTextReference],
+            element_reference: Reference,
+            prefixlen: int,
+            textlen: int,
+            state: SemanticParseState
+    ) -> Iterable[OutgoingReference]:
         # TODO: pylint is right here, should refactor.
         #pylint: disable=too-many-arguments
         result = []
@@ -142,7 +163,7 @@ class ActSemanticsParser:
 
 class ActBlockAmendmentParser:
     @classmethod
-    def parse(cls, act):
+    def parse(cls, act: Act) -> Act:
         new_children = []
         for child in act.children:
             if isinstance(child, Article):
@@ -151,16 +172,18 @@ class ActBlockAmendmentParser:
         return attr.evolve(act, children=tuple(new_children))
 
     @classmethod
-    def parse_article(cls, article):
+    def parse_article(cls, article: Article) -> Article:
         new_children = []
         for paragraph in article.paragraphs:
             new_children.append(cls.parse_paragraph(paragraph))
         return attr.evolve(article, children=tuple(new_children))
 
     @classmethod
-    def parse_paragraph(cls, paragraph):
+    def parse_paragraph(cls, paragraph: Paragraph) -> Paragraph:
         if paragraph.children_type != QuotedBlock:
             return paragraph
+        assert paragraph.children is not None
+        assert paragraph.intro is not None
         if len(paragraph.intro) > 10000:
             return paragraph
         # TODO: We don't currently parse structural amendments properly in the

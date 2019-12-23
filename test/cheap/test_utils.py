@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 import json
+from typing import Any, Iterable, Tuple
+
 import pytest
 
 from hun_law.utils import \
@@ -26,13 +28,13 @@ from hun_law.cache import CacheObject, init_cache
 from .data.example_content import compression_test_parts
 
 
-def test_indented_line_construction():
+def test_indented_line_construction() -> None:
     assert IndentedLine() == IndentedLine()
     assert IndentedLine() == EMPTY_LINE
     assert IndentedLine(tuple()) == EMPTY_LINE
 
 
-def test_indented_line_slice():
+def test_indented_line_slice() -> None:
     parts = (
         IndentedLinePart(5, 'a'),
         IndentedLinePart(5, 'b'),
@@ -81,7 +83,7 @@ def test_indented_line_slice():
         _invalid_slice = line.slice(0, 4)
 
 
-def test_indented_line_serialization():
+def test_indented_line_serialization() -> None:
     parts = (
         IndentedLinePart(5, 'a'),
         IndentedLinePart(5, 'b'),
@@ -106,7 +108,7 @@ def test_indented_line_serialization():
     assert unserialized_empty == EMPTY_LINE
 
 
-def test_indented_line_serialization_compactness(tmpdir):
+def test_indented_line_serialization_compactness(tmpdir: Any) -> None:
     prev_x = 0
     parts = []
     for x, c in compression_test_parts:
@@ -139,7 +141,7 @@ def test_indented_line_serialization_compactness(tmpdir):
     assert new_line.slice(50).indent == line.slice(50).indent
 
 
-def test_indented_line_concat():
+def test_indented_line_concat() -> None:
     parts1 = (
         IndentedLinePart(5, 'a'),
         IndentedLinePart(5, 'b'),
@@ -226,8 +228,8 @@ BOLDNESS_TESTS = [
 ]
 
 
-@pytest.mark.parametrize("parts,should_be_bold", BOLDNESS_TESTS)
-def test_indented_line_bold(parts, should_be_bold):
+@pytest.mark.parametrize("parts,should_be_bold", BOLDNESS_TESTS)  # type: ignore
+def test_indented_line_bold(parts: Iterable[Tuple[str, bool]], should_be_bold: bool) -> None:
     line = IndentedLine(
         tuple(IndentedLinePart(5, s, bold) for s, bold in parts)
     )
@@ -235,7 +237,7 @@ def test_indented_line_bold(parts, should_be_bold):
     assert line.bold == should_be_bold
 
 
-def test_text_to_int_hun():
+def test_text_to_int_hun() -> None:
     assert text_to_int_hun("Nyolcvankilencedik") == 89
     assert text_to_int_hun("tizenegyedik") == 11
     assert text_to_int_hun("HETEDIK") == 7
@@ -246,7 +248,7 @@ def test_text_to_int_hun():
         assert i == text_to_int_hun(int_to_text_hun(i))
 
 
-def test_text_to_int_roman():
+def test_text_to_int_roman() -> None:
     assert text_to_int_roman("MCMXCVIII") == 1998
     assert int_to_text_roman(1998) == "MCMXCVIII"
     for i in range(1, 2000):

@@ -17,6 +17,6 @@
 
 
 class PDFFileDescriptor:
-    def __init__(self, filename, cache_id=None):
+    def __init__(self, filename: str, cache_id: str) -> None:
         self.fp = open(filename, 'rb')
         self.cache_id = cache_id

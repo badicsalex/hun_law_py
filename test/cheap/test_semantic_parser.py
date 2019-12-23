@@ -15,23 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import List, Tuple
+
 import pytest
 
-from hun_law.utils import IndentedLine, IndentedLinePart
-from hun_law.structure import Reference, OutgoingReference
-from hun_law.parsers.structure_parser import ActStructureParser
+from hun_law.structure import Act, OutgoingReference, Reference
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
-
-def absref(act=None, article=None, paragraph=None, point=None, subpoint=None):
-    return Reference(act, article, paragraph, point, subpoint)
+from .utils import ref, quick_parse_structure
 
 
-def ref(article=None, paragraph=None, point=None, subpoint=None):
-    return Reference(None, article, paragraph, point, subpoint)
-
-
-CASES_WITHOUT_POSITIONS = [
+CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]]] = [
     (
         """
             17. §          Hatályát veszti
@@ -41,13 +35,13 @@ CASES_WITHOUT_POSITIONS = [
                            c)   az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése.
         """,
         (
-            (ref("17", None, "a"), absref("1959. évi IV. törvény")),
-            (ref("17", None, "a"), absref("1959. évi IV. törvény", "261", "4")),
+            (ref(None, "17", None, "a"), ref("1959. évi IV. törvény")),
+            (ref(None, "17", None, "a"), ref("1959. évi IV. törvény", "261", "4")),
             # TODO: Act-like decree ref in b)
-            (ref("17", None, "b"), ref("83/A")),
-            (ref("17", None, "c"), absref("1997. évi CXLI. törvény")),
-            (ref("17", None, "c"), absref("1997. évi CXLI. törvény", "16/A")),
-            (ref("17", None, "c"), absref("1997. évi CXLI. törvény", "91", "2")),
+            (ref(None, "17", None, "b"), ref(None, "83/A")),
+            (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény")),
+            (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "16/A")),
+            (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "91", "2")),
         ),
     ),
     (
@@ -66,20 +60,20 @@ CASES_WITHOUT_POSITIONS = [
                 4. a Katv. 2. § 21. pontja;
         """,
         (
-            (ref("40", "1"), absref("2012. évi CXLVII. törvény")),
-            (ref("40", "1"), absref("2012. évi CXLVII. törvény", "2", None, ("19", "20"))),
-            (ref("41", None, "1"), absref("1990. évi XCIII. törvény")),
-            (ref("41", None, "1"), absref("1990. évi XCIII. törvény", "17", "1", "c")),
-            (ref("41", None, "2"), absref("2000. évi C. törvény")),
-            (ref("41", None, "2", "a"), absref("2000. évi C. törvény", "79", "4")),
-            (ref("41", None, "2", "b"), absref("2000. évi C. törvény", "103", "2", "c")),
-            (ref("41", None, "3"), absref("2004. évi CXXIII. törvény")),
-            (ref("41", None, "3", "a"), absref("2004. évi CXXIII. törvény", ("8/A", "8/B"))),
-            (ref("41", None, "3", "b"), absref("2004. évi CXXIII. törvény", ("16/A", "16/B"))),
-            (ref("41", None, "3", "c"), absref("2004. évi CXXIII. törvény", "17/A", "1")),
-            (ref("41", None, "3", "c"), absref("2004. évi CXXIII. törvény", "17/A", "3")),
-            (ref("41", None, "4"), absref("2012. évi CXLVII. törvény")),
-            (ref("41", None, "4"), absref("2012. évi CXLVII. törvény", "2", None, "21")),
+            (ref(None, "40", "1"), ref("2012. évi CXLVII. törvény")),
+            (ref(None, "40", "1"), ref("2012. évi CXLVII. törvény", "2", None, ("19", "20"))),
+            (ref(None, "41", None, "1"), ref("1990. évi XCIII. törvény")),
+            (ref(None, "41", None, "1"), ref("1990. évi XCIII. törvény", "17", "1", "c")),
+            (ref(None, "41", None, "2"), ref("2000. évi C. törvény")),
+            (ref(None, "41", None, "2", "a"), ref("2000. évi C. törvény", "79", "4")),
+            (ref(None, "41", None, "2", "b"), ref("2000. évi C. törvény", "103", "2", "c")),
+            (ref(None, "41", None, "3"), ref("2004. évi CXXIII. törvény")),
+            (ref(None, "41", None, "3", "a"), ref("2004. évi CXXIII. törvény", ("8/A", "8/B"))),
+            (ref(None, "41", None, "3", "b"), ref("2004. évi CXXIII. törvény", ("16/A", "16/B"))),
+            (ref(None, "41", None, "3", "c"), ref("2004. évi CXXIII. törvény", "17/A", "1")),
+            (ref(None, "41", None, "3", "c"), ref("2004. évi CXXIII. törvény", "17/A", "3")),
+            (ref(None, "41", None, "4"), ref("2012. évi CXLVII. törvény")),
+            (ref(None, "41", None, "4"), ref("2012. évi CXLVII. törvény", "2", None, "21")),
         ),
     ),
     (
@@ -92,10 +86,10 @@ CASES_WITHOUT_POSITIONS = [
                     2. második pont, ami referál a 12/A. § (1)–(5) bekezdéseire.
         """,
         (
-            (ref("1"), ref(point="a")),
-            (ref("2", "1"), ref(None, "2", "1")),
-            (ref("2", "1"), ref(point="a")),
-            (ref("2", "2", "2"), ref("12/A", ("1", "5"))),
+            (ref(None, "1"), ref(None, point="a")),
+            (ref(None, "2", "1"), ref(None, None, "2", "1")),
+            (ref(None, "2", "1"), ref(None, point="a")),
+            (ref(None, "2", "2", "2"), ref(None, "12/A", ("1", "5"))),
         )
     ),
     (
@@ -122,15 +116,15 @@ CASES_WITHOUT_POSITIONS = [
                        ”
         """,
         (
-            (ref("1", "1"), absref("2011. évi LXXV. törvény")),
-            (ref("1", "1"), absref("2011. évi LXXV. törvény", "1", "1", "1", "c")),
-            (ref("1", "2"), absref("2011. évi LXXV. törvény")),
-            (ref("1", "2"), absref("2011. évi LXXV. törvény", "1", "1", "4")),
+            (ref(None, "1", "1"), ref("2011. évi LXXV. törvény")),
+            (ref(None, "1", "1"), ref("2011. évi LXXV. törvény", "1", "1", "1", "c")),
+            (ref(None, "1", "2"), ref("2011. évi LXXV. törvény")),
+            (ref(None, "1", "2"), ref("2011. évi LXXV. törvény", "1", "1", "4")),
         )
     ),
 ]
 
-CASES_WITH_POSITIONS = [
+CASES_WITH_POSITIONS: List[Tuple[str, Tuple[OutgoingReference, ...]]] = [
     (
         """
             1. §    A tesztelésről szóló 2345. évi I. törvény
@@ -143,63 +137,54 @@ CASES_WITH_POSITIONS = [
             """,
         (
             OutgoingReference(
-                ref("1"),
+                ref(None, "1"),
                 21, 41,
-                absref("2345. évi I. törvény")
+                ref("2345. évi I. törvény")
             ),
             OutgoingReference(
-                ref("1", None, "a"),
+                ref(None, "1", None, "a"),
                 0, 4,
-                absref("2345. évi I. törvény", "8")
+                ref("2345. évi I. törvény", "8")
             ),
             OutgoingReference(
-                ref("1", None, "a", "aa"),
+                ref(None, "1", None, "a", "aa"),
                 0, 13,
-                absref("2345. évi I. törvény", "8", "5")
+                ref("2345. évi I. törvény", "8", "5")
             ),
             OutgoingReference(
-                ref("1", None, "a", "ab"),
+                ref(None, "1", None, "a", "ab"),
                 0, 22,
-                absref("2345. évi I. törvény", "8", "6", "a")
+                ref("2345. évi I. törvény", "8", "6", "a")
             ),
             OutgoingReference(
-                ref("1", None, "b"),
+                ref(None, "1", None, "b"),
                 0, 7,
-                absref("2345. évi I. törvény", "10")
+                ref("2345. évi I. törvény", "10")
             ),
             OutgoingReference(
-                ref("1", None, "c"),
+                ref(None, "1", None, "c"),
                 22, 36,
-                ref("1", None, "c")
+                ref(None, "1", None, "c")
             ),
         )
     ),
 ]
 
 
-def quick_parse_structure(act_text):
-    lines = []
-    for l in act_text.split('\n'):
-        parts = []
-        skip_spaces = True
-        for char in l:
-            if char == ' ' and skip_spaces:
-                continue
-            skip_spaces = char == ' '
-            parts.append(IndentedLinePart(5, char))
-        lines.append(IndentedLine(tuple(parts)))
-    act = ActStructureParser.parse("2345 évi 1. törvény", "About testing", lines)
+def quick_parse_with_semantics(act_text: str) -> Act:
+    act = quick_parse_structure(act_text)
     return ActSemanticsParser.parse(act)
 
 
-@pytest.mark.parametrize("act_text,references", CASES_WITHOUT_POSITIONS)
-def test_outgoing_references_without_position(act_text, references):
-    act = quick_parse_structure(act_text)
+@pytest.mark.parametrize("act_text,references", CASES_WITHOUT_POSITIONS)  # type: ignore
+def test_outgoing_references_without_position(act_text: str, references: Tuple[Tuple[Reference, Reference], ...]) -> None:
+    act = quick_parse_with_semantics(act_text)
+    assert act.outgoing_references is not None
     outgoing_references = tuple((r.from_reference, r.to_reference) for r in act.outgoing_references)
     assert outgoing_references == references
 
 
-@pytest.mark.parametrize("act_text,outgoing_references", CASES_WITH_POSITIONS)
-def test_outgoing_ref_positions_are_okay(act_text, outgoing_references):
-    act = quick_parse_structure(act_text)
+@pytest.mark.parametrize("act_text,outgoing_references", CASES_WITH_POSITIONS)  # type: ignore
+def test_outgoing_ref_positions_are_okay(act_text: str, outgoing_references: Tuple[OutgoingReference]) -> None:
+    act = quick_parse_with_semantics(act_text)
     assert act.outgoing_references == outgoing_references

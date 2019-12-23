@@ -114,13 +114,13 @@ TEST_STRUCTURE = Act(
 )
 
 
-def test_reference_equality():
+def test_reference_equality() -> None:
     assert Reference() == Reference()
     assert Reference(article="1") != Reference(article="2")
     assert Reference("2345. évi XD. törvény", "1", "2", "a", "ab") == Reference("2345. évi XD. törvény", "1", "2", "a", "ab")
 
 
-def test_relative_references():
+def test_relative_references() -> None:
     act_ref = Reference(TEST_STRUCTURE.identifier)
 
     article_ref = TEST_STRUCTURE.article("1:2").relative_reference.relative_to(act_ref)
@@ -144,7 +144,7 @@ def test_relative_references():
     assert ref_2.relative_to(ref_1) == ref_expected, "Reference relative_to overrides too exact original ref"
 
 
-def test_reference_ranges():
+def test_reference_ranges() -> None:
     not_range = Reference("2345. évi XD. törvény", "1:2", "2")
     range1 = Reference("2345. évi XD. törvény", "1:2", ("2", "3"))
     range2 = Reference(None, None, "2", ("a", "b"))
@@ -158,7 +158,7 @@ def test_reference_ranges():
     assert range2.first_in_range() == Reference(None, None, "2", "a")
 
 
-def test_next_identifiers():
+def test_next_identifiers() -> None:
     assert Article.next_identifier("2") == "3"
     assert Article.next_identifier("2/B") == "2/C"
     assert Article.next_identifier("3:12") == "3:13"

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import cast, Any, Tuple, Type
+
 from . import extractors_for_class
 
 # Yes, this is a hacky way to get all extractors, but you don't get to
@@ -23,7 +25,7 @@ from . import extractors_for_class
 from . import file, kozlonyok_hu_downloader, magyar_kozlony, pdf, act
 
 
-def do_extraction(to_be_processed_objects, end_result_classes=()):
+def do_extraction(to_be_processed_objects: Any, end_result_classes: Tuple[Type] = cast(Tuple[Type], ())) -> Any:
     """Processes all objects, and returns the end result processed objects."""
     global extractors_for_class
     queue = list(to_be_processed_objects)  # simple copy, or listify if not list

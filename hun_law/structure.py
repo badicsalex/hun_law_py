@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable
+from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable, Any
 
 import attr
 
@@ -78,12 +78,12 @@ from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class StructuralElement(ABC):
-    identifier: str
+    identifier: str = attr.ib()
     title: str
 
     @property
     @abstractmethod
-    def formatted_identifier(self):
+    def formatted_identifier(self) -> str:
         pass
 
 
@@ -93,7 +93,7 @@ class Book(StructuralElement):
     # Example:
     # NYOLCADIK KÖNYV
     @property
-    def formatted_identifier(self):
+    def formatted_identifier(self) -> str:
         return "{} KÖNYV".format(int_to_text_hun(int(self.identifier)).upper())
 
 
@@ -108,7 +108,7 @@ class Part(StructuralElement):
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ', None)
 
     @property
-    def formatted_identifier(self):
+    def formatted_identifier(self) -> str:
         # TODO: special parts
         return "{} RÉSZ".format(int_to_text_hun(int(self.identifier)).upper())
 
@@ -120,7 +120,7 @@ class Title(StructuralElement):
     # Example:
     # XXI. CÍM
     @property
-    def formatted_identifier(self):
+    def formatted_identifier(self) -> str:
         # TODO: special parts
         return "{}. CÍM".format(int_to_text_roman(int(self.identifier)).upper())
 
@@ -133,7 +133,7 @@ class Chapter(StructuralElement):
     # IV. Fejezet
     # XXIII. fejezet  <=  not conformant, but present in e.g. PTK
     @property
-    def formatted_identifier(self):
+    def formatted_identifier(self) -> str:
         # TODO: special parts
         return "{}. FEJEZET".format(int_to_text_roman(int(self.identifier)).upper())
 
@@ -148,7 +148,7 @@ class Subtitle(StructuralElement):
     # For older acts, there is no number, only a text.
 
     @property
-    def formatted_identifier(self):
+    def formatted_identifier(self) -> str:
         if not self.identifier:
             return ""
         # TODO: special parts
@@ -214,13 +214,13 @@ class SubArticleElement(ABC):
         return {c.identifier: c for c in self.children}
 
     @text.validator
-    def _content_validator_if_text(self, _attribute, text: Optional[str]):
+    def _content_validator_if_text(self, _attribute: Any, text: Optional[str]) -> None:
         if text is not None:
             if self.intro is not None or self.wrap_up is not None or self.children is not None:
                 raise ValueError("SAE can contain either text or intro/wrap-up/children")
 
     @children.validator
-    def _content_validator_if_children(self, _attribute, children: Optional[Tuple['SubArticleElement', ...]]):
+    def _content_validator_if_children(self, _attribute: Any, children: Optional[Tuple['SubArticleElement', ...]]) -> None:
         if children is None:
             return
         if self.children_type not in self.ALLOWED_CHILDREN_TYPE:
@@ -380,7 +380,7 @@ class Paragraph(SubArticleElement):
             raise KeyError("Selected child is not a Point")
         return result
 
-    def quoted_block(self, block_num) -> QuotedBlock:
+    def quoted_block(self, block_num: int) -> QuotedBlock:
         if self.children is None:
             raise KeyError("There are no children")
         result = self.children[block_num]
@@ -419,7 +419,7 @@ class Article:
     paragraph_map: Mapping[Optional[str], Paragraph] = attr.ib(init=False)
 
     @children.validator
-    def _children_validator(self, _attribute, children: Tuple[Paragraph, ...]):
+    def _children_validator(self, _attribute: Any, children: Tuple[Paragraph, ...]) -> None:
         # Attrs validators as decorators are what they are, it cannot be a function.
         # pylint: disable=no-self-use
         for c in children:
@@ -436,7 +436,7 @@ class Article:
         # Children are always paragraphs (see constructor)
         return self.children
 
-    def paragraph(self, paragraph_id: Optional[str] = None):
+    def paragraph(self, paragraph_id: Optional[str] = None) -> Paragraph:
         if paragraph_id is not None:
             return self.paragraph_map[paragraph_id]
         return self.paragraph_map[None]
@@ -459,13 +459,13 @@ class Article:
 
 BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint)
 
-
+ActChildType = Union['StructuralElement', 'Article']
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class Act:
     identifier: str
     subject: str
     preamble: str
-    children: Tuple[Union['StructuralElement', 'Article'], ...]
+    children: Tuple[ActChildType, ...]
 
     act_id_abbreviations: Optional[Tuple['ActIdAbbreviation']] = None
     outgoing_references: Optional[Tuple['OutgoingReference', ...]] = attr.ib(default=None)
@@ -478,7 +478,7 @@ class Act:
         return tuple(c for c in self.children if isinstance(c, Article))
 
     @articles_map.default
-    def _articles_map_default(self):
+    def _articles_map_default(self) -> Mapping[str, Article]:
         return {c.identifier: c for c in self.articles}
 
     def article(self, article_id: str) -> Article:
@@ -494,6 +494,10 @@ class Act:
 ReferencePartType = Union[None, str, Tuple[str, str]]
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class Reference:
+    # TODO: There is some weird pylint bug with tuples.
+    # Something like https://github.com/PyCQA/pylint/issues/3139
+    #pylint: disable=unsubscriptable-object
+
     act: Optional[str] = None
     article: ReferencePartType = None
     paragraph: ReferencePartType = None
@@ -578,6 +582,6 @@ class BlockAmendmentMetadata:
     amended_reference: Optional[Reference] = None
     inserted_reference: Optional[Reference] = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if self.amended_reference is None and self.inserted_reference is None:
             raise ValueError("A BlockAmendmentMetadata object has to contain at least an amendment or an insertion")

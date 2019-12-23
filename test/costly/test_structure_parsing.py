@@ -33,7 +33,7 @@ def parse_single_kozlony(year: int, issue: int) -> Iterable[Act]:
     return (e.act for e in extracted)
 
 
-def test_end_to_end_2010_181():
+def test_end_to_end_2010_181() -> None:
     # The  first MK to use "The new format" is 2009/117.
     # But subtitles don't have numbers consistently, until the
     # 2010 CXXX Act about legislation.
@@ -52,7 +52,7 @@ def test_end_to_end_2010_181():
         "elektronikus dokumentumként való közzététellel kell kiadni, melynek szövegét hitelesnek kell tekinteni."
 
 
-def test_end_to_end_2012_92():
+def test_end_to_end_2012_92() -> None:
     # The new Penal Code.
     # This act notably uses bold, unnumbered Subtitles, which we test here.
     acts = [a for a in parse_single_kozlony(2012, 92) if isinstance(a, Act)]
@@ -93,7 +93,7 @@ def test_end_to_end_2012_92():
     )
 
 
-def test_end_to_end_2013_31():
+def test_end_to_end_2013_31() -> None:
     # The 2013 Ptk is a great way to test high level structure
     # parsing, because it has  a ton of Books, chapters, etc.,
     # in various configurations.
@@ -131,7 +131,7 @@ def test_end_to_end_2013_31():
     assert ptk.article('7:65').title == "Dédszülő és a dédszülő leszármazójának öröklése"
 
 
-def test_end_to_end_2013_67():
+def test_end_to_end_2013_67() -> None:
     # This issue has empty pages, with which we had problems.
     # It also has a document, where words are not correctly parsed into lines,
     # because y coordinates are not exactly the same
@@ -146,7 +146,7 @@ def test_end_to_end_2013_67():
     assert len(acts) == 6, "Issue 2013/67 of Magyar Kozlony contains 6 separate Acts"
 
 
-def test_end_to_end_2013_185():
+def test_end_to_end_2013_185() -> None:
     # This test tests two things: a rather large MK issue with lots  of small Acts,
     # so the Act separation in the Kozlony Extractor. The other is that there are
     # A lot of real sub-article element cases in these acts.
@@ -177,7 +177,7 @@ def test_end_to_end_2013_185():
         "Relatively large number of paragraphs are correctly parsed"
 
 
-def test_end_to_end_2013_222():
+def test_end_to_end_2013_222() -> None:
     # This Issue contains an Act that has a ton of amendments related to the 2013 Ptk.
     # As such, it is hard to parse correctly, and it has some juicy corner cases
     acts = [a for a in parse_single_kozlony(2013, 222) if isinstance(a, Act)]
@@ -189,12 +189,14 @@ def test_end_to_end_2013_222():
 
     assert act.article("181").paragraph("2").intro == "A Szövtv. 20−24. §-a helyébe a következő rendelkezések lépnek:"
     assert act.article("181").paragraph("2").children_type == QuotedBlock
-    assert len(act.article("181").paragraph("2").children) == 1
+    children = act.article("181").paragraph("2").children
+    assert children is not None and len(children) == 1
 
     # This is a fixupped Paragraph the original text has wrong quote marks to begin the amendment text.
     assert act.article("185").paragraph("4").intro == "A Ptk. 3:85. § (1) bekezdése a következő szöveggel lép hatályba:"
     assert act.article("185").paragraph("4").children_type == BlockAmendment
-    assert len(act.article("185").paragraph("4").children) == 1
+    children = act.article("185").paragraph("4").children
+    assert children is not None and len(children) == 1
     assert act.article("185").paragraph("4").block_amendment().children_type == Paragraph
 
     assert act.article("188").paragraph("3").intro == "A Ptk. 6:155. §-a a következő szöveggel lép hatályba:"
@@ -210,7 +212,7 @@ def test_end_to_end_2013_222():
     assert act.article("192").paragraph().wrap_up == "alapján sarkalatosnak minősül."
 
 
-def test_end_to_end_2016_210():
+def test_end_to_end_2016_210() -> None:
     acts = {a.identifier: a for a in parse_single_kozlony(2016, 210) if isinstance(a, Act)}
     assert len(acts) == 11, "Issue 2016/210 of Magyar Kozlony contains 11 separate Acts"
 
@@ -218,14 +220,17 @@ def test_end_to_end_2016_210():
         "A Hjt. 215. § (1) bekezdés a) és b) pontja helyébe a következő rendelkezések lépnek: " \
         "(Megszűnik az önkéntes tartalékos szolgálati viszony akkor is, ha)"
     assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children_type == QuotedBlock
-    assert len(acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children) == 1
+
+    children = acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children
+    assert children is not None and len(children) == 1
 
     assert acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().intro == "A Hjt. 85. alcíme helyébe a következő alcím lép:"
     assert acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().children_type == QuotedBlock
-    assert len(acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().children) == 1
+    children = acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().children
+    assert children is not None and len(children) == 1
 
 
-def test_end_to_end_2018_123():
+def test_end_to_end_2018_123() -> None:
     # This is the most modern Act we want to touch right now.
     # The purpose of the test is mainly document-format-compatibility
     acts = {a.identifier: a for a in parse_single_kozlony(2018, 123) if isinstance(a, Act)}
@@ -243,7 +248,8 @@ def test_end_to_end_2018_123():
     assert acts["2018. évi LII. törvény"].article("5").paragraph("6").point("b").text == "az Szja tv. szerint egyéb jövedelemnek minősülő jövedelmet"
     assert acts["2018. évi LII. törvény"].article("5").paragraph("6").wrap_up == "nem terheli adófizetési kötelezettség."
 
-    assert acts["2018. évi LII. törvény"].article("34").paragraph().point("11").subpoint("p").text.endswith("járadék folyósításának időtartama;"), \
+    text = acts["2018. évi LII. törvény"].article("34").paragraph().point("11").subpoint("p").text
+    assert text is not None and text.endswith("járadék folyósításának időtartama;"), \
         "Multiline points/subpoints do not generate a wrap-up, if the indentation is correct"
 
     assert acts["2018. évi LIII. törvény"].subject == "a magánélet védelméről"
@@ -254,16 +260,20 @@ def test_end_to_end_2018_123():
     block_amendment = acts["2018. évi LV. törvény"].article("25").paragraph("5").block_amendment()
     assert block_amendment.children_type == AlphabeticPoint
     assert block_amendment.intro == "(3) A büntetés bűntett miatt három évig terjedő szabadságvesztés, ha a rendbontást"
-    assert block_amendment.child("e").text == \
+    child = block_amendment.child("e")
+    assert isinstance(child, AlphabeticPoint)
+    assert child.text == \
         "a gyűlés gyülekezési jogról szóló törvény szerinti békés jellegét biztosító korlátozásokat megsértve"
     assert block_amendment.wrap_up == "követik el."
 
-    assert acts["2018. évi LIV. törvény"].article("2").paragraph().point("4").text.endswith("felfedett üzleti titokra épül."), \
+    text = acts["2018. évi LIV. törvény"].article("2").paragraph().point("4").text
+    assert text is not None and text.endswith("felfedett üzleti titokra épül."), \
         "Multiline numeric points parsed correctly"
 
     # International convention parsing
     assert acts["2018. évi LI. törvény"].article("3").paragraph().children_type == QuotedBlock
-    assert len(acts["2018. évi LI. törvény"].article("3").paragraph().children) == 2, \
+    children = acts["2018. évi LI. törvény"].article("3").paragraph().children
+    assert children is not None and len(children) == 2, \
         "Multiple quote blocks parsed properly"
     last_line_of_hungarian_version = acts["2018. évi LI. törvény"].article("3").paragraph().quoted_block(0).lines[-1].content
     assert last_line_of_hungarian_version.endswith("Szlovák Köztársaság nevében"), \

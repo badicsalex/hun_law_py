@@ -28,7 +28,7 @@ from hun_law.structure import \
     StructuralElement, Subtitle, Chapter, Title, Part, Book,\
     SubArticleElement, Paragraph, AlphabeticSubpoint, NumericSubpoint, NumericPoint, AlphabeticPoint, \
     Reference, \
-    SubArticleChildType
+    SubArticleChildType, ActChildType
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -68,7 +68,7 @@ from hun_law.structure import \
 
 
 class StructureParsingError(ValueError):
-    def __init__(self, message, parser_class=None, identifier=None):
+    def __init__(self, message: str, parser_class: Optional[Type] = None, identifier: Optional[str] = None):
         if parser_class is not None:
             super().__init__(
                 "Error in {} {}: '{}'".format(
@@ -84,14 +84,14 @@ class StructureParsingError(ValueError):
 class StructuralElementParser(ABC):
     PARSED_TYPE: ClassVar[Type[StructuralElement]]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.expected_number = 1
 
     @abstractmethod
     def extract_number(self, line: IndentedLine) -> Optional[int]:
         pass
 
-    def step_to_next_number(self, line: IndentedLine):
+    def step_to_next_number(self, line: IndentedLine) -> None:
         extracted = self.extract_number(line)
         if extracted is None:
             self.expected_number = 1
@@ -139,7 +139,7 @@ class PartParser(StructuralElementParser):
 
     HEADER_REGEX = re.compile(r'(.*) RÉSZ$')
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.is_special = False
 
@@ -237,10 +237,10 @@ class ArticleStructuralParser:
     # BlockAmendment parsers can use it as structural parser.
     PARSED_TYPE = None
 
-    def __init__(self):
-        self.indent = None
+    def __init__(self) -> None:
+        self.indent: Optional[float] = None
 
-    def step_to_next_number(self, line: IndentedLine):
+    def step_to_next_number(self, line: IndentedLine) -> None:
         self.indent = line.indent
 
     def is_header(self, line: IndentedLine, _previous_line: IndentedLine) -> bool:
@@ -249,7 +249,7 @@ class ArticleStructuralParser:
         return ArticleParser.extract_identifier(line) is not None
 
     @classmethod
-    def parse(cls, lines: Sequence[IndentedLine]):
+    def parse(cls, lines: Sequence[IndentedLine]) -> Article:
         return ArticleParser.parse(lines)
 
 
@@ -420,7 +420,7 @@ class AlphabeticSubpointParser(SubArticleElementParser):
     HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\)')
 
     @classmethod
-    def first_identifier(cls):
+    def first_identifier(cls) -> str:
         return cls.PREFIX + 'a'
 
     @classmethod
@@ -453,7 +453,7 @@ class NumericPointParser(SubArticleElementParser):
     HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\.')
 
     @classmethod
-    def first_identifier(cls):
+    def first_identifier(cls) -> str:
         return '1'
 
     @classmethod
@@ -476,7 +476,7 @@ class NumericSubpointParser(SubArticleElementParser):
     HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\.')
 
     @classmethod
-    def first_identifier(cls):
+    def first_identifier(cls) -> str:
         return '1'
 
     @classmethod
@@ -494,7 +494,7 @@ class AlphabeticPointParser(SubArticleElementParser):
     HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\)')
 
     @classmethod
-    def first_identifier(cls):
+    def first_identifier(cls) -> str:
         return 'a'
 
     @classmethod
@@ -512,7 +512,7 @@ class ParagraphParser(SubArticleElementParser):
     HEADER_REGEX = re.compile(r'\(([0-9]+[a-z]?)\)')
 
     @classmethod
-    def first_identifier(cls):
+    def first_identifier(cls) -> str:
         return '1'
 
     @classmethod
@@ -601,7 +601,7 @@ class ArticleParser:
     HEADER_REGEX = re.compile("^(([0-9]+:)?([0-9]+(/[A-Z])?))\\. ?§ *(.*)$")
 
     @classmethod
-    def parse(cls, lines: Sequence[IndentedLine], extenally_determined_identifier: Optional[str] = None):
+    def parse(cls, lines: Sequence[IndentedLine], extenally_determined_identifier: Optional[str] = None) -> Article:
         identifier = cls.extract_identifier(lines[0])
         if identifier is None:
             raise ArticleParsingError("Article does not have a proper header '{}'".format(lines[0].content))
@@ -625,7 +625,7 @@ class ArticleParser:
         return None if result is None else result.group(1)
 
     @classmethod
-    def parse_body(cls, identifier: str, lines: Sequence[IndentedLine]):
+    def parse_body(cls, identifier: str, lines: Sequence[IndentedLine]) -> Article:
         title = None
 
         if lines[0].content[0] == '[':
@@ -675,7 +675,7 @@ class ActStructureParser:
         except Exception as e:
             raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
 
-        return Act(identifier, subject, preamble, elements)
+        return Act(identifier, subject, preamble, tuple(elements))
 
     @classmethod
     def get_parser_for_header_line(cls, line: IndentedLine, previous_line: IndentedLine, parsers: Iterable[Union[StructuralElementParser, ArticleStructuralParser]]) \
@@ -690,7 +690,7 @@ class ActStructureParser:
         return [parser() for parser in STRUCTURE_ELEMENT_PARSERS]
 
     @classmethod
-    def parse_preamble(cls, lines: Sequence[IndentedLine]):
+    def parse_preamble(cls, lines: Sequence[IndentedLine]) -> Tuple[str, Sequence[IndentedLine]]:
         parsers = cls.create_parsers()
         split_point = len(lines)
 
@@ -707,7 +707,7 @@ class ActStructureParser:
         return preamble, rest_of_lines
 
     @classmethod
-    def parse_elements(cls, lines: Sequence[IndentedLine]):
+    def parse_elements(cls, lines: Sequence[IndentedLine]) -> Iterable[ActChildType]:
         parsers = cls.create_parsers()
 
         elements = []
@@ -786,6 +786,6 @@ class BlockAmendmentStructureParser:
         return cls.PARSERS_FOR_TYPE[structural_type], expected_id
 
 
-def similar_indent(a, b):
+def similar_indent(a: float, b: float) -> bool:
     # Super scientific
     return abs(a - b) < 1
