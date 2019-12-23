@@ -45,9 +45,17 @@ else:
             need_regen = True
 
 if need_regen:
+    model_fixup_from = "def __init__(self, context=None, types=None):"
+    model_fixup_to = "def __init__(self, context=None, types=None): # type: ignore"
     with open(os.path.join(dir_of_this_file, 'model.py'), 'w') as f:
         f.write(header_for_generated_files)
-        f.write(tatsu.to_python_model(grammar_file_content))
+        model_file_content = tatsu.to_python_model(grammar_file_content)
+        assert model_fixup_from in model_file_content
+        model_file_content = model_file_content.replace(model_fixup_from, model_fixup_to)
+        f.write(model_file_content)
     with open(os.path.join(dir_of_this_file, 'parser.py'), 'w') as f:
         f.write(header_for_generated_files)
-        f.write(tatsu.to_python_sourcecode(grammar_file_content))
+        f.write("# type: ignore\n")
+        parser_file_content = tatsu.to_python_sourcecode(grammar_file_content)
+        parser_file_content = parser_file_content.replace("  # type: ignore", "")
+        f.write(parser_file_content)
