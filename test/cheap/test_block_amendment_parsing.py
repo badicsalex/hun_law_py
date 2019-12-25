@@ -399,3 +399,20 @@ def test_numeric_subpoint() -> None:
     assert amended_structure.children_type is NumericSubpoint
     assert amended_structure.children is not None
     assert amended_structure.children[0].identifier == '1'
+
+
+def test_brackets_inside_context_intro() -> None:
+    act_text = """
+       1.§   (1) Az Flt. 57/A. § (2) bekezdése a következő k) ponttal egészül ki:
+              (Az (1) bekezdésben meghatározott szervek a jogszabályban meghatározott feladataik ellátásával összefüggésben
+              a következő adatok nyilvántartására jogosultak:)
+              „k) a nemzetiséghez való tartozásra vonatkozó adatok.”
+    """
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
+    assert amended_structure.children_type is AlphabeticPoint
+    assert amended_structure.children is not None
+    assert amended_structure.intro == \
+        "Az (1) bekezdésben meghatározott szervek a jogszabályban meghatározott feladataik ellátásával összefüggésben " \
+        "a következő adatok nyilvántartására jogosultak:"
+    assert amended_structure.children[0].identifier == 'k'

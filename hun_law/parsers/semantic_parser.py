@@ -195,7 +195,7 @@ class ActBlockAmendmentParser:
         #
         # Also, its sometimes bracketed with [] instead of ()
 
-        matches = re.match(r"^(.*:) ?(\([^\)]*\)|\[[^\]]*\])$", paragraph.intro)
+        matches = re.match(r"^(.*:) ?(\(.*\)|\[.*\])$", paragraph.intro)
         context_intro = None
         context_outro = None
         if matches is None:
