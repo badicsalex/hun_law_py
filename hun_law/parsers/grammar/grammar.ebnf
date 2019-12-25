@@ -124,7 +124,7 @@ block_amendment::BlockAmendment
         amended_reference:reference "a következő szöveggel lép hatályba:" |
         inserted_reference:insertion_reference "egészül ki:" |
         inserted_reference:insertion_reference "kiegészülve lép hatályba:" |
-        amended_reference:reference "helyébe a következő" ("rendelkezés lép" | "rendelkezések lépnek") "," ("és" | "valamint") inserted_reference:insertion_reference "egészül ki:"
+        amended_reference:reference "helyébe a következő" ("rendelkezés lép" | "rendelkezések lépnek") "," ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference "egészül ki:"
     );
 
 

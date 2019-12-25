@@ -660,7 +660,15 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
         BlockAmendmentMetadata(
             inserted_reference=ref("2010. évi LXXV. törvény", "1", "1a"),
         )
-    )
+    ),
+    (
+        "A társadalombiztosítási nyugellátásról szóló 1997. évi LXXXI. törvény 96. § (2) bekezdés h) pontja helyébe a következő rendelkezés lép, egyidejűleg a bekezdés a következő i) ponttal egészül ki:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("1997. évi LXXXI. törvény", "96", "2", "h"),
+            inserted_reference=ref("1997. évi LXXXI. törvény", "96", "2", "i"),
+        )
+    ),
+
     # TODO:
     # Other simultaneous amendment + insertion cases:
     # Full articles: "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
