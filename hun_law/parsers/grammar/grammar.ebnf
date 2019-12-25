@@ -111,7 +111,7 @@ list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
 insertion_token = "a következő";
 
 insertion_reference::InsertionReference::Reference =
-    | insertion_token article:article_reference
+    | insertion_token article:article_reference [paragraph:paragraph_reference]
     | [[az] article:article_reference | "a §"] insertion_token paragraph:paragraph_reference
     | [[az] article:article_reference [paragraph:paragraph_reference] | "a §" | "a bekezdés"] insertion_token (point:alphabetic_point_reference | point:numeric_point_reference)
     | [az] article:article_reference [paragraph:paragraph_reference] (point:alphabetic_point_reference | point:numeric_point_reference) insertion_token (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference)

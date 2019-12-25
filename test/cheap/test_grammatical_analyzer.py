@@ -655,6 +655,12 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             inserted_reference=ref("Btk.", "459", "1", "24a"),
         )
     ),
+    (
+        "Az egyszerűsített foglalkoztatásról szóló 2010. évi LXXV. törvény (a továbbiakban: Efotv.) a következő 1. § (1a) bekezdéssel egészül ki:",
+        BlockAmendmentMetadata(
+            inserted_reference=ref("2010. évi LXXV. törvény", "1", "1a"),
+        )
+    )
     # TODO:
     # Other simultaneous amendment + insertion cases:
     # Full articles: "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
