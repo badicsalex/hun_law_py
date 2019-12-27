@@ -122,8 +122,9 @@ def write_mk_raw_as_txt(output_file: TextIO, element: MagyarKozlonyLawRawText, i
     print("==== {} - {} =====\n".format(element.identifier, element.subject), file=output_file)
     base_indent_of_body = min(l.indent for l in element.body if l != EMPTY_LINE)
     for l in element.body:
-        indent_of_body = ' ' * int((l.indent - base_indent_of_body)*0.2)
-        print(indent + ' ' * 5 + indent_of_body + l.content, file=output_file)
+        indent_of_line = ' ' * int((l.indent - base_indent_of_body)*0.2)
+        bold_marker = '<BOLD> ' if l.bold else '       '
+        print(indent + indent_of_line + bold_marker + l.content, file=output_file)
     print(file=output_file)
 
 
