@@ -1189,6 +1189,16 @@ replacement_fixups: ReplacementsType = {
             "replacement": "„a helyi önkormányzatok általános működésének és ágazati feladatainak támogatása” címen megillető, és a részükre"
         }
     ],
+    "2014. évi LXV. törvény": [
+        {
+            "needle": "(2) A Btk. 28. § (la) bekezdése helyébe a következő rendelkezés lép:",
+            "replacement": "(2) A Btk. 28. § (1a) bekezdése helyébe a következő rendelkezés lép:"
+        },
+        {
+            "needle": "„(la) Ha az erős felindulásban elkövetett emberölés, a háromévi szabadságvesztésnél súlyosabban büntetendő",
+            "replacement": "„(1a) Ha az erős felindulásban elkövetett emberölés, a háromévi szabadságvesztésnél súlyosabban büntetendő"
+        }
+    ],
     "2014. évi LXXIV. törvény": [
         {
             "needle": "a „2013. január 1-jétől” szövegrész helyébe a „2013. július 1-jétől” szöveg, a 2015. január 1-jével” szövegrész",
@@ -1468,6 +1478,20 @@ replacement_fixups: ReplacementsType = {
             "replacement": "szóló Megállapodás” által meghatározott MLF hadműveleti elgondolás és hadműveleti képességei által"
         }
     ],
+    "2016. évi CIV. törvény": [
+        {
+            "needle": "központi szerv) szövegrész helyébe a „szerv (e fejezet alkalmazásában a továbbiakban: kijelölt szerv)” szöveg,",
+            "replacement": "központi szerv)” szövegrész helyébe a „szerv (e fejezet alkalmazásában a továbbiakban: kijelölt szerv)” szöveg,"
+        },
+        {
+            "needle": "szövegrész helyébe az „a Kormány által kijelölt szerv (a továbbiakban: nyilvántartó szerv) szöveg,",
+            "replacement": "szövegrész helyébe az „a Kormány által kijelölt szerv (a továbbiakban: nyilvántartó szerv)” szöveg,"
+        },
+        {
+            "needle": "„35. ellátja a 655/2014/EU rendelet 14. cikke szerinti információs hatósági feladatokat.”",
+            "replacement": "„35. ellátja a 655/2014/EU rendelet 14. cikke szerinti információs hatósági feladatokat.””"
+        }
+    ],
     "2016. évi CLXXIX. törvény": [
         {
             "needle": "tizenöt nappal követő időpontra hívják össze.”",
@@ -1482,6 +1506,12 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "a) az önkéntes tartalékos katona hivatásos, szerződéses, honvéd tisztjelölt vagy honvéd altiszt-jelölt szolgálati",
             "replacement": "„a) az önkéntes tartalékos katona hivatásos, szerződéses, honvéd tisztjelölt vagy honvéd altiszt-jelölt szolgálati"
+        }
+    ],
+    "2016. évi CXIII. törvény": [
+        {
+            "needle": "e szakterületen kutatómunkát végez;",
+            "replacement": "e szakterületen kutatómunkát végez;”"
         }
     ],
     "2016. évi LXXI. törvény": [
@@ -1506,10 +1536,38 @@ replacement_fixups: ReplacementsType = {
             "replacement": "fenntartott köznevelési intézmény kivételével –”,"
         }
     ],
+    "2016. évi XIV. törvény": [
+        {
+            "needle": "Hungary Mongolia“",
+            "replacement": "Hungary Mongolia”"
+        }
+    ],
+    "2017. évi CLXXXII. törvény": [
+        {
+            "needle": "közhírré teszi.”",
+            "replacement": "közhírré teszi.””"
+        },
+        {
+            "needle": "(4) A 18/A. § (1) bekezdés a) pontjában meghatározott bírság legmagasabb összege 500 ezer forint.”",
+            "replacement": "(4) A 18/A. § (1) bekezdés a) pontjában meghatározott bírság legmagasabb összege 500 ezer forint.””"
+        }
+    ],
     "2017. évi CLXXXVI. törvény": [
         {
             "needle": "a vezető tisztségviselő képviseleti jogot nem gyakorol, ez a tény) szöveg,",
             "replacement": "a vezető tisztségviselő képviseleti jogot nem gyakorol, ez a tény)” szöveg,"
+        }
+    ],
+    "2017. évi CVII. törvény": [
+        {
+            "needle": "2. For the purpose of this Article ”claims for loss of life or personal injury to passengers of a vessel” shall mean any such",
+            "replacement": "2. For the purpose of this Article “claims for loss of life or personal injury to passengers of a vessel” shall mean any such"
+        }
+    ],
+    "2017. évi CX. törvény": [
+        {
+            "needle": "Cộng hòa Xã hội Chủ nghĩa Việt Nam",
+            "replacement": "Cộng hòa Xã hội Chủ nghĩa Việt Nam”"
         }
     ],
     "2017. évi CXCIII. törvény": [
@@ -1520,6 +1578,62 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "belföldi gyermek adatszolgáltatás időpontjában nyilvántartott adatai vonatkozásában is teljesíti 2018. március 31-ig.",
             "replacement": "belföldi gyermek adatszolgáltatás időpontjában nyilvántartott adatai vonatkozásában is teljesíti 2018. március 31-ig.”"
+        }
+    ],
+    "2017. évi CXCVII. törvény": [
+        {
+            "needle": "89. 71/B. § (4) bekezdésében a „vagy ügyész számára” szövegrész helyébe a „vagy az ügyészség számára,",
+            "replacement": "89. 71/B. § (4) bekezdésében a „vagy ügyész számára” szövegrész helyébe a „vagy az ügyészség számára” szöveg,"
+        },
+        {
+            "needle": "az „az előzetesen letartóztatottat” szövegrész helyébe az „a letartóztatottat szöveg,",
+            "replacement": "az „az előzetesen letartóztatottat” szövegrész helyébe az „a letartóztatottat” szöveg,"
+        },
+        {
+            "needle": "„26. § (1) A körözési eljárást lefolytató szerv a büntetőeljárásról szóló 2017. évi XC. törvény (a továbbiakban: Be.)",
+            "replacement": "„26. § (1) A körözési eljárást lefolytató szerv a büntetőeljárásról szóló 2017. évi XC. törvény (a továbbiakban: Be.) 268. §"
+        },
+        {
+            "needle": "268. § (1) bekezdés c) és d) pontja alapján bűncselekmény elkövetésével gyanúsítható, illetve megalapozottan",
+            "replacement": "(1) bekezdés c) és d) pontja alapján bűncselekmény elkövetésével gyanúsítható, illetve megalapozottan"
+        },
+        {
+            "needle": "„(1) A körözési eljárást lefolytató szerv a Be. 268. § (1) bekezdés a) és b) pontja, valamint a Szabs. tv. 68. §",
+            "replacement": "„29. § (1) A körözési eljárást lefolytató szerv a Be. 268. § (1) bekezdés a) és b) pontja, valamint a Szabs. tv. 68. §"
+        }
+    ],
+    "2017. évi CXII. törvény": [
+        {
+            "needle": "Nr.15.2-2/7034”",
+            "replacement": "Nr.15.2-2/7034"
+        }
+    ],
+    "2017. évi CXIV. törvény": [
+        {
+            "needle": "For the Government of Hungary For the State of Maryland“",
+            "replacement": "For the Government of Hungary For the State of Maryland”"
+        },
+        {
+            "needle": "Magyarország Kormánya nevében Maryland Állam nevében“",
+            "replacement": "Magyarország Kormánya nevében Maryland Állam nevében”"
+        }
+    ],
+    "2017. évi CXV. törvény": [
+        {
+            "needle": "”AGREEMENT BETWEEN THE GOVERNMENT OF HUNGARY AND THE GOVERNMENT OF THE REPUBLIC OF",
+            "replacement": "“AGREEMENT BETWEEN THE GOVERNMENT OF HUNGARY AND THE GOVERNMENT OF THE REPUBLIC OF"
+        }
+    ],
+    "2017. évi CXVI. törvény": [
+        {
+            "needle": "”AGREEMENT BETWEEN THE GOVERNMENT OF HUNGARY AND THE GOVERNMENT OF THE REPUBLIC OF",
+            "replacement": "“AGREEMENT BETWEEN THE GOVERNMENT OF HUNGARY AND THE GOVERNMENT OF THE REPUBLIC OF"
+        }
+    ],
+    "2017. évi CXX. törvény": [
+        {
+            "needle": "jogaira, díjazására és a mintaoltalmi igényre szöveg, a „személyhez fűződő jogaira és a szabadalmi igényre”",
+            "replacement": "jogaira, díjazására és a mintaoltalmi igényre” szöveg, a „személyhez fűződő jogaira és a szabadalmi igényre”"
         }
     ],
     "2017. évi CXXX. törvény": [
@@ -1572,6 +1686,70 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "p) a bizalmi felügyelet által vezetett nyilvántartás tartalmával és a bizalmi szolgáltatás nyújtásával összefüggő",
             "replacement": "„p) a bizalmi felügyelet által vezetett nyilvántartás tartalmával és a bizalmi szolgáltatás nyújtásával összefüggő"
+        },
+        {
+            "needle": "a) 7. § (9) bekezdésében a „jogerős” szövegrész helyébe a „végleges, a „jogerősen alkalmazott” szövegrész",
+            "replacement": "a) 7. § (9) bekezdésében a „jogerős” szövegrész helyébe a „végleges”, a „jogerősen alkalmazott” szövegrész"
+        },
+        {
+            "needle": "megállapított – 182. § (1) bekezdés g) pontja.”",
+            "replacement": "megállapított – 182. § (1) bekezdés g) pontja."
+        },
+        {
+            "needle": "„31. § (1) A Hatóság eljárásainak ügyintézési határideje – amennyiben e törvény eltérő szabályokat nem állapít",
+            "replacement": "31. § (1) A Hatóság eljárásainak ügyintézési határideje – amennyiben e törvény eltérő szabályokat nem állapít"
+        },
+        {
+            "needle": "a „jogerőre emelkedésének” szövegrész helyébe a véglegessé válásának” szöveg,",
+            "replacement": "a „jogerőre emelkedésének” szövegrész helyébe a „véglegessé válásának” szöveg,"
+        },
+        {
+            "needle": "„(2) Az atomenergia-felügyeleti szerv eljárásában hiánypótlásra felhívásnak több ízben helye van.",
+            "replacement": "„(2) Az atomenergia-felügyeleti szerv eljárásában hiánypótlásra felhívásnak több ízben helye van.”"
+        },
+        {
+            "needle": "d) a döntés szóban nem közölhető.",
+            "replacement": "d) a döntés szóban nem közölhető.”"
+        },
+        {
+            "needle": "xi) a radioaktív anyagok birtoklása, előállítása, termelése, kezelése, feldolgozása, forgalmazása, tárolása,",
+            "replacement": "„xi) a radioaktív anyagok birtoklása, előállítása, termelése, kezelése, feldolgozása, forgalmazása, tárolása,"
+        },
+        {
+            "needle": "a) 11/A. § (2d) bekezdésében a „de legalább a (2c) bekezdésben meghatározott terület” szövegrész.”",
+            "replacement": "a) 11/A. § (2d) bekezdésében a „de legalább a (2c) bekezdésben meghatározott terület” szövegrész."
+        },
+        {
+            "needle": "g) 31/B. § (2d) bekezdésében a „jogerőre emelkedésétől” szövegrész helyébe a „véglegessé válásától szöveg,",
+            "replacement": "g) 31/B. § (2d) bekezdésében a „jogerőre emelkedésétől” szövegrész helyébe a „véglegessé válásától” szöveg,"
+        },
+        {
+            "needle": "helyébe a közhírré teszi” szöveg,",
+            "replacement": "helyébe a „közhírré teszi” szöveg,"
+        },
+        {
+            "needle": "vagyonvédelmi, valamint magánnyomozói tevékenységre vonatkozó közigazgatási hatósági eljárási szabályokat",
+            "replacement": "vagyonvédelmi, valamint magánnyomozói tevékenységre vonatkozó közigazgatási hatósági eljárási szabályokat”"
+        },
+        {
+            "needle": "szerinti bűncselekményi kör tekintetében büntetlen előéletű.”",
+            "replacement": "szerinti bűncselekményi kör tekintetében büntetlen előéletű."
+        },
+        {
+            "needle": "a „honlapján közhírré tesz” szöveg, a „hirdetmény” szövegrész helyébe a „közhírré tett közlemény szöveg,",
+            "replacement": "a „honlapján közhírré tesz” szöveg, a „hirdetmény” szövegrész helyébe a „közhírré tett közlemény” szöveg,"
+        },
+        {
+            "needle": "(1b) A klímavédelemért felelős hatóság ellenőrzésre jogosult alkalmazottja (a továbbiakban: ellenőr) az ellenőrzés,",
+            "replacement": "„(1b) A klímavédelemért felelős hatóság ellenőrzésre jogosult alkalmazottja (a továbbiakban: ellenőr) az ellenőrzés,"
+        },
+        {
+            "needle": "szóló 2016. évi CL. törvény (a továbbiakban: Ákr.) szöveg,",
+            "replacement": "szóló 2016. évi CL. törvény (a továbbiakban: Ákr.)” szöveg,"
+        },
+        {
+            "needle": "b) 17. § (2) bekezdésében a „jogerős” szövegrész helyébe a „véglegessé vált” szöveg, a bírósági” szövegrész",
+            "replacement": "b) 17. § (2) bekezdésében a „jogerős” szövegrész helyébe a „véglegessé vált” szöveg, a „bírósági” szövegrész"
         }
     ],
     "2017. évi LXI. törvény": [
@@ -1584,6 +1762,44 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "d) 41. § (5) bekezdésében az ”Az állami vagy önkormányzati fenntartású előadó-művészeti” szövegrész helyébe",
             "replacement": "d) 41. § (5) bekezdésében az „Az állami vagy önkormányzati fenntartású előadó-művészeti” szövegrész helyébe"
+        }
+    ],
+    "2017. évi XXXV. törvény": [
+        {
+            "needle": "to MÁV Zrt.”",
+            "replacement": "to MÁV Zrt."
+        },
+        {
+            "needle": "board of directors or other officer indicated in the General Contractor’s statutes.”",
+            "replacement": "board of directors or other officer indicated in the General Contractor’s statutes."
+        },
+        {
+            "needle": "MÁV Zrt.”",
+            "replacement": "MÁV Zrt."
+        },
+        {
+            "needle": "“Tpvt.”: Act LVII of 1996 on the prohibition of unfair market practices and restriction of competition.”",
+            "replacement": "“Tpvt.”: Act LVII of 1996 on the prohibition of unfair market practices and restriction of competition."
+        },
+        {
+            "needle": "szerződések alapján megszerzett jogok és kötelezettségek tekintetében a MÁV Zrt.”",
+            "replacement": "szerződések alapján megszerzett jogok és kötelezettségek tekintetében a MÁV Zrt."
+        },
+        {
+            "needle": "tisztségviselőjére delegálhatja.”",
+            "replacement": "tisztségviselőjére delegálhatja."
+        },
+        {
+            "needle": "„Hirdetmény”: a TED-ben (Tenders Electronic Daily) és a MÁV Zrt. honlapján közzétett Felhívás.”",
+            "replacement": "„Hirdetmény”: a TED-ben (Tenders Electronic Daily) és a MÁV Zrt. honlapján közzétett Felhívás."
+        },
+        {
+            "needle": "„Tpvt.”: a tisztességtelen piaci magatartás és a versenykorlátozás tilalmáról szóló 1996. évi LVII. törvény.”",
+            "replacement": "„Tpvt.”: a tisztességtelen piaci magatartás és a versenykorlátozás tilalmáról szóló 1996. évi LVII. törvény."
+        },
+        {
+            "needle": "nevében és javára képviselőként eljáró Fővállalkozó.”",
+            "replacement": "nevében és javára képviselőként eljáró Fővállalkozó."
         }
     ],
     "2018. évi LI. törvény": [
