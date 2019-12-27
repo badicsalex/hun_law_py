@@ -121,6 +121,7 @@ block_amendment::BlockAmendment
     = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference
     (
         amended_reference:reference "helyébe a következő rendelkezés lép:" |
+        amended_reference:reference "helyébe a következő rendelkezések lépnek:" |
         amended_reference:reference "a következő szöveggel lép hatályba:" |
         inserted_reference:insertion_reference "egészül ki:" |
         inserted_reference:insertion_reference "kiegészülve lép hatályba:" |

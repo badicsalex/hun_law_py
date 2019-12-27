@@ -668,6 +668,12 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             inserted_reference=ref("1997. évi LXXXI. törvény", "96", "2", "i"),
         )
     ),
+    (
+        "A Btk. 279. § (1) és (2) bekezdése helyébe a következő rendelkezések lépnek:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Btk.", "279", ("1", "2"))
+        )
+    ),
 
     # TODO:
     # Other simultaneous amendment + insertion cases:

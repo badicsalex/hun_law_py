@@ -188,9 +188,8 @@ def test_end_to_end_2013_222() -> None:
     assert act.subject == "egyes törvényeknek az új Polgári Törvénykönyv hatálybalépésével összefüggő módosításáról"
 
     assert act.article("181").paragraph("2").intro == "A Szövtv. 20−24. §-a helyébe a következő rendelkezések lépnek:"
-    assert act.article("181").paragraph("2").children_type == QuotedBlock
-    children = act.article("181").paragraph("2").children
-    assert children is not None and len(children) == 1
+    assert act.article("181").paragraph("2").children_type == BlockAmendment
+    assert act.article("181").paragraph("2").block_amendment().children_type == Article
 
     # This is a fixupped Paragraph the original text has wrong quote marks to begin the amendment text.
     assert act.article("185").paragraph("4").intro == "A Ptk. 3:85. § (1) bekezdése a következő szöveggel lép hatályba:"
@@ -217,15 +216,14 @@ def test_end_to_end_2016_210() -> None:
     assert len(acts) == 11, "Issue 2016/210 of Magyar Kozlony contains 11 separate Acts"
 
     assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().intro == \
-        "A Hjt. 215. § (1) bekezdés a) és b) pontja helyébe a következő rendelkezések lépnek: " \
-        "(Megszűnik az önkéntes tartalékos szolgálati viszony akkor is, ha)"
-    assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children_type == QuotedBlock
+        "A Hjt. 215. § (1) bekezdés a) és b) pontja helyébe a következő rendelkezések lépnek:"
+    assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children_type == BlockAmendment
 
-    children = acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children
-    assert children is not None and len(children) == 1
+    assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().block_amendment().children_type == AlphabeticPoint
 
     assert acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().intro == "A Hjt. 85. alcíme helyébe a következő alcím lép:"
     assert acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().children_type == QuotedBlock
+
     children = acts["2016. évi CLXXXIV. törvény"].article("46").paragraph().children
     assert children is not None and len(children) == 1
 
