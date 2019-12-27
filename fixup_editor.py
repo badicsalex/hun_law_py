@@ -75,6 +75,10 @@ def do_file_editing(body: Iterable[IndentedLine]) -> Tuple[str, ...]:
     return result
 
 
+def count_sublists(haystack: List[str], needle: List[str]) -> int:
+    return sum(1 for i in range(len(haystack) - len(needle)) if haystack[i:i+len(needle)] == needle)
+
+
 def extract_replacements(original_lines: Sequence[str], new_lines: Sequence[str]) -> Iterable[FixupType]:
     if len(original_lines) != len(new_lines):
         # TODO: Line insertion  and deletion
@@ -89,17 +93,21 @@ def extract_replacements(original_lines: Sequence[str], new_lines: Sequence[str]
             result.append({"needle": original_line, "replacement": new_line})
             continue
 
-        # Before needle context: this will be already modified, hence the "new_lines"
-        if new_lines.count(new_lines[line_num-1]) == 1:
-            fixup: FixupType = {
-                "needle": original_line,
-                "replacement": new_line,
-                "needle_prev_lines": [new_lines[line_num-1]]
-            }
-            result.append(fixup)
-            continue
-        # TODO
-        raise ValueError("Super multiline needle not yet supported")
+        # When doing fixups, this will be the real state of the text.
+        simulated_current_lines = list(new_lines[:line_num]) + list(original_lines[line_num:])
+        for before_context_len in range(1, 10):
+            # The previous lines will already be fixupped at this point
+            needle_prev_lines = list(new_lines[line_num-before_context_len:line_num])
+            if count_sublists(simulated_current_lines, needle_prev_lines + [original_line]) == 1:
+                fixup: FixupType = {
+                    "needle": original_line,
+                    "replacement": new_line,
+                    "needle_prev_lines": needle_prev_lines,
+                }
+                result.append(fixup)
+                break
+        else:  # there was no break
+            raise ValueError("Huge before context would be needed for replacement")
     return result
 
 
