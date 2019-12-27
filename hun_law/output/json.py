@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 import json
+from typing import Any, TextIO
 
 from hun_law.utils import object_to_dict_recursive
 
 
-def serialize_to_json_file(act, f):
-    return json.dump(
+def serialize_to_json_file(act: Any, f: TextIO) -> Any:
+    json.dump(
         object_to_dict_recursive(act),
         f,
         indent='  ',

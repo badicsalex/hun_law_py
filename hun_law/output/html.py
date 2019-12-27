@@ -14,17 +14,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-import re
-import sys
+from typing import Iterable, Any, TextIO
 import xml.etree.ElementTree as ET
 
-from hun_law.structure import SubArticleElement, QuotedBlock, BlockAmendment, Article, Subtitle, Reference
-from hun_law.utils import EMPTY_LINE, is_uppercase_hun
+from hun_law.structure import \
+    SubArticleElement, QuotedBlock, BlockAmendment, \
+    StructuralElement, Subtitle, \
+    Article, Reference, OutgoingReference, Act
+from hun_law.utils import EMPTY_LINE
 
 
-def indent_etree_element_in_place(element, level=0):
+def indent_etree_element_in_place(element: ET.Element, level: int = 0) -> None:
     indent = "\n" + level * "  "
-    if len(element):
+    if len(element) != 0:
         if not element.text or not element.text.strip():
             element.text = indent + "  "
         if not element.tail or not element.tail.strip():
@@ -39,7 +41,7 @@ def indent_etree_element_in_place(element, level=0):
             element.tail = indent
 
 
-def generate_html_node_for_structural_element(element):
+def generate_html_node_for_structural_element(element: StructuralElement) -> Iterable[ET.Element]:
     container = ET.Element('div', {'class': 'se_' + element.__class__.__name__.lower()})
     if isinstance(element, Subtitle):
         container.text = element.formatted_identifier + " " + element.title
@@ -49,7 +51,7 @@ def generate_html_node_for_structural_element(element):
     yield container
 
 
-def get_href_for_ref(ref):
+def get_href_for_ref(ref: Reference) -> str:
     result = ''
     if ref.act is not None:
         result = ref.act + ".html"
@@ -57,7 +59,12 @@ def get_href_for_ref(ref):
     return result
 
 
-def generate_text_with_ref_links(container, text, current_ref, outgoing_references):
+def generate_text_with_ref_links(
+        container: ET.Element,
+        text: str,
+        current_ref: Reference,
+        outgoing_references: Iterable[OutgoingReference]
+) -> None:
     links_to_create = []
     for outgoing_ref in outgoing_references:
         absolute_ref = outgoing_ref.to_reference.relative_to(current_ref)
@@ -83,7 +90,7 @@ def generate_text_with_ref_links(container, text, current_ref, outgoing_referenc
         last_a_tag.tail = text[prev_start:]
 
 
-def generate_html_nodes_for_children(act, element, parent_ref):
+def generate_html_nodes_for_children(act: Act, element: Any, parent_ref: Reference) -> Iterable[ET.Element]:
     for child in element.children:
         if isinstance(child, Article):
             yield from generate_html_node_for_article(act, child, parent_ref)
@@ -97,7 +104,7 @@ def generate_html_nodes_for_children(act, element, parent_ref):
             raise TypeError("Unknown child type {}".format(child.__class__))
 
 
-def generate_html_nodes_for_block_amendment(act, e):
+def generate_html_nodes_for_block_amendment(act: Act, e: BlockAmendment) -> Iterable[ET.Element]:
     # Quick hack to signify that IDs are not needed further on
     current_ref = Reference("EXTERNAL")
     if e.intro:
@@ -124,7 +131,7 @@ def generate_html_nodes_for_block_amendment(act, e):
         yield wrap_up_element
 
 
-def generate_html_nodes_for_sub_article_element(act, e, parent_ref):
+def generate_html_nodes_for_sub_article_element(act: Act, e: SubArticleElement, parent_ref: Reference) -> Iterable[ET.Element]:
     current_ref = e.relative_reference.relative_to(parent_ref)
     id_string = current_ref.relative_id_string
     # Quick hack so that we don't have duplicate ids within block amendments
@@ -153,7 +160,7 @@ def generate_html_nodes_for_sub_article_element(act, e, parent_ref):
             yield wrap_up_element
 
 
-def generate_html_nodes_for_quoted_block(element, parent):
+def generate_html_nodes_for_quoted_block(element: QuotedBlock, parent: Any) -> Iterable[ET.Element]:
     container = ET.Element('blockquote', {'class': 'quote_in_{}'.format(parent.__class__.__name__.lower())})
     indent_offset = min(l.indent for l in element.lines if l != EMPTY_LINE)
     for index, l in enumerate(element.lines):
@@ -172,7 +179,7 @@ def generate_html_nodes_for_quoted_block(element, parent):
     yield container
 
 
-def generate_html_node_for_article(act, article, parent_ref):
+def generate_html_node_for_article(act: Act, article: Article, parent_ref: Reference) -> Iterable[ET.Element]:
     current_ref = article.relative_reference.relative_to(parent_ref)
     id_string = current_ref.relative_id_string
     # Quick hack so that we don't have duplicate ids within block amendments
@@ -192,7 +199,7 @@ def generate_html_node_for_article(act, article, parent_ref):
     yield ET.Element('div', {'class': 'space_after_article'})
 
 
-def generate_html_body_for_act(act, indent=True):
+def generate_html_body_for_act(act: Act, indent: bool = True) -> ET.Element:
     body = ET.Element('div', {'class': 'act_container'})
     act_title = ET.SubElement(body, 'div', {'class': 'act_title'})
     act_title.text = act.identifier
@@ -200,7 +207,6 @@ def generate_html_body_for_act(act, indent=True):
     if act.preamble:
         preamble = ET.SubElement(body, 'div', {'class': 'preamble'})
         preamble.text = act.preamble
-    body_elements = []
     for c in act.children:
         if isinstance(c, Article):
             elements_to_add = generate_html_node_for_article(act, c, Reference())
@@ -213,7 +219,7 @@ def generate_html_body_for_act(act, indent=True):
     return body
 
 
-def generate_head_section_for_act(title_text):
+def generate_head_section_for_act(title_text: str) -> ET.Element:
     head = ET.Element('head')
     title = ET.SubElement(head, 'title')
     title.text = title_text
@@ -222,7 +228,7 @@ def generate_head_section_for_act(title_text):
     return head
 
 
-def generate_html_for_act(act, output_file):
+def generate_html_for_act(act: Act, output_file: TextIO) -> None:
     html = ET.Element('html')
     html.append(generate_head_section_for_act(act.identifier))
 
