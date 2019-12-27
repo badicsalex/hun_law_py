@@ -417,7 +417,7 @@ class AlphabeticSubpointParser(SubArticleElementParser):
     PARENT_CAN_HAVE_WRAPUP = True
 
     PREFIX = ''
-    HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\)')
+    HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\) ')
 
     @classmethod
     def first_identifier(cls) -> str:
@@ -434,7 +434,7 @@ def get_prefixed_alphabetic_subpoint_parser(prefix: str) -> Type[AlphabeticSubpo
     # Thank 48. § (3) for this.
     class PrefixedAlphabeticSubpointParser(AlphabeticSubpointParser):
         PREFIX = prefix
-        HEADER_REGEX = re.compile(r'({}[a-z]|ny|sz)\)'.format(prefix))
+        HEADER_REGEX = re.compile(r'({}[a-z]|ny|sz)\) '.format(prefix))
     return PrefixedAlphabeticSubpointParser
 
 
@@ -450,7 +450,7 @@ class NumericPointParser(SubArticleElementParser):
     # 2. Element: saddsadasdsadsa, adsdsadas
     # adsasddas.
 
-    HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\.')
+    HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\. ')
 
     @classmethod
     def first_identifier(cls) -> str:
@@ -473,7 +473,7 @@ class NumericSubpointParser(SubArticleElementParser):
     # 2. Element: saddsadasdsadsa, adsdsadas
     # adsasddas.
 
-    HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\.')
+    HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\. ')
 
     @classmethod
     def first_identifier(cls) -> str:
@@ -491,7 +491,7 @@ class AlphabeticPointParser(SubArticleElementParser):
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
     PARENT_CAN_HAVE_WRAPUP = True
 
-    HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\)')
+    HEADER_REGEX = re.compile(r'([a-z]|ny|sz)\) ')
 
     @classmethod
     def first_identifier(cls) -> str:
@@ -509,7 +509,7 @@ class AlphabeticPointParser(SubArticleElementParser):
 class ParagraphParser(SubArticleElementParser):
     PARSED_TYPE = Paragraph
 
-    HEADER_REGEX = re.compile(r'\(([0-9]+[a-z]?)\)')
+    HEADER_REGEX = re.compile(r'\(([0-9]+[a-z]?)\) ')
 
     @classmethod
     def first_identifier(cls) -> str:

@@ -416,3 +416,19 @@ def test_brackets_inside_context_intro() -> None:
         "Az (1) bekezdésben meghatározott szervek a jogszabályban meghatározott feladataik ellátásával összefüggésben " \
         "a következő adatok nyilvántartására jogosultak:"
     assert amended_structure.children[0].identifier == 'k'
+
+
+def test_paragraph_range_in_unfortunate_place() -> None:
+    act_text = """
+      1.§     (1) A Magyar Nemzeti Bankról szóló 2013. évi CXXXIX. törvény 72. § (4) bekezdése helyébe a következő rendelkezés lép:
+              „(4) Az (1) bekezdésben meghatározott személy helyszíni ellenőrzés során történő eljárására a 67. §
+              (5)–(8) bekezdésében meghatározott szabályokat kell alkalmazni azzal, hogy az ügyfél a szakértői vizsgálatban
+              közreműködni köteles.”
+    """
+
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("1").paragraph("1").block_amendment()
+    assert amended_structure.children_type is Paragraph
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 1
+    assert amended_structure.children[0].identifier == '4'
