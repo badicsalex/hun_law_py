@@ -338,3 +338,31 @@ def dict_to_object_recursive(dct: Any, types_to_use: Iterable[Type], *, types_di
             k = k[1:]
         args_for_the_type[k] = dict_to_object_recursive(v, types_to_use, types_dict=types_dict)
     return the_type(**args_for_the_type)
+
+
+SPECIAL_NEXT_LETTER_PAIRS = set((
+    ('g', 'gy'),
+    ('gy', 'h'),
+    ('n', 'ny'),
+    ('ny', 'o'),
+    ('s', 'sz'),
+    ('sz', 't'),
+    ('t', 'ty'),
+    ('ty', 'u'),
+    ('G', 'GY'),
+    ('GY', 'H'),
+    ('N', 'NY'),
+    ('NY', 'O'),
+    ('S', 'SZ'),
+    ('SZ', 'T'),
+    ('T', 'TY'),
+    ('TY', 'U'),
+))
+
+
+def is_next_letter_hun(a: str, b: str) -> bool:
+    if (a, b) in SPECIAL_NEXT_LETTER_PAIRS:
+        return True
+    if len(a) == 1 and len(b) == 1 and ord(a) + 1 == ord(b):
+        return True
+    return False

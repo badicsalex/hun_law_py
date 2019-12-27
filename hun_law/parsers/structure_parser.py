@@ -349,24 +349,35 @@ class SubArticleElementParser(ABC):
         return next(cls.find_header_lines(lines), None)
 
     @classmethod
-    def find_header_lines(cls, lines: Iterable[IndentedLine], expected_identifier: Optional[str] = None) -> Iterator[int]:
-        if expected_identifier is None:
-            expected_identifier = cls.first_identifier()
+    def find_header_lines(cls, lines: Iterable[IndentedLine], expected_first_identifier: Optional[str] = None) -> Iterator[int]:
+        if expected_first_identifier is None:
+            expected_first_identifier = cls.first_identifier()
+        last_identifier = None
         header_indentation = None
         for lineno, (quote_level, line) in enumerate(iterate_with_quote_level(lines)):
-            line_is_header = (
-                quote_level == 0 and
-                # The last or is a must, because e.g. Paragraph headers are not right-justified, but left.
-                # i.e.
-                #  (9)
-                # (10)
-                (header_indentation is None or similar_indent(header_indentation, line.indent) or line.indent < header_indentation) and
-                cls.extract_identifier(line) == expected_identifier
-            )
-            if line_is_header:
-                yield lineno
-                expected_identifier = cls.PARSED_TYPE.next_identifier(expected_identifier)
-                header_indentation = line.indent
+            if quote_level != 0:
+                continue
+
+            # The last and is a must, because e.g. Paragraph headers are not right-justified, but left.
+            # i.e.
+            #  (9)
+            # (10)
+            if header_indentation is not None and not similar_indent(header_indentation, line.indent) and line.indent > header_indentation:
+                continue
+
+            extracted_identifier = cls.extract_identifier(line)
+            if extracted_identifier is None:
+                continue
+            if last_identifier is None:
+                if extracted_identifier != expected_first_identifier:
+                    continue
+            else:
+                if not cls.PARSED_TYPE.is_next_identifier(last_identifier, extracted_identifier):
+                    continue
+
+            yield lineno
+            last_identifier = extracted_identifier
+            header_indentation = line.indent
 
     @classmethod
     def split_last_item_and_wrapup(cls, lines: Iterable[IndentedLine]) -> Tuple[Tuple[IndentedLine, ...], Optional[str]]:
@@ -759,12 +770,19 @@ class BlockAmendmentStructureParser:
     @classmethod
     def do_parse_block_by_block(cls, parser: Type[Union[ArticleParser, SubArticleElementParser]], expected_id: str, lines: Sequence[IndentedLine]) -> Iterable[SubArticleChildType]:
         current_lines: List[IndentedLine] = []
-        next_id = parser.PARSED_TYPE.next_identifier(expected_id)
+        last_identifier = expected_id
         for quote_level, line in iterate_with_quote_level(lines):
-            if current_lines and quote_level == 0 and parser.extract_identifier(line) == next_id:
+            extracted_identifier = parser.extract_identifier(line)
+            header_found = (
+                current_lines and
+                quote_level == 0 and
+                extracted_identifier is not None and
+                parser.PARSED_TYPE.is_next_identifier(last_identifier, extracted_identifier)
+            )
+            if header_found:
                 yield parser.parse(current_lines)
-                expected_id = next_id
-                next_id = parser.PARSED_TYPE.next_identifier(expected_id)
+                assert extracted_identifier is not None
+                last_identifier = extracted_identifier
                 current_lines = []
             current_lines.append(line)
         yield parser.parse(current_lines)

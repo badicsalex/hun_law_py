@@ -432,3 +432,25 @@ def test_paragraph_range_in_unfortunate_place() -> None:
     assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
     assert amended_structure.children[0].identifier == '4'
+
+
+def test_amended_paragraph_id_amendment() -> None:
+    act_text = """
+       338. § A Btk. 283. § (2) és (2a) bekezdése helyébe a következő rendelkezések lépnek:
+                „(2) Aki abból a célból, hogy az ellene folytatott büntetőeljárás alól kivonja magát, a bűnügyi felügyelet tartama
+                alatt a számára meghatározott területet, lakást, egyéb helyiséget, intézményt, vagy ahhoz tartozó bekerített helyet
+
+                a kényszerintézkedés szabályainak megszegésével elhagyja, vétség miatt két évig terjedő szabadságvesztéssel
+                büntetendő.
+                (2a) A (2) bekezdés szerint büntetendő, aki abból a célból, hogy az ellene folytatott kiadatási vagy átadási
+                eljárás alól kivonja magát, az ideiglenes kiadatási, illetve az ideiglenes átadási bűnügyi felügyelet tartama alatt
+                a számára meghatározott területet, lakást, egyéb helyiséget, intézményt, vagy ahhoz tartozó bekerített helyet
+                a kényszerintézkedés szabályainak megszegésével elhagyja.”
+    """
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("338").paragraph().block_amendment()
+    assert amended_structure.children_type is Paragraph
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 2
+    assert amended_structure.children[0].identifier == '2'
+    assert amended_structure.children[1].identifier == '2a'

@@ -404,6 +404,14 @@ CASES: List[Tuple[
         ["2013. évi V. törvény"],
     ),
     (
+        "A Btk. 283. § (2) és (2a) bekezdése helyébe",
+        "  [  ] <                          >        ",
+        [
+            ref("Btk.", "283", ("2", "2a")),
+        ],
+        ["Btk."]
+    ),
+    (
         "Az 1–30. §, a 31. § (1) és (3)−(5) bekezdése, a 32–34. §, a 35. § (1) és (3)–(5) bekezdése, a 36. §, a 37. § "
         "(1) és (3)–(5) bekezdése, a 38. §, a 39. § (1) és (3)–(5) bekezdése, a 40–59. §, a 60. § (1) bekezdése, a 61. § (1), (2) "
         "és (7) bekezdése, 62–66. §, a 67. § (5) bekezdés a)–d) és g) pontja, a 68. § (1)–(3), (10) és (12)–(15) bekezdése, "
@@ -674,7 +682,12 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             amended_reference=ref("Btk.", "279", ("1", "2"))
         )
     ),
-
+    (
+        "A Btk. 283. § (2) és (2a) bekezdése helyébe a következő rendelkezések lépnek:",
+        BlockAmendmentMetadata(
+            amended_reference=ref("Btk.", "283", ("2", "2a"))
+        )
+    ),
     # TODO:
     # Other simultaneous amendment + insertion cases:
     # Full articles: "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"

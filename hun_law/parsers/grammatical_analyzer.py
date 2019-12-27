@@ -95,8 +95,8 @@ class ReferenceCollector:
         if ref_type not in self.NAME_TO_STRUCTURE:
             return False
         assert self.deferred_item.ref_data is not None
-        next_id = self.NAME_TO_STRUCTURE[ref_type].next_identifier(self.deferred_item.ref_data)
-        return next_id == ref_data
+        assert ref_data is not None
+        return self.NAME_TO_STRUCTURE[ref_type].is_next_identifier(self.deferred_item.ref_data, ref_data)
 
     def merge_to_deferred(self, ref_data: str, end_pos: int) -> None:
         assert self.deferred_item is not None

@@ -19,7 +19,7 @@ from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable, An
 
 import attr
 
-from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine
+from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_next_letter_hun
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -246,7 +246,7 @@ class SubArticleElement(ABC):
 
     @classmethod
     @abstractmethod
-    def next_identifier(cls, identifier: str) -> str:
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
         pass
 
     @property
@@ -262,11 +262,11 @@ class AlphabeticSubpoint(SubArticleElement):
         return "{}) ".format(identifier)
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
         if len(identifier) == 1:
-            return chr(ord(identifier) + 1)
+            return is_next_letter_hun(identifier, next_identifier)
         if len(identifier) == 2:
-            return identifier[0] + chr(ord(identifier[1]) + 1)
+            return identifier[0] == next_identifier[0] and is_next_letter_hun(identifier[1], next_identifier[1])
         raise ValueError("Invalid identifier for subpoint '{}'".format(identifier))
 
     @property
@@ -281,12 +281,8 @@ class NumericSubpoint(SubArticleElement):
         return "{}. ".format(identifier)
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
-        if identifier.isdigit():
-            return str(int(identifier) + 1)
-        number = identifier[:-1]
-        postfix = identifier[-1]
-        return number + chr(ord(postfix) + 1)
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
+        return NumericPoint.is_next_identifier(identifier, next_identifier)
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -307,12 +303,19 @@ class NumericPoint(SubArticleElement):
         return result
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
         if identifier.isdigit():
-            return str(int(identifier) + 1)
-        number = identifier[:-1]
-        postfix = identifier[-1]
-        return number + chr(ord(postfix) + 1)
+            if next_identifier.isdigit():
+                # "1" and "2"
+                return int(identifier) + 1 == int(next_identifier)
+            # "1" and "1a"
+            return identifier + 'a' == next_identifier
+        if next_identifier.isdigit():
+            # "1a" and "2"
+            # TODO: lets hope for no "1sz" or similar
+            return int(identifier[:-1]) + 1 == int(next_identifier)
+        # "1a" and "1b"
+        return identifier[:-1] == next_identifier[:-1] and is_next_letter_hun(identifier[-1], next_identifier[-1])
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -333,12 +336,8 @@ class AlphabeticPoint(SubArticleElement):
         return result
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
-        if identifier == 'ny':
-            return 'o'
-        if identifier == 'sz':
-            return 't'
-        return chr(ord(identifier) + 1)
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
+        return is_next_letter_hun(identifier, next_identifier)
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -354,7 +353,7 @@ class BlockAmendment(SubArticleElement):
         raise TypeError("Block Amendments do not have header")
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
         raise TypeError("Block Amendments do not have identifiers")
 
     @property
@@ -398,12 +397,8 @@ class Paragraph(SubArticleElement):
         return result
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
-        if identifier.isdigit():
-            return str(int(identifier) + 1)
-        number = identifier[:-1]
-        postfix = identifier[-1]
-        return number + chr(ord(postfix) + 1)
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
+        return NumericPoint.is_next_identifier(identifier, next_identifier)
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -442,15 +437,33 @@ class Article:
         return self.paragraph_map[None]
 
     @classmethod
-    def next_identifier(cls, identifier: str) -> str:
-        if "/" in identifier:
-            prefix, letter = identifier.split('/')
-            return "{}/{}".format(prefix, chr(ord(letter) + 1))
+    def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
+        # pylint: disable=too-many-return-statements
+        if (":" in identifier) != (":" in next_identifier):
+            return False
+
         if ":" in identifier:
-            book, num = identifier.split(":")
-            # "1:234/A" like cases are already handled above
-            return "{}:{}".format(book, int(num) + 1)
-        return str(int(identifier) + 1)
+            book, identifier = identifier.split(":")
+            next_book, next_identifier = next_identifier.split(":")
+            if book != next_book:
+                if int(book) + 1 == int(next_book) and next_identifier == '1':
+                    return True
+                return False
+
+        if "/" not in identifier:
+            if "/" not in next_identifier:
+                # "1" and "2"
+                return int(identifier) + 1 == int(next_identifier)
+            # "1" and "1/A"
+            return identifier + '/A' == next_identifier
+
+        id1, postfix1 = identifier.split("/")
+        if "/" not in next_identifier:
+            # "1/A" and "2"
+            return int(id1) + 1 == int(next_identifier)
+
+        id2, postfix2 = next_identifier.split("/")
+        return id1 == id2 and is_next_letter_hun(postfix1, postfix2)
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -496,7 +509,7 @@ ReferencePartType = Union[None, str, Tuple[str, str]]
 class Reference:
     # TODO: There is some weird pylint bug with tuples.
     # Something like https://github.com/PyCQA/pylint/issues/3139
-    #pylint: disable=unsubscriptable-object
+    # pylint: disable=unsubscriptable-object
 
     act: Optional[str] = None
     article: ReferencePartType = None

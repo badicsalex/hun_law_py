@@ -14,10 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Type
+import pytest
 
 from hun_law.structure import \
     Act, Book, \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
+    Article, Paragraph, AlphabeticPoint, NumericPoint, NumericSubpoint, AlphabeticSubpoint, \
     Reference
 
 TEST_STRUCTURE = Act(
@@ -158,19 +160,100 @@ def test_reference_ranges() -> None:
     assert range2.first_in_range() == Reference(None, None, "2", "a")
 
 
-def test_next_identifiers() -> None:
-    assert Article.next_identifier("2") == "3"
-    assert Article.next_identifier("2/B") == "2/C"
-    assert Article.next_identifier("3:12") == "3:13"
-    assert Article.next_identifier("1:123/G") == "1:123/H"
+def test_next_identifiers_article_happy() -> None:
+    assert Article.is_next_identifier("2", "3")
+    assert Article.is_next_identifier("2", "2/A")
+    assert Article.is_next_identifier("2/C", "3")
+    assert Article.is_next_identifier("2/C", "2/D")
+    assert Article.is_next_identifier("2/S", "2/T")
+    assert Article.is_next_identifier("2/S", "2/SZ")
+    assert Article.is_next_identifier("2/SZ", "2/T")
 
-    assert Paragraph.next_identifier("3") == "4"
-    assert Paragraph.next_identifier("3b") == "3c"
+    assert Article.is_next_identifier("1:2", "1:3")
+    assert Article.is_next_identifier("1:2", "1:2/A")
+    assert Article.is_next_identifier("1:2/C", "1:3")
+    assert Article.is_next_identifier("1:2/C", "1:2/D")
+    assert Article.is_next_identifier("1:1", "2:1")
+    assert Article.is_next_identifier("1:3", "2:1")
+    assert Article.is_next_identifier("1:2/C", "2:1")
 
-    assert AlphabeticPoint.next_identifier("c") == "d"
 
-    assert NumericPoint.next_identifier("123") == "124"
-    assert NumericPoint.next_identifier("123x") == "123y"
+def test_next_identifiers_article_unhappy() -> None:
+    assert not Article.is_next_identifier("1:2", "3")
+    assert not Article.is_next_identifier("1:2", "2/A")
+    assert not Article.is_next_identifier("1:2/C", "3")
+    assert not Article.is_next_identifier("1:2/C", "2/D")
+    assert not Article.is_next_identifier("1:1", "1")
+    assert not Article.is_next_identifier("1:3", "1")
+    assert not Article.is_next_identifier("1:2/C", "1")
 
-    assert AlphabeticSubpoint.next_identifier("c") == "d"
-    assert AlphabeticSubpoint.next_identifier("cd") == "ce"
+    assert not Article.is_next_identifier("2", "1:3")
+    assert not Article.is_next_identifier("2", "1:2/A")
+    assert not Article.is_next_identifier("2/C", "1:3")
+    assert not Article.is_next_identifier("2/C", "1:2/D")
+    assert not Article.is_next_identifier("1", "2:1")
+    assert not Article.is_next_identifier("3", "2:1")
+    assert not Article.is_next_identifier("2/C", "2:1")
+
+    assert not Article.is_next_identifier("3", "2")
+    assert not Article.is_next_identifier("3", "5")
+
+    assert not Article.is_next_identifier("2", "3/A")
+    assert not Article.is_next_identifier("2", "2/B")
+    assert not Article.is_next_identifier("2/A", "2")
+    assert not Article.is_next_identifier("2/A", "1")
+
+    assert not Article.is_next_identifier("1:3", "1:2")
+    assert not Article.is_next_identifier("1:3", "1:5")
+
+    assert not Article.is_next_identifier("1:2", "1:3/A")
+    assert not Article.is_next_identifier("1:2", "1:2/B")
+    assert not Article.is_next_identifier("1:2/A", "1:2")
+    assert not Article.is_next_identifier("1:2/A", "1:1")
+
+    assert not Article.is_next_identifier("2:2", "1:3")
+    assert not Article.is_next_identifier("3:2", "2:2/A")
+    assert not Article.is_next_identifier("3:2/C", "2:3")
+    assert not Article.is_next_identifier("3:2/C", "2:2/D")
+    assert not Article.is_next_identifier("3:1", "2:1")
+    assert not Article.is_next_identifier("3:3", "2:1")
+    assert not Article.is_next_identifier("3:2/C", "2:1")
+
+
+@pytest.mark.parametrize("numeric_cls", (Paragraph, NumericPoint, NumericSubpoint))  # type: ignore
+def test_next_identifiers_simple_numeric(numeric_cls: Type) -> None:
+    assert numeric_cls.is_next_identifier("2", "3")
+    assert numeric_cls.is_next_identifier("2", "2a")
+    assert numeric_cls.is_next_identifier("2b", "2c")
+    assert numeric_cls.is_next_identifier("2b", "3")
+
+    assert not numeric_cls.is_next_identifier("2", "4")
+    assert not numeric_cls.is_next_identifier("2", "2")
+    assert not numeric_cls.is_next_identifier("3", "2")
+    assert not numeric_cls.is_next_identifier("2c", "2c")
+    assert not numeric_cls.is_next_identifier("2c", "2b")
+    assert not numeric_cls.is_next_identifier("2b", "2")
+    assert not numeric_cls.is_next_identifier("2b", "1")
+    assert not numeric_cls.is_next_identifier("2b", "2d")
+    assert not numeric_cls.is_next_identifier("3", "2a")
+
+
+def test_next_identifiers_alphabetic() -> None:
+    assert AlphabeticPoint.is_next_identifier("c", "d")
+    assert AlphabeticPoint.is_next_identifier("n", "ny")
+    assert AlphabeticPoint.is_next_identifier("ny", "o")
+    assert not AlphabeticPoint.is_next_identifier("c", "f")
+    assert not AlphabeticPoint.is_next_identifier("c", "c")
+    assert not AlphabeticPoint.is_next_identifier("c", "a")
+
+    assert AlphabeticSubpoint.is_next_identifier("c", "d")
+    assert not AlphabeticSubpoint.is_next_identifier("c", "f")
+    assert not AlphabeticSubpoint.is_next_identifier("c", "c")
+    assert not AlphabeticSubpoint.is_next_identifier("c", "a")
+
+    assert AlphabeticSubpoint.is_next_identifier("ac", "ad")
+    assert not AlphabeticSubpoint.is_next_identifier("ac", "af")
+    assert not AlphabeticSubpoint.is_next_identifier("ac", "ac")
+    assert not AlphabeticSubpoint.is_next_identifier("ac", "aa")
+
+    assert not AlphabeticSubpoint.is_next_identifier("ac", "bd")
