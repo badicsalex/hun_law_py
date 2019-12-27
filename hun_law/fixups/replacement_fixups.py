@@ -1285,6 +1285,83 @@ replacement_fixups: ReplacementsType = {
             "replacement": "„28. § Felhatalmazást kap a Kormány, hogy e törvény alapján"
         }
     ],
+    "2015. évi LXX. törvény": [
+        {
+            "needle": "„Felek“)",
+            "replacement": "„Felek”)"
+        },
+        {
+            "needle": "elősegítéséről szóló, Mátraházán, 2012. október 11-én kelt Megállapodás (a továbbiakban: „CBE-megállapodás“)",
+            "replacement": "elősegítéséről szóló, Mátraházán, 2012. október 11-én kelt Megállapodás (a továbbiakban: „CBE-megállapodás”)"
+        },
+        {
+            "needle": "válasz“",
+            "needle_prev_lines": [
+                "FÜGGELÉKEK: a jelen ATIA 4. Cikke alapján felhasznált személyes adatok",
+                "",
+                "A Függelék: Az ATIA 4. Cikk (1) bekezdése alapján használt személyes adatok",
+                "„A gépjárművezető személyazonosságának megállapítására irányuló megkeresés és az arra adott"
+            ],
+            "replacement": "válasz”"
+        },
+        {
+            "needle": "„Személy címének megállapítására irányuló megkeresés és az arra adott válasz“",
+            "needle_prev_lines": [
+                "válasz”",
+                "",
+                "B Függelék: Az ATIA 4. Cikk (2) bekezdése alapján használt személyes adatok"
+            ],
+            "replacement": "„Személy címének megállapítására irányuló megkeresés és az arra adott válasz”"
+        },
+        {
+            "needle": "„Iratok megküldésére és kézbesítésére irányuló megkeresés és az arra adott válasz“",
+            "needle_prev_lines": [
+                "„Személy címének megállapítására irányuló megkeresés és az arra adott válasz”",
+                "C Függelék: Az ATIA 4. Cikk (3) bekezdése alapján használt személyes adatok"
+            ],
+            "replacement": "„Iratok megküldésére és kézbesítésére irányuló megkeresés és az arra adott válasz”"
+        },
+        {
+            "needle": "válasz“",
+            "needle_prev_lines": [
+                "„Iratok megküldésére és kézbesítésére irányuló megkeresés és az arra adott válasz”",
+                "D Függelék: Az ATIA 4. Cikk (4) bekezdése alapján használt személyes adatok",
+                "„Határozatok határon átnyúló végrehajtására kézbesítésére irányuló megkeresés és az arra adott"
+            ],
+            "replacement": "válasz”"
+        },
+        {
+            "needle": "válasz“",
+            "needle_prev_lines": [
+                "„A gépjárművezető személyazonosságának megállapítására irányuló megkeresés és az arra adott"
+            ],
+            "replacement": "válasz”"
+        },
+        {
+            "needle": "„Személy címének megállapítására irányuló megkeresés és az arra adott válasz“",
+            "replacement": "„Személy címének megállapítására irányuló megkeresés és az arra adott válasz”"
+        },
+        {
+            "needle": "„Iratok megküldésére és kézbesítésére irányuló megkeresés és az arra adott válasz“",
+            "replacement": "„Iratok megküldésére és kézbesítésére irányuló megkeresés és az arra adott válasz”"
+        },
+        {
+            "needle": "válasz“",
+            "replacement": "válasz”"
+        }
+    ],
+    "2015. évi LXXVI. törvény": [
+        {
+            "needle": "„187/B. (1) A bv. intézet az előterjesztés vagy a kérelem véleményezésének megalapozása érdekében megkeresi",
+            "replacement": "„187/B. § (1) A bv. intézet az előterjesztés vagy a kérelem véleményezésének megalapozása érdekében megkeresi"
+        }
+    ],
+    "2015. évi LXXX. törvény": [
+        {
+            "needle": "„(1) A MÁÉRT-en részt vevő külhoni szervezet vagy szervezetek a saját országuk vonatkozásában külhoni nemzetrész",
+            "replacement": "„5. § (1) A MÁÉRT-en részt vevő külhoni szervezet vagy szervezetek a saját országuk vonatkozásában külhoni nemzetrész"
+        }
+    ],
     "2015. évi XI. törvény": [
         {
             "needle": "rendelkezései alapján nem él keresettel, az általános szabályok szerint pert indíthat a személyiségi jog védelme iránt.",
