@@ -1530,6 +1530,12 @@ replacement_fixups: ReplacementsType = {
             "replacement": "Szakképzési Hídprogramot” szöveg,"
         }
     ],
+    "2016. évi LXXVII. törvény": [
+        {
+            "needle": "(2) A Ptk. 5:96. § (3) bekezdése helyébe következő rendelkezés lép:",
+            "replacement": "(2) A Ptk. 5:96. § (3) bekezdése helyébe a következő rendelkezés lép:"
+        }
+    ],
     "2016. évi LXXX. törvény": [
         {
             "needle": "fenntartott köznevelési intézmény kivételével –,",
