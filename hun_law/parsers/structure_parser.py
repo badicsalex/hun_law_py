@@ -720,15 +720,11 @@ class ActStructureParser:
     @classmethod
     def parse_elements(cls, lines: Sequence[IndentedLine]) -> Iterable[ActChildType]:
         parsers = cls.create_parsers()
-
         elements = []
-        current_element_parser = cls.get_parser_for_header_line(lines[0], EMPTY_LINE, parsers)
-        assert current_element_parser is not None
-
-        current_lines = [lines[0]]
-        previous_line = lines[0]
-        current_element_parser.step_to_next_number(current_lines[0])
-        for quote_level, line in iterate_with_quote_level(lines[1:]):
+        current_lines = []
+        current_element_parser = None
+        previous_line = EMPTY_LINE
+        for quote_level, line in iterate_with_quote_level(lines):
             if quote_level != 0:
                 current_lines.append(line)
                 continue
@@ -737,10 +733,12 @@ class ActStructureParser:
             if new_header_parser is None:
                 current_lines.append(line)
                 continue
-            elements.append(current_element_parser.parse(current_lines))
+            if current_element_parser is not None:
+                elements.append(current_element_parser.parse(current_lines))
             current_element_parser = new_header_parser
             current_lines = [line]
             current_element_parser.step_to_next_number(current_lines[0])
+        assert current_element_parser is not None
         elements.append(current_element_parser.parse(current_lines))
         return elements
 

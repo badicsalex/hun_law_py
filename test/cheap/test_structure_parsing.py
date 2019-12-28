@@ -89,3 +89,17 @@ def test_quoting_parsing() -> None:
     assert len(paragraph.children) == 3
     assert paragraph.intro is not None
     assert paragraph.wrap_up is not None
+
+
+def test_quoting_parsing_2() -> None:
+    text = """
+       1. § A földgázellátásról szóló 2008. évi XL. törvény 48. § (4) bekezdésében az „a villamos energiáról szóló 2007. évi
+                LXXXVI. törvény szerinti átviteli rendszerirányítóra” szövegrész helyébe az „a rendszerirányítást végző szállítási
+                rendszerüzemeltetőre és a villamos energiáról szóló 2007. évi LXXXVI. törvény szerinti átviteli rendszerirányítóra”
+                szöveg lép.
+       2. § Ez a törvény a kihirdetését követő 15. napon lép hatályba.
+    """
+
+    resulting_structure = quick_parse_structure(text)
+    assert resulting_structure.article("1").paragraph().text is not None
+    assert resulting_structure.article("2").paragraph().text is not None
