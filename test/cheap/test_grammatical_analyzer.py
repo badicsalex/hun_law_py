@@ -467,10 +467,9 @@ CASES: List[Tuple[
 
 @pytest.mark.parametrize("s,positions,refs,act_refs", CASES)  # type: ignore
 def test_parse_results_are_correct(s: str, positions: Optional[str], refs: Optional[List[Reference]], act_refs: Optional[List[str]]) -> None:
-    parsed = GrammaticalAnalyzer().analyze(s)
+    parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     if refs is None:
         return
-    parsed.indented_print()
     parsed_refs = []
     parsed_act_refs = []
     parsed_pos_chars = [" "] * len(s)
@@ -540,8 +539,7 @@ ABBREVIATION_CASES: Tuple[Tuple[str, List[ActIdAbbreviation]], ...] = (
 
 @pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)  # type: ignore
 def test_new_abbreviations(s: str, abbrevs: List[ActIdAbbreviation]) -> None:
-    parsed = GrammaticalAnalyzer().analyze(s)
-    parsed.indented_print()
+    parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     new_abbrevs = list(parsed.act_id_abbreviations)
     assert new_abbrevs == abbrevs
 
@@ -701,7 +699,6 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
 
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)  # type: ignore
 def test_block_amendment_parsing(s: str, correct_metadata: BlockAmendmentMetadata) -> None:
-    parsed = GrammaticalAnalyzer().analyze(s)
-    parsed.indented_print()
+    parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.special_expression
     assert correct_metadata == parsed_metadata

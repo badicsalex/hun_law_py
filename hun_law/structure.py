@@ -598,3 +598,6 @@ class BlockAmendmentMetadata:
     def __attrs_post_init__(self) -> None:
         if self.amended_reference is None and self.inserted_reference is None:
             raise ValueError("A BlockAmendmentMetadata object has to contain at least an amendment or an insertion")
+
+
+SemanticMetadataType = Union[InTextReference, ActIdAbbreviation, BlockAmendmentMetadata]

@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-
-from typing import Dict, Union, List, Type, Any, Optional, Iterable, Tuple
+from abc import ABC, abstractmethod
+from typing import Dict, Union, Type, Any, Optional, Iterable, Tuple, ClassVar
 
 import attr
 import tatsu
@@ -23,28 +23,15 @@ import tatsu.model
 
 from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
-    SubArticleElement, \
-    ReferencePartType
+    Act, SubArticleElement, \
+    ReferencePartType, SemanticMetadataType
 
 from .grammar import model
 from .grammar.parser import ActGrammarParser  # type: ignore
 
 
-def iterate_depth_first(node: Any, filter_class: Optional[Type] = None) -> Iterable[Any]:
-    if isinstance(node, tatsu.model.Node):
-        to_iter = node.ast
-    else:
-        to_iter = node
-    if isinstance(to_iter, dict):
-        for k, v in to_iter.items():
-            if k == 'parseinfo':
-                continue
-            yield from iterate_depth_first(v, filter_class)
-    elif isinstance(to_iter, list):
-        for v in to_iter:
-            yield from iterate_depth_first(v, filter_class)
-    if filter_class is None or isinstance(node, filter_class):
-        yield node
+def get_subtree_start_and_end_pos(subtree: model.ModelBase) -> Tuple[int, int]:
+    return subtree.parseinfo.pos, subtree.parseinfo.endpos
 
 
 @attr.s(slots=True, auto_attribs=True)
@@ -142,68 +129,23 @@ class ReferenceCollector:
         yield InTextReference(start_override, end_override, Reference(*ref_args))
 
 
-@attr.s(slots=True, frozen=True)
-class GrammaticalAnalysisResult:
-    tree: Any = attr.ib()
-
-    act_references: Tuple[InTextReference, ...] = attr.ib(init=False)
-    element_references: Tuple[InTextReference, ...] = attr.ib(init=False)
-    act_id_abbreviations: Tuple[ActIdAbbreviation, ...] = attr.ib(init=False)
-    special_expression: Union[None, BlockAmendmentMetadata] = attr.ib(init=False)
-
-    @property
-    def all_references(self) -> Tuple[InTextReference, ...]:
-        return self.act_references + self.element_references
-
-    @element_references.default
-    def _element_references_default(self) -> Tuple[InTextReference, ...]:
-        if isinstance(self.tree, model.BlockAmendment):
-            refs_to_parse = list(self._iterate_references_in_block_amendment())
-        else:
-            refs_to_parse = list(self._iterate_references_in_compound_references())
-
-        refs_found = set(reference for act_id, reference in refs_to_parse)
-
-        # Collect all other refs scattered elsewhere
-        for ref in iterate_depth_first(self.tree, model.Reference):
-            if ref in refs_found:
-                continue
-            refs_to_parse.append((None, ref))
-
-        result: List[InTextReference] = []
-        for act_id, parsed_ref in refs_to_parse:
-            result.extend(self._convert_single_reference(act_id, parsed_ref))
-        return tuple(result)
-
-    def _iterate_references_in_compound_references(self) -> Iterable[Tuple[Optional[str], model.Reference]]:
-        for ref_container in iterate_depth_first(self.tree, model.CompoundReference):
-            if not ref_container.references:
-                continue
-            act_id = None
-            if ref_container.act_reference is not None:
-                act_id = self._get_act_id_from_parse_result(ref_container.act_reference)
-            for reference in ref_container.references:
-                assert isinstance(reference, model.Reference)
-                yield act_id, reference
-
-    def _iterate_references_in_block_amendment(self) -> Iterable[Tuple[Optional[str], model.Reference]]:
-        act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
-        if self.tree.amended_reference:
-            assert isinstance(self.tree.amended_reference, model.Reference)
-            yield act_id, self.tree.amended_reference
-        if self.tree.inserted_reference:
-            assert isinstance(self.tree.inserted_reference, model.Reference)
-            yield act_id, self.tree.inserted_reference
+class ModelConverter(ABC):
+    # TODO: This used to not have a value, but pylint seems to complain
+    # about usages then. I don't know why.
+    CONVERTED_TYPE: ClassVar[Type[model.ModelBase]] = model.ModelBase
 
     @classmethod
-    def _convert_single_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[InTextReference]:
-        reference_collector = ReferenceCollector()
-        if act_id is not None:
-            reference_collector.act = act_id
+    @abstractmethod
+    def convert(cls, tree_element: model.ModelBase) -> Iterable[SemanticMetadataType]:
+        """ Convert a model element to any number of structure elements """
 
-        cls._fill_reference_collector(parsed_ref, reference_collector)
-        full_start_pos, full_end_pos = cls._get_subtree_start_and_end_pos(parsed_ref)
-        yield from reference_collector.iter(full_start_pos, full_end_pos)
+
+class ReferenceConversionHelper:
+    """ Method namespace to convert model.Reference to structure.InTextReference
+
+    Not an actual ModelConverter, just a helper class, because most references will
+    have an Act Id as context, so we only want to be called from the appropriate
+    complex converters"""
 
     @classmethod
     def _fill_reference_collector(cls, parsed_ref: model.Reference, reference_collector: ReferenceCollector) -> None:
@@ -212,36 +154,31 @@ class GrammaticalAnalysisResult:
             assert isinstance(ref_part, model.ReferencePart), ref_part
             ref_type_name = ref_part.__class__.__name__[:-len('ReferencePart')].lower()
             for ref_list_item in ref_part.singles:
-                start_pos, end_pos = cls._get_subtree_start_and_end_pos(ref_list_item)
+                start_pos, end_pos = get_subtree_start_and_end_pos(ref_list_item)
                 id_as_string = "".join(ref_list_item.id.id)
                 reference_collector.add_item(ref_type_name, id_as_string, start_pos, end_pos)
             for ref_list_item in ref_part.ranges:
-                start_pos, end_pos = cls._get_subtree_start_and_end_pos(ref_list_item)
+                start_pos, end_pos = get_subtree_start_and_end_pos(ref_list_item)
                 start_id_as_string = "".join(ref_list_item.start.id)
                 end_id_as_string = "".join(ref_list_item.end.id)
                 reference_collector.add_item(ref_type_name, (start_id_as_string, end_id_as_string), start_pos, end_pos)
 
-    @act_references.default
-    def _act_references_default(self) -> Tuple[InTextReference, ...]:
-        result = []
-        for act_ref in iterate_depth_first(self.tree, model.ActReference):
-            if act_ref.abbreviation is not None:
-                start_pos, end_pos = self._get_subtree_start_and_end_pos(act_ref.abbreviation)
-            elif act_ref.act_id is not None:
-                start_pos, end_pos = self._get_subtree_start_and_end_pos(act_ref.act_id)
-            else:
-                raise ValueError('Neither abbreviation, nor act_id in act_ref')
-            act_str = self._get_act_id_from_parse_result(act_ref)
-            result.append(
-                InTextReference(
-                    start_pos, end_pos,
-                    Reference(act=act_str)
-                )
-            )
-        return tuple(result)
+    @classmethod
+    def convert_single_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[InTextReference]:
+        reference_collector = ReferenceCollector()
+        if act_id is not None:
+            reference_collector.act = act_id
+
+        cls._fill_reference_collector(parsed_ref, reference_collector)
+        full_start_pos, full_end_pos = get_subtree_start_and_end_pos(parsed_ref)
+        yield from reference_collector.iter(full_start_pos, full_end_pos)
+
+
+class ActReferenceConversionHelper:
+    """ Method namespace to help converting model.ActReferences """
 
     @classmethod
-    def _get_act_id_from_parse_result(cls, act_ref: model.ActReference) -> str:
+    def get_act_id_from_parse_result(cls, act_ref: model.ActReference) -> str:
         if act_ref.act_id is not None:
             return "{}. évi {}. törvény".format(act_ref.act_id.year, act_ref.act_id.number)
         if act_ref.abbreviation is not None:
@@ -249,67 +186,171 @@ class GrammaticalAnalysisResult:
         raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
     @classmethod
-    def _get_subtree_start_and_end_pos(cls, subtree: model.ModelBase) -> Tuple[int, int]:
-        return subtree.parseinfo.pos, subtree.parseinfo.endpos
+    def get_act_id_pos_from_parse_result(cls, act_ref: model.ActReference) -> Tuple[int, int]:
+        if act_ref.abbreviation is not None:
+            return get_subtree_start_and_end_pos(act_ref.abbreviation)
+        if act_ref.act_id is not None:
+            return get_subtree_start_and_end_pos(act_ref.act_id)
+        raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
-    @act_id_abbreviations.default
-    def _act_id_abbreviations_default(self) -> Tuple[ActIdAbbreviation, ...]:
-        result = []
-        for act_ref in iterate_depth_first(self.tree, model.ActReference):
-            if act_ref.from_now_on is None:
-                continue
-            result.append(
-                ActIdAbbreviation(
-                    str(act_ref.from_now_on.abbreviation.s),
-                    self._get_act_id_from_parse_result(act_ref)
-                )
-            )
-        return tuple(result)
 
-    @special_expression.default
-    def _special_expression_default(self) -> Union[None, BlockAmendmentMetadata]:
-        if isinstance(self.tree, model.BlockAmendment):
-            return self._convert_block_amendment()
-        return None
+class ToInTextReference(ModelConverter):
+    CONVERTED_TYPE = model.CompoundReference
+    @classmethod
+    def convert(cls, tree_element: model.CompoundReference) -> Iterable[InTextReference]:
+        act_id = None
+        if tree_element.act_reference is not None:
+            act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+            start_pos, end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
+            yield InTextReference(start_pos, end_pos, Reference(act=act_id))
 
-    def _convert_block_amendment(self) -> Optional[BlockAmendmentMetadata]:
-        if not isinstance(self.tree, model.BlockAmendment):
+        if tree_element.references:
+            for reference in tree_element.references:
+                assert isinstance(reference, model.Reference)
+                yield from ReferenceConversionHelper.convert_single_reference(act_id, reference)
+
+
+class ToActIdAbbreviation(ModelConverter):
+    CONVERTED_TYPE = model.ActReference
+    @classmethod
+    def convert(cls, tree_element: model.ActReference) -> Iterable[ActIdAbbreviation]:
+        if tree_element.from_now_on is None:
+            return ()
+
+        return (
+            ActIdAbbreviation(
+                str(tree_element.from_now_on.abbreviation.s),
+                ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element)
+            ),
+        )
+
+
+class ToBlockAmendmentMetadata(ModelConverter):
+    CONVERTED_TYPE = model.BlockAmendment
+
+    @classmethod
+    def convert_potential_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[InTextReference]:
+        if not reference:
             return None
-        assert isinstance(self.tree.act_reference, model.ActReference)
-        act_id = self._get_act_id_from_parse_result(self.tree.act_reference)
+        converted_references = tuple(
+            ReferenceConversionHelper.convert_single_reference(act_id, reference),
+        )
+        # Block amendments may only be contigous ranges, not actual lists.
+        if len(converted_references) != 1:
+            # Most likely a misparse, so don't fail horribly in this case, just pretend
+            # we did not find anything.
+            return None
+        return converted_references[0]
 
-        amended_reference = None
-        if self.tree.amended_reference:
-            amended_references = tuple(
-                r.reference for r in self._convert_single_reference(act_id, self.tree.amended_reference)
-            )
-            # Block amendments may only be contigous ranges, not lists.
-            if len(amended_references) != 1:
-                # Most likely a misparse, so don't fail horribly in this case, just report
-                # that this as not a block amendment. Same as failing in grammar phase.
-                return None
-            amended_reference = amended_references[0]
+    @classmethod
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[Union[BlockAmendmentMetadata, InTextReference]]:
+        assert isinstance(tree_element.act_reference, model.ActReference)
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
+        yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
 
-        inserted_reference = None
-        if self.tree.inserted_reference:
-            inserted_references = tuple(
-                r.reference for r in self._convert_single_reference(act_id, self.tree.inserted_reference)
-            )
-            # Block amendments may only be contigous ranges, not lists.
-            if len(inserted_references) != 1:
-                # Most likely a misparse, so don't fail horribly in this case, just report
-                # that this as not a block amendment. Same as failing in grammar phase.
-                return None
-            inserted_reference = inserted_references[0]
+        amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
+        inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
+        if amended_reference is None and inserted_reference is None:
+            # One or both references were misparsed probably, or grammar is wrong
+            # Don't fail horribly in this case, as the rest of the text is probably
+            # okay, and we can salvage the situation.
+            # TODO: Maybe we really should fail here.
+            return
 
         if amended_reference is not None and inserted_reference is not None:
             # Act has to be cut off first, because otherwise relative_to does not do anything.
-            inserted_reference = attr.evolve(inserted_reference, act=None)
-            inserted_reference = inserted_reference.relative_to(amended_reference)
-        return BlockAmendmentMetadata(
-            amended_reference=amended_reference,
-            inserted_reference=inserted_reference,
+            fixed_ref = attr.evolve(inserted_reference.reference, act=None).relative_to(amended_reference.reference)
+            inserted_reference = attr.evolve(inserted_reference, reference=fixed_ref)
+
+        if amended_reference:
+            yield amended_reference
+        if inserted_reference:
+            yield inserted_reference
+
+        yield BlockAmendmentMetadata(
+            amended_reference=amended_reference.reference if amended_reference is not None else None,
+            inserted_reference=inserted_reference.reference if inserted_reference is not None else None,
         )
+
+
+@attr.s(slots=True, frozen=True)
+class GrammarResultContainer:
+    CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
+        ToInTextReference,
+        ToActIdAbbreviation,
+        ToBlockAmendmentMetadata,
+    )
+
+    tree: Any = attr.ib()
+    results: Tuple[SemanticMetadataType, ...] = attr.ib(init=False)
+
+    @classmethod
+    def convert_single_node(cls, node: model.ModelBase) -> Iterable[SemanticMetadataType]:
+        for converter in cls.CONVERTER_CLASSES:
+            if isinstance(node, converter.CONVERTED_TYPE):
+                yield from converter.convert(node)
+
+    @classmethod
+    def convert_depth_first(cls, node: model.ModelBase) -> Iterable[SemanticMetadataType]:
+        if isinstance(node, tatsu.model.Node):
+            to_iter = node.ast
+        else:
+            to_iter = node
+        if isinstance(to_iter, dict):
+            for k, v in to_iter.items():
+                if k == 'parseinfo':
+                    continue
+                yield from cls.convert_depth_first(v)
+        elif isinstance(to_iter, list):
+            for v in to_iter:
+                yield from cls.convert_depth_first(v)
+        yield from cls.convert_single_node(node)
+
+    @results.default
+    def _results_default(self) -> Tuple[SemanticMetadataType, ...]:
+        return tuple(self.convert_depth_first(self.tree))
+
+    @property
+    def all_references(self) -> Tuple[InTextReference, ...]:
+        return tuple(r for r in self.results if isinstance(r, InTextReference))
+
+    @property
+    def act_references(self) -> Tuple[InTextReference, ...]:
+        return tuple(r for r in self.all_references if r.reference.last_component_with_type()[1] is Act)
+
+    @property
+    def element_references(self) -> Tuple[InTextReference, ...]:
+        return tuple(r for r in self.all_references if r.reference.last_component_with_type()[1] is not Act)
+
+    @property
+    def act_id_abbreviations(self) -> Tuple[ActIdAbbreviation, ...]:
+        return tuple(r for r in self.results if isinstance(r, ActIdAbbreviation))
+
+    @property
+    def special_expression(self) -> Union[None, BlockAmendmentMetadata]:
+        result = tuple(r for r in self.results if isinstance(r, BlockAmendmentMetadata))
+        if result:
+            return result[0]
+        return None
+
+
+class GrammaticalAnalyzer:
+    def __init__(self) -> None:
+        self.parser = ActGrammarParser(
+            semantics=model.ActGrammarModelBuilderSemantics(),  # type: ignore
+            parseinfo=True
+        )
+
+    def analyze(self, s: str, *, debug: bool = False, print_result: bool = False) -> GrammarResultContainer:
+        parse_result = self.parser.parse(
+            s,
+            rule_name='start_default',
+            trace=debug, colorize=debug,
+        )
+        if print_result:
+            self._indented_print(parse_result)
+        return GrammarResultContainer(parse_result)
 
     @classmethod
     def _indented_print(cls, node: Any = None, indent: str = '') -> None:
@@ -330,22 +371,3 @@ class GrammaticalAnalysisResult:
                 cls._indented_print(v, indent + '    ')
         else:
             print(node)
-
-    def indented_print(self, indent: str = '') -> None:
-        self._indented_print(self.tree, indent)
-
-
-class GrammaticalAnalyzer:
-    def __init__(self) -> None:
-        self.parser = ActGrammarParser(
-            semantics=model.ActGrammarModelBuilderSemantics(),  # type: ignore
-            parseinfo=True
-        )
-
-    def analyze(self, s: str, *, debug: bool = False) -> GrammaticalAnalysisResult:
-        parse_result = self.parser.parse(
-            s,
-            rule_name='start_default',
-            trace=debug, colorize=debug,
-        )
-        return GrammaticalAnalysisResult(parse_result)
