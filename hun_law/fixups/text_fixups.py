@@ -46,6 +46,14 @@ add_fixup("2011. évi CLXIX. törvény", replace_line_content(
     "(7) 2012. január 1-je előtt a kiskorúak védelme érdekében",
 ))
 
+add_fixup("2013. évi LXXVIII. törvény", delete_line(
+    "212/A. §"
+))
+add_fixup("2013. évi LXXVIII. törvény", replace_line_content(
+    "(1) Aki gyermekének szülője, továbbá az elkövetéskor vagy korábban vele közös háztartásban vagy egy lakásban",
+    "212/A. § (1) Aki gyermekének szülője, továbbá az elkövetéskor vagy korábban vele közös háztartásban vagy egy lakásban"
+))
+
 for act_id, replacements in replacement_fixups.items():
     for replace_args in replacements:
         # TODO: correct typing for this call. Replacements will probably need to
