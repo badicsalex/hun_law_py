@@ -132,7 +132,7 @@ insertion_reference::Reference =
     | [az] article:article_reference [paragraph:paragraph_reference] (point:alphabetic_point_reference | point:numeric_point_reference) insertion_token (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference)
     ;
 
-subtitle_token = ("alcímmel" | "alcímekkel" | "alcím" ["címe"] | "alcíme");
+subtitle_token = ("alcímmel" | "alcímekkel" | "alcím-megjelölése" | "alcím-megjelölés" |  "alcíme" | "alcím" ["címe"]);
 
 reference_with_subtitle::ReferenceWithSubtitle::Reference =
     | subtitle_token "és" article:article_reference

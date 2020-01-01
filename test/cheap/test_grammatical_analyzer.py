@@ -969,6 +969,19 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             ),
         )
     ),
+    (
+        "A Büntető Törvénykönyvről szóló 2012. évi C. törvény 350. §-a és az azt megelőző alcím-megjelölése helyébe a következő rendelkezés lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("350", "350"),
+            position=StructuralReference("2012. évi C. törvény", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "350")),
+            replaces=(
+                StructuralReference("2012. évi C. törvény", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "350")),
+                ref("2012. évi C. törvény", "350"),
+            ),
+        )
+    ),
+
 
     # TODO:
     # (
