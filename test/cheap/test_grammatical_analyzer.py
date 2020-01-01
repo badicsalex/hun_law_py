@@ -416,6 +416,22 @@ CASES: List[Tuple[
         ["Btk."]
     ),
     (
+        "A Büntető Törvénykönyvről szóló 1978. évi IV. törvény (a továbbiakban: 1978. évi IV. törvény) 316. § (4) bekezdése csak úgy.",
+        "                                [                   ]                                         <                  >          ",
+        [
+            ref("1978. évi IV. törvény", "316", "4"),
+        ],
+        ["1978. évi IV. törvény"]
+    ),
+    (
+        "A Büntető Törvénykönyvről szóló 1978. évi IV. törvény (a továbbiakban: 1978. évi IV. törvény) 316. § (4) bekezdése a következő c) ponttal egészül ki:",
+        "                                [                   ]                                         <                                         >            ",
+        [
+            ref("1978. évi IV. törvény", "316", "4", "c"),
+        ],
+        ["1978. évi IV. törvény"]
+    ),
+    (
         "Az 1–30. §, a 31. § (1) és (3)−(5) bekezdése, a 32–34. §, a 35. § (1) és (3)–(5) bekezdése, a 36. §, a 37. § "
         "(1) és (3)–(5) bekezdése, a 38. §, a 39. § (1) és (3)–(5) bekezdése, a 40–59. §, a 60. § (1) bekezdése, a 61. § (1), (2) "
         "és (7) bekezdése, 62–66. §, a 67. § (5) bekezdés a)–d) és g) pontja, a 68. § (1)–(3), (10) és (12)–(15) bekezdése, "
@@ -536,6 +552,14 @@ ABBREVIATION_CASES: Tuple[Tuple[str, List[ActIdAbbreviation]], ...] = (
     ),
     (
         "A Kvtv. 72. §-a a következő (9)–(12) bekezdésekkel egészül ki:",
+        []
+    ),
+    (
+        "A Büntető Törvénykönyvről szóló 1978. évi IV. törvény (a továbbiakban: 1978. évi IV. törvény) 316. § (4) bekezdése csak úgy.",
+        []
+    ),
+    (
+        "A Büntető Törvénykönyvről szóló 1978. évi IV. törvény (a továbbiakban: 1978. évi IV. törvény) 316. § (4) bekezdése a következő c) ponttal egészül ki:",
         []
     ),
 )

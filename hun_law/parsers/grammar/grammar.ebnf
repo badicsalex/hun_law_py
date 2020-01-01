@@ -54,7 +54,7 @@ reference::Reference =
 
 act_reference::ActReference = abbreviation:abbreviation | (act_id:act_id [from_now_on:from_now_on | from_now_on_long] );
 from_now_on = "(" "a" "továbbiakban" [":"] abbreviation:abbreviation ["törvény"] ")" ;
-from_now_on_long = "(" "a" "továbbiakban" [":"] {word}+ ")" ;
+from_now_on_long = "(" "a" "továbbiakban" [":"] ( act_id | {word}+ ) ")" ;
 act_id::ActId = year:number "." "évi" number:roman "." act_suffix;
 act_suffix = "törvény" | /törvén[a-zéáőúöüóíű]+/ | "tv.";
 
