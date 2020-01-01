@@ -651,15 +651,18 @@ class ArticleParser:
             # Nonstandard. However, it is a de facto thing to give titles to Articles
             # In some Acts. Format is something like
             # 3:116. §  [A társaság képviselete. Cégjegyzés]
-            # Let's hope for no multiline titles for now
             if lines[0].content[-1] == ']':
                 title = lines[0].content[1:-1]
                 lines = lines[1:]
             elif lines[1].content[-1] == ']':
                 title = lines[0].content[1:] + " " + lines[1].content[:-1]
                 lines = lines[2:]
+            elif lines[2].content[-1] == ']':
+                title = lines[0].content[1:] + " " + lines[1].content + " " + lines[1].content[:-1]
+                lines = lines[3:]
             else:
-                raise ValueError("Multiline article titles not supported")
+                # Seriously, we are at 3 at this point.
+                raise ValueError("Over-long article titles not supported")
 
         if lines[0] == EMPTY_LINE:
             # Pathological case where there is an empty line between the article title
