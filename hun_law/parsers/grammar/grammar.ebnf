@@ -106,11 +106,25 @@ quote = "„" /[^„”]*/ { quote /[^„”]*/ }* "”" ;
 
 list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
 
+# ============= STRUCTURAL REFERENCES =============
+
+after_article::AfterArticle::StructuralReference = [az] >article_id "." article_suffix ("követően" | "követő" );
+before_article::BeforeArticle::StructuralReference = [az] >article_id "." article_suffix ("megelőzően" | "megelőző" );
+subtitle_title::SubtitleTitle::StructuralReference = {!"alcíme" any_simple_expression} "alcíme";
+chapter_number::ChapterNumber::StructuralReference = id:roman "." "Fejezete";
+
+any_structural_reference =
+    | [chapter_number] structural_reference:after_article
+    | [chapter_number] structural_reference:before_article
+    | structural_reference:subtitle_title
+    | structural_reference:chapter_number
+    ;
+
+
 # ============ BLOCK AMENDMENT PARSING ============
 
 insertion_token = "a következő";
 
-insertion_reference::InsertionReference::Reference =
 insertion_reference::Reference =
     | insertion_token article:article_reference [paragraph:paragraph_reference]
     | [[az] article:article_reference | "a §"] insertion_token paragraph:paragraph_reference
@@ -118,9 +132,21 @@ insertion_reference::Reference =
     | [az] article:article_reference [paragraph:paragraph_reference] (point:alphabetic_point_reference | point:numeric_point_reference) insertion_token (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference)
     ;
 
+subtitle_token = ("alcímmel" | "alcímekkel" | "alcím" ["címe"] | "alcíme");
+
+reference_with_subtitle::ReferenceWithSubtitle::Reference =
+    | subtitle_token "és" article:article_reference
+    | article:article_reference "és" az ["azt" | "azokat"] "megelőző" subtitle_token
+    | subtitle_token
+    ;
+
 amendment_suffix =
     | "helyébe a következő" ("rendelkezés lép" | "rendelkezések lépnek")
     | "a következő szöveggel lép hatályba"
+    ;
+
+amendment_suffix_with_subtitle =
+    "helyébe a következő" ["rendelkezés és"] "alcím" ["és rendelkezés"] ("lép" | "lépnek")
     ;
 
 insertion_suffix =
@@ -128,13 +154,18 @@ insertion_suffix =
     | "kiegészülve lép hatályba"
     ;
 
-
 block_amendment::BlockAmendment
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference [>any_structural_reference]
     (
+        # non-subtitle cases
         amended_reference:reference amendment_suffix ":" |
         inserted_reference:insertion_reference insertion_suffix ":" |
-        amended_reference:reference amendment_suffix "," ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference insertion_suffix ":"
+        amended_reference:reference amendment_suffix "," ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference insertion_suffix ":" |
+
+        # subtitle cases
+        amended_reference:reference_with_subtitle amendment_suffix ":" |
+        amended_reference:reference_with_subtitle amendment_suffix_with_subtitle ":" |
+        insertion_token inserted_reference:reference_with_subtitle insertion_suffix ":"
     );
 
 

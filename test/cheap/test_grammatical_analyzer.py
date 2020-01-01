@@ -21,7 +21,9 @@ import pytest
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
 from hun_law.structure import \
     Reference, ActIdAbbreviation, BlockAmendmentMetadata, \
-    Article, Paragraph, NumericPoint, AlphabeticPoint, AlphabeticSubpoint
+    Article, Paragraph, NumericPoint, AlphabeticPoint, AlphabeticSubpoint, \
+    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
+    Subtitle
 
 from .utils import ref
 
@@ -785,15 +787,191 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             replaces=(ref("Btk.", "283", ("2", "2a")),),
         )
     ),
-    # TODO:
-    # Other simultaneous amendment + insertion cases:
-    # Full articles: "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
-    # "követően" constructs:
-    #   "A Tfvt. a 17/A. §-t követően a következő 17/B. és 17/C. §-sal egészül ki"
-    #   "Az Ngt. a 6/C. §-át követően a következő alcímmel és 6/D−K. §-sal egészül ki:"
-    #   "A helyi adókról szóló 1990. évi C. törvény (a továbbiakban: Htv.) a 11. §-t követően a következő 11/A. §-sal egészül ki"
+    (
+        "A Btk. XX. Fejezete a következő alcímmel és 212/A. §-sal kiegészülve lép hatályba:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("212/A", "212/A"),
+            position=StructuralReference("Btk."),
+        )
+    ),
+    (
+        "A Btk. 349. §-a és a megelőző alcím helyébe a következő rendelkezés és alcím lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("349", "349"),
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
+            replaces=(
+                StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
+                ref("Btk.", "349"),
+            )
+        )
+    ),
+    (
+        "A Btk. a 300. §-t megelőzően a következő alcímmel egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "300")),
+        )
+    ),
+    (
+        "A Btk. XXVII. Fejezete a következő alcímmel és 300/A. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("300/A", "300/A"),
+            position=StructuralReference("Btk."),
+        )
+    ),
+    (
+        "A Btk. Terrorcselekmény alcíme a következő 316/A. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Article,
+            expected_id_range=("316/A", "316/A"),
+            position=ref("Btk.", "316/A"),
+        ),
+    ),
+    (
+        "A Btk. Terrorizmus finanszírozása alcíme a következő 318/A. és 318/B. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Article,
+            expected_id_range=("318/A", "318/B"),
+            position=ref("Btk.", "318/A"),
+        ),
+    ),
+    (
+        "A Btk. a 404. §-t követően a következő alcímmel és 404/A. §-sal kiegészülve lép hatályba:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("404/A", "404/A"),
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "404")),
+        ),
+    ),
+    (
+        "A Btk. a következő 226/A. §-sal és az azt megelőző alcímmel egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("226/A", "226/A"),
+            position=StructuralReference("Btk."),
+        ),
+    ),
+    (
+        "A Btk. „Új pszichoaktív anyaggal visszaélés” alcíme a következő 184/A–184/D. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Article,
+            expected_id_range=("184/A", "184/D"),
+            position=ref("Btk.", "184/A"),
+        ),
+    ),
+    (
+        "A Btk. XXIV. Fejezete a következő alcímmel és 261/A. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("261/A", "261/A"),
+            position=StructuralReference("Btk."),
+        ),
+    ),
+    (
+        "A Btk. 388/A. §-a és az azt megelőző alcím helyébe a következő alcím és rendelkezés lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("388/A", "388/A"),
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "388/A")),
+            replaces=(
+                StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "388/A")),
+                ref("Btk.", "388/A"),
+            ),
+        ),
+    ),
+    (
+        "A Btk. a következő 352/A–352/C. §-sal és az azokat megelőző alcímekkel egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("352/A", "352/C"),
+            position=StructuralReference("Btk."),
+        ),
+    ),
+    (
+        "A Btk. a következő alcímmel és 410/A. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("410/A", "410/A"),
+            position=StructuralReference("Btk."),
+        ),
+    ),
+    (
+        "A Btk. 411. §-át megelőző alcím címe és 411. §-a helyébe a következő rendelkezés lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("411", "411"),
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "411")),
+            replaces=(
+                StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "411")),
+                ref("Btk.", "411"),
+            ),
+        ),
+    ),
+    (
+        "A Btk. IX. Fejezete a 92/A. §-t követően a következő alcímmel egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "92/A")),
+        ),
+    ),
+    (
+        "A Btk. 83. §-t megelőző alcím helyébe a következő alcím lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "83")),
+            replaces=(
+                StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "83")),
+            ),
+        ),
+    ),
+    (
+        "A Btk. a 124. §-t követően a következő alcímmel és 124/A. §-sal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=("124/A", "124/A"),
+            position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "124")),
+        ),
+    ),
+    (
+        "Az elektronikus információszabadságról szóló 2005. évi XC. törvény (a továbbiakban: Einfotv.) 12. §-át megelőző alcíme helyébe a következő alcím lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            position=StructuralReference("2005. évi XC. törvény", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "12")),
+            replaces=(
+                StructuralReference("2005. évi XC. törvény", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "12")),
+            ),
+        )
+    ),
 
+    # TODO:
+    # (
+    #     "A Ptk. Hatodik Könyv Ötödik Része helyébe a következő rész lép:",
+    #     BlockAmendmentMetadata(
+    #         expected_type=Part,
+    #         position=StructuralReference("Ptk."),
+    #         replaces=(StructuralReference("Ptk.", book="6", part="5"),),
+    #     ),
+    # ),
+    # (
+    #     "A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:",
+    #     BlockAmendmentMetadata(
+    #         expected_type=Title,
+    #         position=StructuralReference("Ptk."),
+    #         replaces=(StructuralReference("Ptk.", book="3", title="8"),),
+    #     ),
+    # ),
 )
+
+# TODO:
+# Other simultaneous amendment + insertion cases:
+# Full articles: "Az R2. 7. §-a helyébe a következő rendelkezés lép, és az R2. a következő 7/A. §-sal egészül ki"
+# "követően" constructs:
+#   "A Tfvt. a 17/A. §-t követően a következő 17/B. és 17/C. §-sal egészül ki"
+#   "Az Ngt. a 6/C. §-át követően a következő alcímmel és 6/D−K. §-sal egészül ki:"
+#   "A helyi adókról szóló 1990. évi C. törvény (a továbbiakban: Htv.) a 11. §-t követően a következő 11/A. §-sal egészül ki"
 
 
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)  # type: ignore

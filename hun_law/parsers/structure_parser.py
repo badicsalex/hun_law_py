@@ -793,9 +793,12 @@ class BlockAmendmentStructureParser:
 
     @classmethod
     def get_parser_and_id(cls, metadata: BlockAmendmentMetadata) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
+        structural_type = metadata.expected_type
+        if structural_type not in cls.PARSERS_FOR_TYPE:
+            raise SubArticleParsingError("Type not yet supported for BlockAmendment parsing", structural_type)
+
         assert metadata.expected_id_range is not None
         expected_id = metadata.expected_id_range[0]
-        structural_type = metadata.expected_type
         if structural_type is AlphabeticSubpoint and len(expected_id) != 1:
             # TODO: let's hope it is not a two-letter subpoint like "ny"
             return get_prefixed_alphabetic_subpoint_parser(expected_id[:-1]), expected_id

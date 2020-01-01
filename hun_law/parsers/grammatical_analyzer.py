@@ -24,7 +24,8 @@ import tatsu.model
 from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
     Act, SubArticleElement, \
-    ReferencePartType, SemanticMetadataType
+    ReferencePartType, SemanticMetadataType, \
+    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, Subtitle
 
 from .grammar import model
 from .grammar.parser import ActGrammarParser  # type: ignore
@@ -281,6 +282,18 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         return converted_references[0].reference
 
     @classmethod
+    def convert_structural_reference(cls, act_id: str, reference: Optional[model.StructuralReference]) -> StructuralReference:
+        if isinstance(reference, model.BeforeArticle):
+            assert reference.id is not None
+            return StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "".join(reference.id)))
+
+        if isinstance(reference, model.AfterArticle):
+            assert reference.id is not None
+            return StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "".join(reference.id)))
+
+        return StructuralReference(act_id)
+
+    @classmethod
     def get_reference_range_and_type(cls, reference: Reference) -> Tuple[Tuple[str, str], Type[Union[SubArticleElement, Article]]]:
         expected_id_range, expected_type = reference.last_component_with_type()
 
@@ -326,10 +339,7 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         )
 
     @classmethod
-    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
-        assert isinstance(tree_element.act_reference, model.ActReference)
-        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
-
+    def convert_simple_case(cls, act_id: str, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
         amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
         inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
         if amended_reference is not None:
@@ -345,6 +355,71 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
             # okay, and we can salvage the situation.
             # TODO: Maybe we really should fail here.
             pass
+
+    @classmethod
+    def convert_id_range_for_subtitle_case(cls, reference: Optional[Reference]) -> Optional[Tuple[str, str]]:
+        if reference is None or reference.article is None:
+            return None
+        if isinstance(reference.article, str):
+            return (reference.article, reference.article)
+        return reference.article
+
+    @classmethod
+    def subtitle_amendment_only(cls, structural_reference: StructuralReference, amended_reference: Reference) -> BlockAmendmentMetadata:
+        expected_id_range = cls.convert_id_range_for_subtitle_case(amended_reference)
+        if structural_reference.subtitle is None:
+            assert isinstance(amended_reference.article, str)
+            structural_reference = StructuralReference(
+                amended_reference.act,
+                subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, amended_reference.article)
+            )
+
+        replaces: Tuple[Union[Reference, StructuralReference], ...] = (structural_reference, )
+        if amended_reference.article is not None:
+            replaces = replaces + (amended_reference, )
+        return BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=expected_id_range,
+            position=structural_reference,
+            replaces=replaces,
+        )
+
+    @classmethod
+    def subtitle_insertion_only(cls, structural_reference: StructuralReference, inserted_reference: Optional[Reference]) -> BlockAmendmentMetadata:
+        expected_id_range = cls.convert_id_range_for_subtitle_case(inserted_reference)
+        return BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            expected_id_range=expected_id_range,
+            position=structural_reference,
+        )
+
+    @classmethod
+    def convert_subtitle_case(cls, act_id: str, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+        assert isinstance(tree_element.act_reference, model.ActReference)
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+
+        structural_reference = cls.convert_structural_reference(act_id, tree_element.structural_reference)
+        amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
+        inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
+        if amended_reference is not None:
+            if inserted_reference:
+                # TODO. Not even part of the grammar currently either.
+                raise ValueError("Simultaneous insertion and amendments with Subtitles not yet supported")
+            yield cls.subtitle_amendment_only(structural_reference, amended_reference)
+        else:
+            yield cls.subtitle_insertion_only(structural_reference, inserted_reference)
+
+    @classmethod
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+        assert isinstance(tree_element.act_reference, model.ActReference)
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+
+        if (
+                isinstance(tree_element.amended_reference, model.ReferenceWithSubtitle) or
+                isinstance(tree_element.inserted_reference, model.ReferenceWithSubtitle)
+        ):
+            return cls.convert_subtitle_case(act_id, tree_element)
+        return cls.convert_simple_case(act_id, tree_element)
 
 
 @attr.s(slots=True, frozen=True)

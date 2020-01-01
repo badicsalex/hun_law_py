@@ -585,6 +585,27 @@ class Reference:
         return None, None
 
 
+class RelativePosition(Enum):
+    BEFORE = 1
+    AFTER = 2
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class SubtitleReferenceArticleRelative:
+    position: RelativePosition
+    article_id: str
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class StructuralReference:
+    act: Optional[str] = None
+    book: Optional[str] = None
+    part: Optional[str] = None
+    title: Optional[str] = None
+    chapter: Optional[str] = None
+    subtitle: Optional[SubtitleReferenceArticleRelative] = None
+
+
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class ActIdAbbreviation:
     abbreviation: str
@@ -593,10 +614,10 @@ class ActIdAbbreviation:
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class BlockAmendmentMetadata:
+    position: Union[Reference, StructuralReference]
     expected_type: Type[Union[SubArticleElement, Article, StructuralElement]]
     expected_id_range: Optional[Tuple[str, str]] = None
-    position: Union[None, Reference] = None
-    replaces: Tuple[Reference, ...] = tuple()
+    replaces: Tuple[Union[Reference, StructuralReference], ...] = tuple()
 
 
 SemanticMetadataType = Union[InTextReference, ActIdAbbreviation, BlockAmendmentMetadata]

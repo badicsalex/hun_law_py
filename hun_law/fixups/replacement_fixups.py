@@ -1498,6 +1498,12 @@ replacement_fixups: ReplacementsType = {
             "replacement": "tizenöt nappal követő időpontra hívják össze."
         }
     ],
+    "2016. évi CLXXXI. törvény": [
+        {
+            "needle": "„35/A §. Magyarország diplomáciai és konzuli képviseletének, nemzetközi szervezet mellett működő állandó",
+            "replacement": "„35/A. § Magyarország diplomáciai és konzuli képviseletének, nemzetközi szervezet mellett működő állandó"
+        }
+    ],
     "2016. évi CLXXXIV. törvény": [
         {
             "needle": "„143. § (1) Árvák kiegészítő támogatására jogosult az állomány elhunyt tagjának – ideértve a 224. § (3) bekezdése",
