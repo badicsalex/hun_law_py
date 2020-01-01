@@ -152,3 +152,7 @@ blockquote {
     grid-column: 3 / end;
     font-size: 10pt;
 }
+
+:target {
+   background-color: #ffffc0;
+}
