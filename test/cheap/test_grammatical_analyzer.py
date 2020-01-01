@@ -19,7 +19,9 @@ from typing import Tuple, List, Optional
 import pytest
 
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
-from hun_law.structure import Reference, ActIdAbbreviation, BlockAmendmentMetadata
+from hun_law.structure import \
+    Reference, ActIdAbbreviation, BlockAmendmentMetadata, \
+    Article, Paragraph, NumericPoint, AlphabeticPoint, AlphabeticSubpoint
 
 from .utils import ref
 
@@ -547,143 +549,240 @@ def test_new_abbreviations(s: str, abbrevs: List[ActIdAbbreviation]) -> None:
 BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(amended_reference=ref("2012. évi CCXIX. törvény", '28'))
+        BlockAmendmentMetadata(
+            expected_type=Article,
+            expected_id_range=("28", "28"),
+            position=ref("2012. évi CCXIX. törvény", '28'),
+            replaces=(ref("2012. évi CCXIX. törvény", '28'),),
+        )
     ),
     (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(amended_reference=ref("2012. évi I. törvény", "29", "2", "e"))
+        BlockAmendmentMetadata(
+            expected_type=AlphabeticPoint,
+            expected_id_range=("e", "e"),
+            position=ref("2012. évi I. törvény", "29", "2", "e"),
+            replaces=(ref("2012. évi I. törvény", "29", "2", "e"),)
+        )
     ),
     (
         "A Tv. 1. § 3. pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(amended_reference=ref('Tv.', "1", None, "3"))
+        BlockAmendmentMetadata(
+            expected_type=NumericPoint,
+            expected_id_range=("3", "3"),
+            position=ref('Tv.', "1", None, "3"),
+            replaces=(ref('Tv.', "1", None, "3"),)
+        )
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(amended_reference=ref("2111. évi LXXV. törvény", "1", "1", "1", "c"))
+        BlockAmendmentMetadata(
+            expected_type=AlphabeticSubpoint,
+            expected_id_range=("c", "c"),
+            position=ref("2111. évi LXXV. törvény", "1", "1", "1", "c"),
+            replaces=(ref("2111. évi LXXV. törvény", "1", "1", "1", "c"),),
+        )
     ),
     (
         "A Batv. 1. § (2) bekezdés b)–f) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(amended_reference=ref("Batv.", "1", "2", ("b", "f")))
+        BlockAmendmentMetadata(
+            expected_type=AlphabeticPoint,
+            expected_id_range=("b", "f"),
+            position=ref("Batv.", "1", "2", "b"),
+            replaces=(ref("Batv.", "1", "2", ("b", "f")),),
+
+        )
     ),
     (
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
-        BlockAmendmentMetadata(inserted_reference=ref("Eht.", "188", None, "31/a"))
+        BlockAmendmentMetadata(
+            expected_type=NumericPoint,
+            expected_id_range=("31/a", "31/a"),
+            position=ref("Eht.", "188", None, "31/a"),
+        )
     ),
     (
         "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
-        BlockAmendmentMetadata(inserted_reference=ref("1995. évi XCVII. törvény", "71", None, "3a"))
+        BlockAmendmentMetadata(
+            expected_type=NumericPoint,
+            expected_id_range=("3a", "3a"),
+            position=ref("1995. évi XCVII. törvény", "71", None, "3a"),
+        )
     ),
     (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(inserted_reference=ref("Víziközmű tv.", "63", ("5", "7")))
+        BlockAmendmentMetadata(
+            expected_type=Paragraph,
+            expected_id_range=("5", "7"),
+            position=ref("Víziközmű tv.", "63", "5"),
+        )
     ),
     (
         "A Ptk. 6:417. § (4) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "6:417", "4"))
+        BlockAmendmentMetadata(
+            expected_type=Paragraph,
+            expected_id_range=("4", "4"),
+            position=ref("Ptk.", "6:417", "4"),
+            replaces=(ref("Ptk.", "6:417", "4"),),
+        )
     ),
     (
         "A Ptk. 6:130. §-a a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "6:130"))
+        BlockAmendmentMetadata(
+            expected_type=Article,
+            expected_id_range=("6:130", "6:130"),
+            position=ref("Ptk.", "6:130"),
+            replaces=(ref("Ptk.", "6:130"),),
+        )
     ),
     (
         "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba:",
-        BlockAmendmentMetadata(inserted_reference=ref("Ptk.", "3:391", "3"))
+        BlockAmendmentMetadata(
+            expected_type=Paragraph,
+            expected_id_range=("3", "3"),
+            position=ref("Ptk.", "3:391", "3"),
+        )
     ),
     (
         "A Ptk. 3:278. § (1) bekezdés e) pontja a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "3:278", "1", "e"))
+        BlockAmendmentMetadata(
+            expected_type=AlphabeticPoint,
+            expected_id_range=("e", "e"),
+            position=ref("Ptk.", "3:278", "1", "e"),
+            replaces=(ref("Ptk.", "3:278", "1", "e"),),
+        )
     ),
     (
         "A polgári törvénykönyvről szóló 2013. évi V. tv. 3:319. § (5) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(amended_reference=ref("2013. évi V. törvény", "3:319", "5"))
+        BlockAmendmentMetadata(
+            expected_type=Paragraph,
+            expected_id_range=("5", "5"),
+            position=ref("2013. évi V. törvény", "3:319", "5"),
+            replaces=(ref("2013. évi V. törvény", "3:319", "5"),),
+        )
     ),
     (
         "A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(inserted_reference=ref("Gyvt.", "69/D", ("1a", "1b")))
+        BlockAmendmentMetadata(
+            expected_type=Paragraph,
+            expected_id_range=("1a", "1b"),
+            position=ref("Gyvt.", "69/D", "1a"),
+        )
     ),
     (
         "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(amended_reference=ref("Ptk.", "3:261", ("4", "5")))
+        BlockAmendmentMetadata(
+            expected_type=Paragraph,
+            expected_id_range=("4", "5"),
+            position=ref("Ptk.", "3:261", "4"),
+            replaces=(ref("Ptk.", "3:261", ("4", "5")),),
+        )
     ),
     (
         "A Kkt. 49. § (2) bekezdés i) pontja helyébe a következő rendelkezés lép, és a bekezdés a következő j) ponttal egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Kkt.", "49", "2", "i"),
-            inserted_reference=ref("Kkt.", "49", "2", "j"),
+            expected_type=AlphabeticPoint,
+            expected_id_range=("i", "j"),
+            position=ref("Kkt.", "49", "2", "i"),
+            replaces=(ref("Kkt.", "49", "2", "i"),)
         )
     ),
     (
         "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Elszámolási tv.", "35", "4"),
-            inserted_reference=ref("Elszámolási tv.", "35", "5"),
+            expected_type=Paragraph,
+            expected_id_range=("4", "5"),
+            position=ref("Elszámolási tv.", "35", "4"),
+            replaces=(ref("Elszámolási tv.", "35", "4"),),
         )
     ),
     (
         "A Ptk. 3:268. § (2) és (3) bekezdése helyébe a következő rendelkezések lépnek, és a § a következő (4) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Ptk.", "3:268", ("2", "3")),
-            inserted_reference=ref("Ptk.", "3:268", "4"),
+            expected_type=Paragraph,
+            expected_id_range=("2", "4"),
+            position=ref("Ptk.", "3:268", "2"),
+            replaces=(ref("Ptk.", "3:268", ("2", "3")),)
         )
     ),
     (
         "A Ptk. 8:6. § r) pontja helyébe a következő rendelkezés lép, és a § a következő s) ponttal egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Ptk.", "8:6", None, "r"),
-            inserted_reference=ref("Ptk.", "8:6", None, "s"),
+            expected_type=AlphabeticPoint,
+            expected_id_range=("r", "s"),
+            position=ref("Ptk.", "8:6", None, "r"),
+            replaces=(ref("Ptk.", "8:6", None, "r"),),
         )
     ),
     (
         "A Tv. 16. § (1) bekezdés f) pontja helyébe a következő rendelkezés lép, és a § a következő g) és h) pontokkal egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Tv.", "16", "1", "f"),
-            inserted_reference=ref("Tv.", "16", "1", ("g", "h")),
+            expected_type=AlphabeticPoint,
+            expected_id_range=("f", "h"),
+            position=ref("Tv.", "16", "1", "f"),
+            replaces=(ref("Tv.", "16", "1", "f"),),
         )
     ),
     (
         "Az Tv. 5/A. § (2a) bekezdése helyébe a következő rendelkezés lép, és a § a következő (2b)–(2f) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Tv.", "5/A", "2a"),
-            inserted_reference=ref("Tv.", "5/A", ("2b", "2f")),
+            expected_type=Paragraph,
+            expected_id_range=("2a", "2f"),
+            position=ref("Tv.", "5/A", "2a"),
+            replaces=(ref("Tv.", "5/A", "2a"),),
         )
     ),
     (
         "Az Evt. 108. § (4) bekezdése helyébe a következő rendelkezés lép, valamint a következő (5)–(10) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Evt.", "108", "4"),
-            inserted_reference=ref("Evt.", "108", ("5", "10")),
+            expected_type=Paragraph,
+            expected_id_range=("4", "10"),
+            position=ref("Evt.", "108", "4"),
+            replaces=(ref("Evt.", "108", "4"),),
         )
     ),
     (
         "A Btk. 459. § (1) bekezdés 24. pontja helyébe a következő rendelkezés lép, valamint a 459. § (1) bekezdése a következő 24a. ponttal egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Btk.", "459", "1", "24"),
-            inserted_reference=ref("Btk.", "459", "1", "24a"),
+            expected_type=NumericPoint,
+            expected_id_range=("24", "24a"),
+            position=ref("Btk.", "459", "1", "24"),
+            replaces=(ref("Btk.", "459", "1", "24"),),
         )
     ),
     (
         "Az egyszerűsített foglalkoztatásról szóló 2010. évi LXXV. törvény (a továbbiakban: Efotv.) a következő 1. § (1a) bekezdéssel egészül ki:",
         BlockAmendmentMetadata(
-            inserted_reference=ref("2010. évi LXXV. törvény", "1", "1a"),
+            expected_type=Paragraph,
+            expected_id_range=("1a", "1a"),
+            position=ref("2010. évi LXXV. törvény", "1", "1a"),
         )
     ),
     (
         "A társadalombiztosítási nyugellátásról szóló 1997. évi LXXXI. törvény 96. § (2) bekezdés h) pontja helyébe a következő rendelkezés lép, egyidejűleg a bekezdés a következő i) ponttal egészül ki:",
         BlockAmendmentMetadata(
-            amended_reference=ref("1997. évi LXXXI. törvény", "96", "2", "h"),
-            inserted_reference=ref("1997. évi LXXXI. törvény", "96", "2", "i"),
+            expected_type=AlphabeticPoint,
+            expected_id_range=("h", "i"),
+            position=ref("1997. évi LXXXI. törvény", "96", "2", "h"),
+            replaces=(ref("1997. évi LXXXI. törvény", "96", "2", "h"),),
         )
     ),
     (
         "A Btk. 279. § (1) és (2) bekezdése helyébe a következő rendelkezések lépnek:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Btk.", "279", ("1", "2"))
+            expected_type=Paragraph,
+            expected_id_range=("1", "2"),
+            position=ref("Btk.", "279", "1"),
+            replaces=(ref("Btk.", "279", ("1", "2")),),
         )
     ),
     (
         "A Btk. 283. § (2) és (2a) bekezdése helyébe a következő rendelkezések lépnek:",
         BlockAmendmentMetadata(
-            amended_reference=ref("Btk.", "283", ("2", "2a"))
+            expected_type=Paragraph,
+            expected_id_range=("2", "2a"),
+            position=ref("Btk.", "283", "2"),
+            replaces=(ref("Btk.", "283", ("2", "2a")),),
         )
     ),
     # TODO:

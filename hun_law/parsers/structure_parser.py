@@ -27,7 +27,7 @@ from hun_law.structure import \
     Act, Article, QuotedBlock, BlockAmendment,\
     StructuralElement, Subtitle, Chapter, Title, Part, Book,\
     SubArticleElement, Paragraph, AlphabeticSubpoint, NumericSubpoint, NumericPoint, AlphabeticPoint, \
-    Reference, \
+    BlockAmendmentMetadata, \
     SubArticleChildType, ActChildType
 
 # Main act on which all the code was based:
@@ -754,8 +754,14 @@ class BlockAmendmentStructureParser:
     }
 
     @classmethod
-    def parse(cls, expected_reference: Reference, context_intro: Optional[str], context_wrap_up: Optional[str], lines: Sequence[IndentedLine]) -> BlockAmendment:
-        parser, expected_id = cls.get_parser_and_id(expected_reference)
+    def parse(
+            cls,
+            metadata: BlockAmendmentMetadata,
+            context_intro: Optional[str],
+            context_wrap_up: Optional[str],
+            lines: Sequence[IndentedLine]
+    ) -> BlockAmendment:
+        parser, expected_id = cls.get_parser_and_id(metadata)
         children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
         return BlockAmendment(
             identifier=None,
@@ -786,16 +792,10 @@ class BlockAmendmentStructureParser:
         yield parser.parse(current_lines)
 
     @classmethod
-    def get_parser_and_id(cls, expected_reference: Reference) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
-        expected_id, structural_type = expected_reference.last_component_with_type()
-        assert expected_id is not None
-        assert structural_type is not None
-
-        if isinstance(expected_id, tuple):
-            # In case of reference range, get start of range.
-            # TODO: check for end of range too
-            expected_id = expected_id[0]
-
+    def get_parser_and_id(cls, metadata: BlockAmendmentMetadata) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
+        assert metadata.expected_id_range is not None
+        expected_id = metadata.expected_id_range[0]
+        structural_type = metadata.expected_type
         if structural_type is AlphabeticSubpoint and len(expected_id) != 1:
             # TODO: let's hope it is not a two-letter subpoint like "ny"
             return get_prefixed_alphabetic_subpoint_parser(expected_id[:-1]), expected_id

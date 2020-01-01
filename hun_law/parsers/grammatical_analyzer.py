@@ -194,7 +194,7 @@ class ActReferenceConversionHelper:
         raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
 
-class ToInTextReference(ModelConverter):
+class CompoundReferenceToInTextReference(ModelConverter):
     CONVERTED_TYPE = model.CompoundReference
     @classmethod
     def convert(cls, tree_element: model.CompoundReference) -> Iterable[InTextReference]:
@@ -210,7 +210,7 @@ class ToInTextReference(ModelConverter):
                 yield from ReferenceConversionHelper.convert_single_reference(act_id, reference)
 
 
-class ToActIdAbbreviation(ModelConverter):
+class ActReferenceToActIdAbbreviation(ModelConverter):
     CONVERTED_TYPE = model.ActReference
     @classmethod
     def convert(cls, tree_element: model.ActReference) -> Iterable[ActIdAbbreviation]:
@@ -225,7 +225,7 @@ class ToActIdAbbreviation(ModelConverter):
         )
 
 
-class ToBlockAmendmentMetadata(ModelConverter):
+class BlockAmendmentToInTextReference(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendment
 
     @classmethod
@@ -243,7 +243,7 @@ class ToBlockAmendmentMetadata(ModelConverter):
         return converted_references[0]
 
     @classmethod
-    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[Union[BlockAmendmentMetadata, InTextReference]]:
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[InTextReference]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
         act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
@@ -251,12 +251,6 @@ class ToBlockAmendmentMetadata(ModelConverter):
 
         amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
         inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
-        if amended_reference is None and inserted_reference is None:
-            # One or both references were misparsed probably, or grammar is wrong
-            # Don't fail horribly in this case, as the rest of the text is probably
-            # okay, and we can salvage the situation.
-            # TODO: Maybe we really should fail here.
-            return
 
         if amended_reference is not None and inserted_reference is not None:
             # Act has to be cut off first, because otherwise relative_to does not do anything.
@@ -268,18 +262,98 @@ class ToBlockAmendmentMetadata(ModelConverter):
         if inserted_reference:
             yield inserted_reference
 
-        yield BlockAmendmentMetadata(
-            amended_reference=amended_reference.reference if amended_reference is not None else None,
-            inserted_reference=inserted_reference.reference if inserted_reference is not None else None,
+
+class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
+    CONVERTED_TYPE = model.BlockAmendment
+
+    @classmethod
+    def convert_potential_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[Reference]:
+        if not reference:
+            return None
+        converted_references = tuple(
+            ReferenceConversionHelper.convert_single_reference(act_id, reference),
         )
+        # Block amendments may only be contigous ranges, not actual lists.
+        if len(converted_references) != 1:
+            # Most likely a misparse, so don't fail horribly in this case, just pretend
+            # we did not find anything.
+            return None
+        return converted_references[0].reference
+
+    @classmethod
+    def get_reference_range_and_type(cls, reference: Reference) -> Tuple[Tuple[str, str], Type[Union[SubArticleElement, Article]]]:
+        expected_id_range, expected_type = reference.last_component_with_type()
+
+        assert expected_type is not None
+        assert not issubclass(expected_type, Act)
+
+        assert expected_id_range is not None
+        if isinstance(expected_id_range, str):
+            expected_id_range = (expected_id_range, expected_id_range)
+        return expected_id_range, expected_type
+
+    @classmethod
+    def sae_amendment_only(cls, amended_reference: Reference) -> BlockAmendmentMetadata:
+        expected_id_range, expected_type = cls.get_reference_range_and_type(amended_reference)
+        return BlockAmendmentMetadata(
+            expected_type=expected_type,
+            expected_id_range=expected_id_range,
+            position=amended_reference.first_in_range(),
+            replaces=(amended_reference,),
+        )
+
+    @classmethod
+    def sae_insertion_only(cls, inserted_reference: Reference) -> BlockAmendmentMetadata:
+        expected_id_range, expected_type = cls.get_reference_range_and_type(inserted_reference)
+        return BlockAmendmentMetadata(
+            expected_type=expected_type,
+            expected_id_range=expected_id_range,
+            position=inserted_reference.first_in_range(),
+        )
+
+    @classmethod
+    def sae_amendment_and_insertion(cls, amended_reference: Reference, inserted_reference: Reference) -> BlockAmendmentMetadata:
+        amended_range, amended_type = cls.get_reference_range_and_type(amended_reference)
+        inserted_range, inserted_type = cls.get_reference_range_and_type(inserted_reference)
+        assert amended_type == inserted_type
+        assert amended_type.is_next_identifier(amended_range[1], inserted_range[0])
+        expected_id_range = (amended_range[0], inserted_range[1])
+        return BlockAmendmentMetadata(
+            expected_type=amended_type,
+            expected_id_range=expected_id_range,
+            position=amended_reference.first_in_range(),
+            replaces=(amended_reference,),
+        )
+
+    @classmethod
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+        assert isinstance(tree_element.act_reference, model.ActReference)
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+
+        amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
+        inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
+        if amended_reference is not None:
+            if inserted_reference:
+                yield cls.sae_amendment_and_insertion(amended_reference, inserted_reference)
+            else:
+                yield cls.sae_amendment_only(amended_reference)
+        elif inserted_reference is not None:
+            yield cls.sae_insertion_only(inserted_reference)
+        else:
+            # One or both references were misparsed probably, or grammar is wrong
+            # Don't fail horribly in this case, as the rest of the text is probably
+            # okay, and we can salvage the situation.
+            # TODO: Maybe we really should fail here.
+            pass
 
 
 @attr.s(slots=True, frozen=True)
 class GrammarResultContainer:
     CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
-        ToInTextReference,
-        ToActIdAbbreviation,
-        ToBlockAmendmentMetadata,
+        CompoundReferenceToInTextReference,
+        ActReferenceToActIdAbbreviation,
+        BlockAmendmentToBlockAmendmentMetadata,
+        BlockAmendmentToInTextReference,
     )
 
     tree: Any = attr.ib()

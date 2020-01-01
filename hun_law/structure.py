@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable, Any
 
 import attr
@@ -560,7 +561,7 @@ class Reference:
             result = attr.evolve(result, subpoint=result.subpoint[0])
         return result
 
-    def last_component_with_type(self) -> Tuple[ReferencePartType, Optional[Type]]:
+    def last_component_with_type(self) -> Tuple[ReferencePartType, Optional[Type[Union[SubArticleElement, Article, Act]]]]:
         # Thanks pylint, but this is the simplest form of this function.
         # pylint: disable=too-many-return-statements
         if self.subpoint is not None:
@@ -592,12 +593,10 @@ class ActIdAbbreviation:
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class BlockAmendmentMetadata:
-    amended_reference: Optional[Reference] = None
-    inserted_reference: Optional[Reference] = None
-
-    def __attrs_post_init__(self) -> None:
-        if self.amended_reference is None and self.inserted_reference is None:
-            raise ValueError("A BlockAmendmentMetadata object has to contain at least an amendment or an insertion")
+    expected_type: Type[Union[SubArticleElement, Article, StructuralElement]]
+    expected_id_range: Optional[Tuple[str, str]] = None
+    position: Union[None, Reference] = None
+    replaces: Tuple[Reference, ...] = tuple()
 
 
 SemanticMetadataType = Union[InTextReference, ActIdAbbreviation, BlockAmendmentMetadata]
