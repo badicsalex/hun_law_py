@@ -92,9 +92,8 @@ def MagyarKozlonySectionExtractor(kozlony: KozlonyPagesWithHeaderAndFooter) -> I
     current_section_type = None
     content_of_current_section: List[IndentedLine] = []
 
-    # Don't parse the last page, as that's just a note from the editor and publisher
-    # TODO: assert for this
-    for page in kozlony.pages[:-1]:
+    for page in kozlony.pages:
+
         if not page.lines:
             continue
         for section_type in SECTION_TYPES:
