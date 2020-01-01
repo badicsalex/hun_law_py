@@ -1295,6 +1295,12 @@ replacement_fixups: ReplacementsType = {
             "replacement": "„28. § Felhatalmazást kap a Kormány, hogy e törvény alapján"
         }
     ],
+    "2015. évi CXL. törvény": [
+        {
+            "needle": "31. § A Btk. a következő 352/A–C. §-sal és az azokat megelőző alcímekkel egészül ki:",
+            "replacement": "31. § A Btk. a következő 352/A–352/C. §-sal és az azokat megelőző alcímekkel egészül ki:"
+        }
+    ],
     "2015. évi LXX. törvény": [
         {
             "needle": "„Felek“)",
@@ -1812,6 +1818,46 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "nevében és javára képviselőként eljáró Fővállalkozó.”",
             "replacement": "nevében és javára képviselőként eljáró Fővállalkozó."
+        }
+    ],
+    "2018. évi CXIV. törvény": [
+        {
+            "needle": "b) az „E’’, „F’’, „G’’, „H’’, „I’’, „J’’ fizetési osztályban említett munkakör betöltése esetén évi huszonegy munkanap",
+            "replacement": "b) az „E”, „F”, „G”, „H”, „I”, „J” fizetési osztályban említett munkakör betöltése esetén évi huszonegy munkanap"
+        }
+    ],
+    "2018. évi CXV. törvény": [
+        {
+            "needle": "„A rendvédelmi feladatokat ellátó szervek hivatásos állományának szolgálati jogviszonyáról szóló 2015. évi",
+            "replacement": "„65/L. § A rendvédelmi feladatokat ellátó szervek hivatásos állományának szolgálati jogviszonyáról szóló 2015. évi"
+        },
+        {
+            "needle": "XLII. törvény és más kapcsolódó törvények módosításáról szóló 2018. évi CXV. törvény (a továbbiakban: Riasztv.)",
+            "replacement": "XLII. törvény és más kapcsolódó törvények módosításáról szóló 2018. évi CXV. törvény (a továbbiakban: Riasztv.) 27. § (1)"
+        },
+        {
+            "needle": "27. § (1) bekezdésével módosított 5. § (1) bekezdés a) pontját és a Riasztv. 27. § (2) bekezdésével módosított 15. §",
+            "replacement": "bekezdésével módosított 5. § (1) bekezdés a) pontját és a Riasztv. 27. § (2) bekezdésével módosított 15. §"
+        }
+    ],
+    "2018. évi CXXI. törvény": [
+        {
+            "needle": "lép.”",
+            "replacement": "lép."
+        }
+    ],
+    "2018. évi CXXV. törvény": [
+        {
+            "needle": "e) 25/C. § (12) bekezdésében a „ , vagy állami szolgálati” szövegrész.”",
+            "replacement": "e) 25/C. § (12) bekezdésében a „ , vagy állami szolgálati” szövegrész."
+        },
+        {
+            "needle": "betöltő személy is helyettesítheti.” szöveg lép.”",
+            "replacement": "betöltő személy is helyettesítheti.” szöveg lép."
+        },
+        {
+            "needle": "a célhoz köthető feladat eredményes végrehajtásáért céljuttatásra jogosult.””",
+            "replacement": "a célhoz köthető feladat eredményes végrehajtásáért céljuttatásra jogosult.”"
         }
     ],
     "2018. évi LI. törvény": [
