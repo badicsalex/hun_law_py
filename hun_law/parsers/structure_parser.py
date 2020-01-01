@@ -83,9 +83,11 @@ class StructureParsingError(ValueError):
 
 class StructuralElementParser(ABC):
     PARSED_TYPE: ClassVar[Type[StructuralElement]]
+    strict: bool
 
-    def __init__(self) -> None:
+    def __init__(self, strict: bool = True) -> None:
         self.expected_number = 1
+        self.strict = strict
 
     @abstractmethod
     def extract_number(self, line: IndentedLine) -> Optional[int]:
@@ -100,6 +102,8 @@ class StructuralElementParser(ABC):
 
     def is_header(self, line: IndentedLine, _previous_line: IndentedLine) -> bool:
         number = self.extract_number(line)
+        if not self.strict:
+            return number is not None
         return number in (1, self.expected_number)
 
     def parse(self, lines: Sequence[IndentedLine]) -> StructuralElement:
@@ -139,8 +143,8 @@ class PartParser(StructuralElementParser):
 
     HEADER_REGEX = re.compile(r'(.*) RÉSZ$')
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, strict: bool = True) -> None:
+        super().__init__(strict)
         self.is_special = False
 
     def extract_number(self, line: IndentedLine) -> Optional[int]:
@@ -218,6 +222,9 @@ class SubtitleParser(StructuralElementParser):
     def is_header(self, line: IndentedLine, previous_line: IndentedLine) -> bool:
         if not line.bold:
             return False
+        if not self.strict:
+            return is_uppercase_hun(line.content[0]) or self.extract_number(line) is not None
+
         if previous_line == EMPTY_LINE and is_uppercase_hun(line.content[0]):
             return True
         number = self.extract_number(line)
@@ -237,7 +244,8 @@ class ArticleStructuralParser:
     # BlockAmendment parsers can use it as structural parser.
     PARSED_TYPE = None
 
-    def __init__(self) -> None:
+    def __init__(self, strict: bool = True) -> None:
+        self.strict = strict
         self.indent: Optional[float] = None
 
     def step_to_next_number(self, line: IndentedLine) -> None:
@@ -671,55 +679,22 @@ class ArticleParser:
         return Article(identifier, tuple(p for p in paragraphs if isinstance(p, Paragraph)), title)
 
 
-class ActParsingError(StructureParsingError):
-    pass
+ActBodyParserType = Union[StructuralElementParser, ArticleStructuralParser]
+ActBodyParsersType = Iterable[ActBodyParserType]
 
 
-class ActStructureParser:
-    PARSED_TYPE = Act
-
+class ActBodyParser:
+    """ Parse Act and BlockAmendment body """
     @classmethod
-    def parse(cls, identifier: str, subject: str, lines: Sequence[IndentedLine]) -> Act:
-        try:
-            preamble, lines = cls.parse_preamble(lines)
-            elements = cls.parse_elements(lines)
-        except Exception as e:
-            raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
-
-        return Act(identifier, subject, preamble, tuple(elements))
-
-    @classmethod
-    def get_parser_for_header_line(cls, line: IndentedLine, previous_line: IndentedLine, parsers: Iterable[Union[StructuralElementParser, ArticleStructuralParser]]) \
-            -> Optional[Union[StructuralElementParser, ArticleStructuralParser]]:
+    def get_parser_for_header_line(cls, line: IndentedLine, previous_line: IndentedLine, parsers: ActBodyParsersType) \
+            -> Optional[ActBodyParserType]:
         for p in parsers:
             if p.is_header(line, previous_line):
                 return p
         return None
 
     @classmethod
-    def create_parsers(cls) -> Iterable[Union[StructuralElementParser, ArticleStructuralParser]]:
-        return [parser() for parser in STRUCTURE_ELEMENT_PARSERS]
-
-    @classmethod
-    def parse_preamble(cls, lines: Sequence[IndentedLine]) -> Tuple[str, Sequence[IndentedLine]]:
-        parsers = cls.create_parsers()
-        split_point = len(lines)
-
-        previous_line = EMPTY_LINE
-        # No quote parsing, because we REALLY hope preambles don't
-        # contain quoted article or strucutral headers.
-        for line_number, line in enumerate(lines):
-            if cls.get_parser_for_header_line(line, previous_line, parsers) is not None:
-                split_point = line_number
-                break
-            previous_line = line
-        preamble = " ".join(l.content for l in lines[:split_point] if l != EMPTY_LINE)
-        rest_of_lines = lines[split_point:]
-        return preamble, rest_of_lines
-
-    @classmethod
-    def parse_elements(cls, lines: Sequence[IndentedLine]) -> Iterable[ActChildType]:
-        parsers = cls.create_parsers()
+    def parse_elements(cls, parsers: ActBodyParsersType, lines: Sequence[IndentedLine]) -> Iterable[ActChildType]:
         elements = []
         current_lines = []
         current_element_parser = None
@@ -743,6 +718,46 @@ class ActStructureParser:
         return elements
 
 
+class ActParsingError(StructureParsingError):
+    pass
+
+
+class ActStructureParser:
+    PARSED_TYPE = Act
+
+    @classmethod
+    def parse(cls, identifier: str, subject: str, lines: Sequence[IndentedLine]) -> Act:
+        try:
+            parsers = cls.create_parsers()
+            preamble, lines = cls.parse_preamble(parsers, lines)
+            elements = ActBodyParser.parse_elements(parsers, lines)
+        except Exception as e:
+            raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
+
+        return Act(identifier, subject, preamble, tuple(elements))
+
+    @classmethod
+    def create_parsers(cls) -> ActBodyParsersType:
+        return [parser() for parser in STRUCTURE_ELEMENT_PARSERS]
+
+    @classmethod
+    def parse_preamble(cls, parsers: ActBodyParsersType, lines: Sequence[IndentedLine]) -> Tuple[str, Sequence[IndentedLine]]:
+        parsers = cls.create_parsers()
+        split_point = len(lines)
+
+        previous_line = EMPTY_LINE
+        # No quote parsing, because we REALLY hope preambles don't
+        # contain quoted article or strucutral headers.
+        for line_number, line in enumerate(lines):
+            if ActBodyParser.get_parser_for_header_line(line, previous_line, parsers) is not None:
+                split_point = line_number
+                break
+            previous_line = line
+        preamble = " ".join(l.content for l in lines[:split_point] if l != EMPTY_LINE)
+        rest_of_lines = lines[split_point:]
+        return preamble, rest_of_lines
+
+
 class BlockAmendmentStructureParser:
     PARSERS_FOR_TYPE: Mapping[Type, Type[Union[ArticleParser, SubArticleElementParser]]] = {
         Article: ArticleParser,
@@ -761,8 +776,15 @@ class BlockAmendmentStructureParser:
             context_wrap_up: Optional[str],
             lines: Sequence[IndentedLine]
     ) -> BlockAmendment:
-        parser, expected_id = cls.get_parser_and_id(metadata)
-        children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
+
+        children: Tuple[SubArticleChildType, ...]
+        if issubclass(metadata.expected_type, StructuralElement):
+            parsers = cls.create_parsers()
+            children = tuple(ActBodyParser.parse_elements(parsers, lines))
+        else:
+            parser, expected_id = cls.get_parser_and_id(metadata)
+            children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
+
         return BlockAmendment(
             identifier=None,
             text=None,
@@ -770,6 +792,10 @@ class BlockAmendmentStructureParser:
             children=children,
             wrap_up=context_wrap_up
         )
+
+    @classmethod
+    def create_parsers(cls) -> ActBodyParsersType:
+        return [parser(strict=False) for parser in STRUCTURE_ELEMENT_PARSERS]
 
     @classmethod
     def do_parse_block_by_block(cls, parser: Type[Union[ArticleParser, SubArticleElementParser]], expected_id: str, lines: Sequence[IndentedLine]) -> Iterable[SubArticleChildType]:
@@ -794,9 +820,6 @@ class BlockAmendmentStructureParser:
     @classmethod
     def get_parser_and_id(cls, metadata: BlockAmendmentMetadata) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
         structural_type = metadata.expected_type
-        if structural_type not in cls.PARSERS_FOR_TYPE:
-            raise SubArticleParsingError("Type not yet supported for BlockAmendment parsing", structural_type)
-
         assert metadata.expected_id_range is not None
         expected_id = metadata.expected_id_range[0]
         if structural_type is AlphabeticSubpoint and len(expected_id) != 1:

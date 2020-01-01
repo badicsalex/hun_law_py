@@ -100,6 +100,8 @@ def generate_html_nodes_for_children(act: Act, element: Any, parent_ref: Referen
             yield from generate_html_nodes_for_sub_article_element(act, child, parent_ref)
         elif isinstance(child, QuotedBlock):
             yield from generate_html_nodes_for_quoted_block(child, element)
+        elif isinstance(child, StructuralElement):
+            yield from generate_html_node_for_structural_element(child)
         else:
             raise TypeError("Unknown child type {}".format(child.__class__))
 

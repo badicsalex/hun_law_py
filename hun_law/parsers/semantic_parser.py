@@ -21,7 +21,7 @@ from typing import List, Iterable
 import attr
 
 from hun_law.structure import \
-    Act, Article, Paragraph, QuotedBlock, BlockAmendment, \
+    Act, Article, Paragraph, QuotedBlock, BlockAmendment, StructuralElement, \
     Reference, OutgoingReference, InTextReference,\
     BlockAmendmentMetadata, \
     ActIdAbbreviation, SubArticleChildType
@@ -63,7 +63,7 @@ class ActSemanticsParser:
     ) -> None:
         # TODO: pylint is right here, should refactor.
         #pylint: disable=too-many-arguments
-        if isinstance(element, (QuotedBlock, BlockAmendment, Article)):
+        if isinstance(element, (QuotedBlock, BlockAmendment, Article, StructuralElement)):
             return
         element_reference = element.relative_reference.relative_to(parent_reference)
         if element.text is not None:

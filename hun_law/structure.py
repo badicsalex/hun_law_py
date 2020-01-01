@@ -188,10 +188,11 @@ class QuotedBlock:
     identifier: ClassVar = None
 
 
-SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock']
+SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock', 'StructuralElement']
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()
+    ALLOW_DIFFERENTLY_TYPED_CHILDREN: ClassVar[bool] = False
 
     identifier: Optional[str] = None
     text: Optional[str] = attr.ib(default=None)
@@ -206,7 +207,18 @@ class SubArticleElement(ABC):
     def _children_type_default(self) -> Optional[Type[SubArticleChildType]]:
         if self.children is None:
             return None
-        return type(self.children[0])
+        result = type(self.children[0])
+        for c in self.children:
+            # We really do want type equality here, not "isintance".
+            # pylint: disable=unidiomatic-typecheck
+            if type(c) != result:
+                if self.ALLOW_DIFFERENTLY_TYPED_CHILDREN:
+                    return None
+                raise TypeError(
+                    "All children  has to be of the  same type ({} is not {})"
+                    .format(type(c), result)
+                )
+        return result
 
     @children_map.default
     def _children_map_default(self) -> Optional[Mapping[Optional[str], SubArticleChildType]]:
@@ -224,16 +236,11 @@ class SubArticleElement(ABC):
     def _content_validator_if_children(self, _attribute: Any, children: Optional[Tuple['SubArticleElement', ...]]) -> None:
         if children is None:
             return
-        if self.children_type not in self.ALLOWED_CHILDREN_TYPE:
-            raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.children_type))
         for c in children:
             # We really do want type equality here, not "isintance".
             # pylint: disable=unidiomatic-typecheck
-            if type(c) != self.children_type:
-                raise TypeError(
-                    "All children  has to be of the  same type ({} is not {})"
-                    .format(type(c), self.children_type)
-                )
+            if type(c) not in self.ALLOWED_CHILDREN_TYPE:
+                raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.children_type))
 
     def child(self, child_id: str) -> SubArticleChildType:
         if self.children_map is None:
@@ -348,6 +355,7 @@ class AlphabeticPoint(SubArticleElement):
 @attr.s(slots=True, frozen=True)
 class BlockAmendment(SubArticleElement):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()  # Will be defined later in this file, since it uses classes defined later.
+    ALLOW_DIFFERENTLY_TYPED_CHILDREN = True
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:
@@ -471,7 +479,14 @@ class Article:
         return Reference(article=self.identifier)
 
 
-BlockAmendment.ALLOWED_CHILDREN_TYPE = (Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint)
+BlockAmendment.ALLOWED_CHILDREN_TYPE = (
+    Article,
+    Paragraph,
+    AlphabeticPoint,
+    NumericPoint,
+    AlphabeticSubpoint,
+    NumericSubpoint,
+) + STRUCTURE_ELEMENT_TYPES
 
 ActChildType = Union['StructuralElement', 'Article']
 @attr.s(slots=True, frozen=True, auto_attribs=True)

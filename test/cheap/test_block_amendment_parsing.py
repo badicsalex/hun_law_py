@@ -17,7 +17,8 @@
 
 
 from hun_law.structure import \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint, \
+    Subtitle
 
 from .utils import quick_parse_structure
 
@@ -454,3 +455,83 @@ def test_amended_paragraph_id_amendment() -> None:
     assert len(amended_structure.children) == 2
     assert amended_structure.children[0].identifier == '2'
     assert amended_structure.children[1].identifier == '2a'
+
+
+def test_amendment_with_subtitle_parsing() -> None:
+    act_text = """
+       29. § A Btk. a 300. §-t megelőzően a következő alcímmel egészül ki:
+         <BOLD> „Korrupciós bűncselekmény feljelentésének elmulasztása”
+       30. § A Btk. XXVII. Fejezete a következő alcímmel és 300/A. §-sal egészül ki:
+         <BOLD> „Értelmező rendelkezés
+                300/A. § (1) E fejezet alkalmazásában kötelességszegés a kötelességnek előny adásához kötött teljesítése is.
+                (2) A 290. § és a 291. § alkalmazásában külföldi gazdálkodó szervezet az a szervezet, amely a személyes joga szerint
+                jogi személyiséggel rendelkezik és az adott szervezeti formában gazdasági tevékenység végzésére jogosult.”
+    """
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("29").paragraph().block_amendment()
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 1
+    assert amended_structure.children[0] == Subtitle("", "Korrupciós bűncselekmény feljelentésének elmulasztása")
+
+    amended_structure = resulting_structure.article("30").paragraph().block_amendment()
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 2
+    assert amended_structure.children[0] == Subtitle("", "Értelmező rendelkezés")
+    assert isinstance(amended_structure.children[1], Article)
+    assert amended_structure.children[1].identifier == "300/A"
+    assert len(amended_structure.children[1].children) == 2
+
+
+def test_amendment_with_multiple_subtitles() -> None:
+    act_text = """
+
+           31. § A Btk. a következő 352/A–352/C. §-sal és az azokat megelőző alcímekkel egészül ki:
+         <BOLD> „Határzár tiltott átlépése
+                352/A. § (1) Aki Magyarországnak az államhatár rendje védelmét biztosító létesítmény által védett területére
+                a létesítményen keresztül jogosulatlanul belép, bűntett miatt három évig terjedő szabadságvesztéssel büntetendő.
+                (2) A büntetés egy évtől öt évig terjedő szabadságvesztés, ha az (1) bekezdésben meghatározott bűncselekményt
+                a) fegyveresen,
+                b) felfegyverkezve,
+                c) tömegzavargás résztvevőjeként
+                követik el.
+                (3) Aki az (1) bekezdésben meghatározott bűncselekményt fegyveresen vagy felfegyverkezve tömegzavargás
+                résztvevőjeként követi el, két évtől nyolc évig terjedő szabadságvesztéssel büntetendő.
+                (4) A büntetés öt évtől tíz évig terjedő szabadságvesztés, ha a (2) vagy (3) bekezdésben meghatározott
+                bűncselekmény halált okoz.
+
+         <BOLD> Határzár megrongálása
+                352/B. § (1) Aki az államhatár rendjének védelmét biztosító létesítményt, illetve eszközt megsemmisíti
+                vagy megrongálja, ha súlyosabb bűncselekmény nem valósul meg, bűntett miatt egy évtől öt évig terjedő
+                szabadságvesztéssel büntetendő.
+                (2) A büntetés két évtől nyolc évig terjedő szabadságvesztés, ha az (1) bekezdésben meghatározott bűncselekményt
+                a) fegyveresen,
+                b) felfegyverkezve,
+                c) tömegzavargás résztvevőjeként
+                követik el.
+                (3) Aki az (1) bekezdésben meghatározott bűncselekményt fegyveresen vagy felfegyverkezve tömegzavargás
+                résztvevőjeként követi el, öt évtől tíz évig terjedő szabadságvesztéssel büntetendő.
+                (4) A büntetés tíz évtől húsz évig terjedő szabadságvesztés, ha a (2) vagy (3) bekezdésben meghatározott
+                bűncselekmény halált okoz.
+         <BOLD> Határzárral kapcsolatos építési munka akadályozása
+                352/C. § Aki az államhatár rendjének védelmét biztosító létesítmény építésével vagy karbantartásával
+                kapcsolatos munkavégzést akadályozza, ha más bűncselekmény nem valósul meg, vétség miatt egy évig terjedő
+                szabadságvesztéssel büntetendő.”
+    """
+
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("31").paragraph().block_amendment()
+
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 6
+    assert amended_structure.children[0] == Subtitle("", "Határzár tiltott átlépése")
+    article = amended_structure.children[1]
+    assert isinstance(article, Article)
+    assert article.identifier == '352/A'
+    assert article.paragraph('2').point('b').text == "felfegyverkezve,"
+
+    assert amended_structure.children[2] == Subtitle("", "Határzár megrongálása")
+    assert amended_structure.children[4] == Subtitle("", "Határzárral kapcsolatos építési munka akadályozása")
+
+    article = amended_structure.children[5]
+    assert isinstance(article, Article)
+    assert article.identifier == '352/C'

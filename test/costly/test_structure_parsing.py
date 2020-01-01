@@ -171,7 +171,15 @@ def test_end_to_end_2013_185() -> None:
     assert acts["2013. évi CLXXVII. törvény"].article("58").title == "A Ptk. 7:10–7:24. §-ához"
     assert acts["2013. évi CLXXVII. törvény"].article("59").title == "A Ptk. 7:28. § (3) és (4) bekezdéséhez"
 
-    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("1").children_type == QuotedBlock
+    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("1").children_type == BlockAmendment
+    block_amendment = acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("1").block_amendment()
+    assert block_amendment.children is not None
+    assert len(block_amendment.children) == 2
+
+    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("2").children_type == BlockAmendment
+    block_amendment = acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("2").block_amendment()
+    assert block_amendment.children is not None
+    assert len(block_amendment.children) == 2
 
     assert acts["2013. évi CLXXIX. törvény"].article("1").paragraph("29").intro == "Hatályát veszti az Flt.", \
         "Relatively large number of paragraphs are correctly parsed"
