@@ -11,3 +11,4 @@ jedi
 pylint
 pytest
 pytest-parallel
+mypy
