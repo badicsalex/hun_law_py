@@ -599,6 +599,15 @@ class Reference:
             return self.act, Act
         return None, None
 
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'Reference':
+        if self.act is None:
+            return self
+        if self.act not in abbreviations_map:
+            return self
+        # TODO: We have no way of determining whether the Act ID is an
+        # abbreviation or not right now.
+        return attr.evolve(self, act=abbreviations_map[self.act])
+
 
 class RelativePosition(Enum):
     BEFORE = 1

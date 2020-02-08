@@ -141,20 +141,12 @@ class ActSemanticsParser:
             if in_text_reference.end_pos <= prefixlen or in_text_reference.end_pos > textlen:
                 continue
 
-            # Try to resolve abbreviations
-            # TODO: We have no way of determining whether the Act ID is an
-            # abbreviation or not right now.
-            to_reference = in_text_reference.reference
-            if to_reference.act is not None:
-                if to_reference.act in abbreviations_map:
-                    to_reference = attr.evolve(to_reference, act=abbreviations_map[to_reference.act])
-
             result.append(
                 OutgoingReference(
                     from_reference=element_reference,
                     start_pos=max(in_text_reference.start_pos - prefixlen, 0),
                     end_pos=(in_text_reference.end_pos - prefixlen),
-                    to_reference=to_reference
+                    to_reference=in_text_reference.reference.resolve_abbreviations(abbreviations_map)
                 )
             )
         result.sort()
