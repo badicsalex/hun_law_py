@@ -496,7 +496,7 @@ class Act:
     preamble: str
     children: Tuple[ActChildType, ...]
 
-    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation']] = None
+    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation', ...]] = None
     outgoing_references: Optional[Tuple['OutgoingReference', ...]] = attr.ib(default=None)
 
     articles: Tuple[Article, ...] = attr.ib(init=False)
