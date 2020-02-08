@@ -1014,5 +1014,5 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)  # type: ignore
 def test_block_amendment_parsing(s: str, correct_metadata: BlockAmendmentMetadata) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
-    parsed_metadata = parsed.special_expression
-    assert correct_metadata == parsed_metadata
+    parsed_metadata = parsed.semantic_data
+    assert (correct_metadata, ) == parsed_metadata

@@ -16,12 +16,12 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from typing import List, Iterable
+from typing import List, Iterable, Tuple, Mapping
 
 import attr
 
 from hun_law.structure import \
-    Act, Article, Paragraph, QuotedBlock, BlockAmendment, StructuralElement, \
+    Act, Article, Paragraph, QuotedBlock, BlockAmendment, StructuralElement, SemanticData, \
     Reference, OutgoingReference, InTextReference,\
     BlockAmendmentMetadata, \
     ActIdAbbreviation, SubArticleChildType
@@ -34,6 +34,7 @@ class SemanticParseState:
     analyzer: GrammaticalAnalyzer = attr.ib(factory=GrammaticalAnalyzer)
     act_id_abbreviations: List[ActIdAbbreviation] = attr.ib(factory=list)
     outgoing_references: List[OutgoingReference] = attr.ib(factory=list)
+    semantic_data: List[Tuple[Reference, SemanticData]] = attr.ib(factory=list)
 
 
 class ActSemanticsParser:
@@ -50,7 +51,8 @@ class ActSemanticsParser:
         return attr.evolve(
             act,
             act_id_abbreviations=tuple(state.act_id_abbreviations),
-            outgoing_references=tuple(state.outgoing_references)
+            outgoing_references=tuple(state.outgoing_references),
+            semantic_data=tuple(state.semantic_data),
         )
 
     @classmethod
@@ -112,14 +114,20 @@ class ActSemanticsParser:
 
         state.act_id_abbreviations.extend(analysis_result.act_id_abbreviations)
 
+        abbreviations_map = {a.abbreviation: a.act for a in state.act_id_abbreviations}
+
         state.outgoing_references.extend(cls.convert_parsed_references(
             analysis_result.all_references,
             element_reference,
             len(prefix), len(text) - len(postfix),
-            state
+            abbreviations_map,
         ))
-        # TODO: parse block amendments, and return interesting results
-        return
+
+        for semantic_data_element in analysis_result.semantic_data:
+            state.semantic_data.append((
+                element_reference,
+                semantic_data_element.resolve_abbreviations(abbreviations_map),
+            ))
 
     @classmethod
     def convert_parsed_references(
@@ -128,12 +136,11 @@ class ActSemanticsParser:
             element_reference: Reference,
             prefixlen: int,
             textlen: int,
-            state: SemanticParseState
+            abbreviations_map: Mapping[str, str],
     ) -> Iterable[OutgoingReference]:
         # TODO: pylint is right here, should refactor.
         #pylint: disable=too-many-arguments
         result = []
-        abbreviations_map = {a.abbreviation: a.act for a in state.act_id_abbreviations}
         for in_text_reference in parsed_references:
             # The end of the parsed reference is inside the target string
             # Checking for the end and not the beginning is important, because
@@ -199,15 +206,19 @@ class ActBlockAmendmentParser:
                 context_outro = paragraph.wrap_up[1:-1]
 
         # TODO: Maybe cache?
-        analysis_result = GrammaticalAnalyzer().analyze(actual_intro).special_expression
-        if not isinstance(analysis_result, BlockAmendmentMetadata):
+        semantic_data = GrammaticalAnalyzer().analyze(actual_intro).semantic_data
+        for semantic_data_element in semantic_data:
+            if isinstance(semantic_data_element, BlockAmendmentMetadata):
+                block_amendment_metadata = semantic_data_element
+                break
+        else:  # no break: no BlockAmendmentMetadata found
             return paragraph
 
         assert len(paragraph.children) == 1
 
         try:
             block_amendment = BlockAmendmentStructureParser.parse(
-                analysis_result,
+                block_amendment_metadata,
                 context_intro, context_outro,
                 paragraph.quoted_block(0).lines
             )

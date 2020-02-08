@@ -19,13 +19,15 @@ from typing import List, Tuple
 
 import pytest
 
-from hun_law.structure import Act, OutgoingReference, Reference
+from hun_law.structure import Act, OutgoingReference, Reference, \
+    SemanticData, BlockAmendmentMetadata, \
+    NumericPoint, AlphabeticSubpoint
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 from .utils import ref, quick_parse_structure
 
 
-CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]]] = [
+CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...], Tuple[Tuple[Reference, SemanticData], ...]]] = [
     (
         """
             17. §          Hatályát veszti
@@ -43,10 +45,13 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "16/A")),
             (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "91", "2")),
         ),
+        (),
     ),
     (
         """
         40. § (1)  A kisadózó vállalkozások tételes adójáról és a kisvállalati adóról szóló 2012. évi CXLVII. törvény (a továbbiakban: Katv.) 2. § 19–20. pontja helyébe a következő rendelkezés lép:
+               „19. Torolve
+                20. Torolve2”
 
         41. §   Hatályát veszti
                 1. az illetékekről szóló 1990. évi XCIII. törvény 17. § (1) bekezdés c) pontjában a „vagy egészségügyi hozzájárulás” szövegrész;
@@ -75,6 +80,19 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             (ref(None, "41", None, "4"), ref("2012. évi CXLVII. törvény")),
             (ref(None, "41", None, "4"), ref("2012. évi CXLVII. törvény", "2", None, "21")),
         ),
+        (
+            (
+                ref(None, "40", "1"),
+                BlockAmendmentMetadata(
+                    position=ref('2012. évi CXLVII. törvény', '2', None, '19'),
+                    expected_type=NumericPoint,
+                    expected_id_range=('19', '20'),
+                    replaces=(
+                        ref('2012. évi CXLVII. törvény', '2', None, ('19', '20')),
+                    )
+                )
+            ),
+        ),
     ),
     (
         """
@@ -90,7 +108,8 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             (ref(None, "2", "1"), ref(None, None, "2", "1")),
             (ref(None, "2", "1"), ref(None, point="a")),
             (ref(None, "2", "2", "2"), ref(None, "12/A", ("1", "5"))),
-        )
+        ),
+        (),
     ),
     (
         """
@@ -99,28 +118,44 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                        helyébe a következő rendelkezés lép: (E törvényben és az e törvény felhatalmazása alapján kiadott
                        jogszabályban: 1. devizakölcsön: a természetes személy mint adós vagy adóstárs és a pénzügyi intézmény
                        között létrejött olyan kölcsönszerződés alapján fennálló tartozás, amelynél)
-                       „
-                            c) a kölcsön fedezete a Magyar Köztársaság területén lévő lakóingatlanon alapított zálogjog vagy a Magyar
+                       „c) a kölcsön fedezete a Magyar Köztársaság területén lévő lakóingatlanon alapított zálogjog vagy a Magyar
                             Köztársaság 2005. évi költségvetéséről szóló 2004. évi CXXXV. törvény 44. §-a alapján vállalt állami készfizető
                             kezesség;
                        ”
                   (2)  A Tv. 1. § (1) bekezdés 4. pontja helyébe a következő rendelkezés lép: (E törvényben és az e törvény
                        felhatalmazása alapján kiadott jogszabályban:)
-                       „
-                            4. gyűjtőszámlahitel: gyűjtőszámlahitelre vonatkozó hitelkeret-szerződés alapján a devizakölcsön törlesztése során
-                            a rögzített árfolyam alkalmazása miatt a hiteladós által meg nem fizetett törlesztőrészlet-hányad finanszírozására,
-                            a devizakölcsön tekintetében hitelezőnek minősülő pénzügyi intézmény által a hiteladósnak forintban,
-                            a devizakölcsön ingatlanfedezetével azonos ingatlanra érvényesíthető jelzálogjog vagy a Magyar Köztársaság
-                            2005. évi költségvetéséről szóló 2004. évi CXXXV. törvény 44. §-a alapján vállalt állami készfizető kezesség fedezete
-                            mellett a rögzített árfolyam alkalmazásának időszaka alatt folyósított kölcsön;
-                       ”
+                       „4. gyűjtőszámlahitel: nem annyira fontos”
         """,
         (
             (ref(None, "1", "1"), ref("2011. évi LXXV. törvény")),
             (ref(None, "1", "1"), ref("2011. évi LXXV. törvény", "1", "1", "1", "c")),
             (ref(None, "1", "2"), ref("2011. évi LXXV. törvény")),
             (ref(None, "1", "2"), ref("2011. évi LXXV. törvény", "1", "1", "4")),
-        )
+        ),
+        (
+            (
+                ref(None, "1", "1"),
+                BlockAmendmentMetadata(
+                    position=ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
+                    expected_type=AlphabeticSubpoint,
+                    expected_id_range=('c', 'c'),
+                    replaces=(
+                        ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
+                    )
+                )
+            ),
+            (
+                ref(None, "1", "2"),
+                BlockAmendmentMetadata(
+                    position=ref("2011. évi LXXV. törvény", "1", "1", "4"),
+                    expected_type=NumericPoint,
+                    expected_id_range=('4', '4'),
+                    replaces=(
+                        ref("2011. évi LXXV. törvény", "1", "1", "4"),
+                    )
+                )
+            ),
+        ),
     ),
 ]
 
@@ -172,16 +207,17 @@ CASES_WITH_POSITIONS: List[Tuple[str, Tuple[OutgoingReference, ...]]] = [
 
 
 def quick_parse_with_semantics(act_text: str) -> Act:
-    act = quick_parse_structure(act_text)
+    act = quick_parse_structure(act_text, parse_block_amendments=True)
     return ActSemanticsParser.parse(act)
 
 
-@pytest.mark.parametrize("act_text,references", CASES_WITHOUT_POSITIONS)  # type: ignore
-def test_outgoing_references_without_position(act_text: str, references: Tuple[Tuple[Reference, Reference], ...]) -> None:
+@pytest.mark.parametrize("act_text,references,semantic_data", CASES_WITHOUT_POSITIONS)  # type: ignore
+def test_outgoing_references_without_position(act_text: str, references: Tuple[Tuple[Reference, Reference], ...], semantic_data: Tuple[Tuple[Reference, SemanticData], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
     assert act.outgoing_references is not None
     outgoing_references = tuple((r.from_reference, r.to_reference) for r in act.outgoing_references)
     assert outgoing_references == references
+    assert act.semantic_data == semantic_data
 
 
 @pytest.mark.parametrize("act_text,outgoing_references", CASES_WITH_POSITIONS)  # type: ignore

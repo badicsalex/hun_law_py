@@ -480,11 +480,8 @@ class GrammarResultContainer:
         return tuple(r for r in self.results if isinstance(r, ActIdAbbreviation))
 
     @property
-    def special_expression(self) -> Union[None, BlockAmendmentMetadata]:
-        result = tuple(r for r in self.results if isinstance(r, BlockAmendmentMetadata))
-        if result:
-            return result[0]
-        return None
+    def semantic_data(self) -> Tuple[SemanticData, ...]:
+        return tuple(r for r in self.results if isinstance(r, SemanticData))
 
 
 class GrammaticalAnalyzer:

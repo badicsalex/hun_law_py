@@ -498,6 +498,7 @@ class Act:
 
     act_id_abbreviations: Optional[Tuple['ActIdAbbreviation', ...]] = None
     outgoing_references: Optional[Tuple['OutgoingReference', ...]] = attr.ib(default=None)
+    semantic_data: Optional[Tuple[Tuple['Reference', 'SemanticData'], ...]] = None
 
     articles: Tuple[Article, ...] = attr.ib(init=False)
     articles_map: Mapping[str, Article] = attr.ib(init=False)
@@ -638,6 +639,7 @@ class StructuralReference:
         # abbreviation or not right now.
         return attr.evolve(self, act=abbreviations_map[self.act])
 
+
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class ActIdAbbreviation:
     abbreviation: str
@@ -646,7 +648,8 @@ class ActIdAbbreviation:
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class SemanticData:
-    pass
+    def resolve_abbreviations(self, _abbreviations_map: Mapping[str, str]) -> 'SemanticData':
+        return self
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
@@ -655,3 +658,8 @@ class BlockAmendmentMetadata(SemanticData):
     expected_type: Type[Union[SubArticleElement, Article, StructuralElement]]
     expected_id_range: Optional[Tuple[str, str]] = None
     replaces: Tuple[Union[Reference, StructuralReference], ...] = tuple()
+
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'BlockAmendmentMetadata':
+        position = self.position.resolve_abbreviations(abbreviations_map)
+        replaces = tuple(r.resolve_abbreviations(abbreviations_map) for r in self.replaces)
+        return attr.evolve(self, position=position, replaces=replaces)
