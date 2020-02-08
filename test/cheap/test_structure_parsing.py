@@ -23,7 +23,6 @@ from typing import Iterable, Any
 import pytest
 
 from hun_law.utils import object_to_dict_recursive
-from hun_law.structure import Subtitle
 
 from .utils import quick_parse_structure
 
