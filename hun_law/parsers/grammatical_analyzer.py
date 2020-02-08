@@ -21,10 +21,10 @@ import attr
 import tatsu
 import tatsu.model
 
-from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, \
+from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
     Act, SubArticleElement, \
-    ReferencePartType, SemanticMetadataType, \
+    ReferencePartType, \
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, Subtitle
 
 from .grammar import model
@@ -130,6 +130,9 @@ class ReferenceCollector:
         yield InTextReference(start_override, end_override, Reference(*ref_args))
 
 
+ConversionResultType = Union[InTextReference, ActIdAbbreviation, SemanticData]
+
+
 class ModelConverter(ABC):
     # TODO: This used to not have a value, but pylint seems to complain
     # about usages then. I don't know why.
@@ -137,7 +140,7 @@ class ModelConverter(ABC):
 
     @classmethod
     @abstractmethod
-    def convert(cls, tree_element: model.ModelBase) -> Iterable[SemanticMetadataType]:
+    def convert(cls, tree_element: model.ModelBase) -> Iterable[ConversionResultType]:
         """ Convert a model element to any number of structure elements """
 
 
@@ -432,16 +435,16 @@ class GrammarResultContainer:
     )
 
     tree: Any = attr.ib()
-    results: Tuple[SemanticMetadataType, ...] = attr.ib(init=False)
+    results: Tuple[ConversionResultType, ...] = attr.ib(init=False)
 
     @classmethod
-    def convert_single_node(cls, node: model.ModelBase) -> Iterable[SemanticMetadataType]:
+    def convert_single_node(cls, node: model.ModelBase) -> Iterable[ConversionResultType]:
         for converter in cls.CONVERTER_CLASSES:
             if isinstance(node, converter.CONVERTED_TYPE):
                 yield from converter.convert(node)
 
     @classmethod
-    def convert_depth_first(cls, node: model.ModelBase) -> Iterable[SemanticMetadataType]:
+    def convert_depth_first(cls, node: model.ModelBase) -> Iterable[ConversionResultType]:
         if isinstance(node, tatsu.model.Node):
             to_iter = node.ast
         else:
@@ -457,7 +460,7 @@ class GrammarResultContainer:
         yield from cls.convert_single_node(node)
 
     @results.default
-    def _results_default(self) -> Tuple[SemanticMetadataType, ...]:
+    def _results_default(self) -> Tuple[ConversionResultType, ...]:
         return tuple(self.convert_depth_first(self.tree))
 
     @property

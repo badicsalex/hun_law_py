@@ -637,11 +637,13 @@ class ActIdAbbreviation:
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
-class BlockAmendmentMetadata:
+class SemanticData:
+    pass
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
+class BlockAmendmentMetadata(SemanticData):
     position: Union[Reference, StructuralReference]
     expected_type: Type[Union[SubArticleElement, Article, StructuralElement]]
     expected_id_range: Optional[Tuple[str, str]] = None
     replaces: Tuple[Union[Reference, StructuralReference], ...] = tuple()
-
-
-SemanticMetadataType = Union[InTextReference, ActIdAbbreviation, BlockAmendmentMetadata]
