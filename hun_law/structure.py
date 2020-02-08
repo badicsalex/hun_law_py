@@ -629,6 +629,14 @@ class StructuralReference:
     chapter: Optional[str] = None
     subtitle: Optional[SubtitleReferenceArticleRelative] = None
 
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'StructuralReference':
+        if self.act is None:
+            return self
+        if self.act not in abbreviations_map:
+            return self
+        # TODO: We have no way of determining whether the Act ID is an
+        # abbreviation or not right now.
+        return attr.evolve(self, act=abbreviations_map[self.act])
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class ActIdAbbreviation:
