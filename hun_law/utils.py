@@ -310,6 +310,8 @@ def object_to_dict_recursive(obj: Any) -> Any:
         return obj
     if isinstance(obj, (list, tuple)):
         return list(object_to_dict_recursive(v) for v in obj)
+    if isinstance(obj, type):
+        return {'__typename__': obj.__name__}
 
     dct = attr.asdict(
         obj,
@@ -329,6 +331,9 @@ def dict_to_object_recursive(dct: Any, types_to_use: Iterable[Type], *, types_di
         return dct
     if isinstance(dct, (list, tuple)):
         return tuple(dict_to_object_recursive(v, types_to_use, types_dict=types_dict) for v in dct)
+    if "__typename__" in dct:
+        return types_dict[dct['__typename__']]
+
     the_type = types_dict[dct['__type__']]
     args_for_the_type = {}
     for k, v in dct.items():
