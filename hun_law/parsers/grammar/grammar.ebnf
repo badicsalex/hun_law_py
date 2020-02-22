@@ -21,6 +21,7 @@
 # ============ STARTING TOKENS ============
 start_default =
     | block_amendment $
+    | enforcement_date $
     | {any_simple_expression}+ $;
 
 # ============ STRUCTURE PARSING ============
@@ -169,6 +170,28 @@ block_amendment::BlockAmendment
     );
 
 
+# ============ ENFORCEMENT DATE PARSING ============
+
+after_publication::AfterPublication =
+    ("a" | "e törvény")
+    "kihirdetését követő"
+    [as_text:hungarian_ordinal | as_number:number_with_dot]
+    "napon"
+    ;
+
+enforcement_date::EnforcementDate =
+    (
+        (("E" | "Ez a") "törvény") |
+        /[A]z?/
+    )
+    { references+:reference [list_separator [az]] }*
+    (
+        exact_date:date |
+        after_publication:after_publication
+    )
+    "lép hatályba."
+        ;
+
 # ============ SIMPLE TOKENS ============
 
 az = /az?/;
@@ -177,5 +200,19 @@ roman_with_dot = roman "." ;
 number = /[0-9]+/ ;
 word = /[a-zéáőúöüóíűA-ZÉÁŐÚÖÜÓÍŰ\-]+/ ;
 roman = /[IVXLCDM]+/ ; # TODO = actual grammar for this.
+
+date::Date =
+        year:number "." month:month day:number ("-án" | "-jén" | "-én" | ". napján")
+    ;
+
+month = "január" | "február" | "március" | "április" | "május" | "június" |
+    "július" | "augusztus" | "október" | "november" | "december";
+
+hungarian_ordinal = "első" | "második" | "harmadik" | "negyedik" | "ötödik" |
+    "hatodik" | "hetedik"| "nyolcadik" | "kilencedik" | "tizedik" |
+    "tizenegyedik" | "tizenkettedik" | "tizenharmadik" | "tizennegyedik" | "tizenötödik" |
+    "tizenhatodik" | "tizenhetedik" | "tizennyolcadik" | "tizenkilencedik" |
+    "huszadik" | "harmincadik" | "negyvenedik" | "ötvenedik" |
+    "hatvanadik" | "hetvenedik" | "nyolcvanadik" | "kilencvenedik";
 
 dash = "−" | "–" | "-" ;

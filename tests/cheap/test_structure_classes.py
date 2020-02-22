@@ -145,6 +145,11 @@ def test_relative_references() -> None:
     ref_expected = Reference(article="1", point="2", subpoint="a")
     assert ref_2.relative_to(ref_1) == ref_expected, "Reference relative_to overrides too exact original ref"
 
+    ref_1 = Reference(article="1", point="1", subpoint='a')
+    ref_2 = Reference(point="2")
+    ref_expected = Reference(article="1", point="2")
+    assert ref_2.relative_to(ref_1) == ref_expected, "Reference relative_to overrides too exact original ref"
+
 
 def test_reference_ranges() -> None:
     not_range = Reference("2345. évi XD. törvény", "1:2", "2")

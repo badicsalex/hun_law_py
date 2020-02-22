@@ -20,7 +20,7 @@ from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable, An
 
 import attr
 
-from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_next_letter_hun
+from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_next_letter_hun, Date
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -663,3 +663,24 @@ class BlockAmendmentMetadata(SemanticData):
         position = self.position.resolve_abbreviations(abbreviations_map)
         replaces = tuple(r.resolve_abbreviations(abbreviations_map) for r in self.replaces)
         return attr.evolve(self, position=position, replaces=replaces)
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class DayNextMonthAfterPublication:
+    day: int
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class DaysAfterPublication:
+    days: int = 1
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class SpecialEnforcementDate:
+    description: str
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
+class EnforcementDate(SemanticData):
+    position: Optional[Reference]
+    date: Union[Date, DaysAfterPublication, DayNextMonthAfterPublication, SpecialEnforcementDate]

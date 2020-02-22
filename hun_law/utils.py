@@ -134,6 +134,14 @@ class IndentedLine:
 
 EMPTY_LINE = IndentedLine()
 
+
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class Date:
+    year: int
+    month: int
+    day: int
+
+
 T = TypeVar('T')
 
 
@@ -371,3 +379,23 @@ def is_next_letter_hun(a: str, b: str) -> bool:
     if len(a) == 1 and len(b) == 1 and ord(a) + 1 == ord(b):
         return True
     return False
+
+
+MONTHS_HUN = (
+    "január",
+    "február",
+    "március",
+    "április",
+    "május",
+    "június",
+    "július",
+    "augusztus",
+    "szeptember",
+    "október",
+    "november"
+    "december"
+)
+
+
+def text_to_month_hun(s: str) -> int:
+    return MONTHS_HUN.index(s) + 1

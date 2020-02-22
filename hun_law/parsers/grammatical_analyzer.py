@@ -21,11 +21,15 @@ import attr
 import tatsu
 import tatsu.model
 
-from hun_law.structure import Reference, ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
+from hun_law.structure import Reference, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
     Act, SubArticleElement, \
     ReferencePartType, \
-    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, Subtitle
+    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, Subtitle, \
+    ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
+    EnforcementDate, DaysAfterPublication
+
+from hun_law.utils import text_to_month_hun, text_to_int_hun, Date
 
 from .grammar import model
 from .grammar.parser import ActGrammarParser  # type: ignore
@@ -425,6 +429,78 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         return cls.convert_simple_case(act_id, tree_element)
 
 
+class EnforcementDateToEnforcementDate(ModelConverter):
+    CONVERTED_TYPE = model.EnforcementDate
+
+    @classmethod
+    def convert_after_publication_date(cls, after_publication: model.AfterPublication) -> DaysAfterPublication:
+        if after_publication.as_number:
+            return DaysAfterPublication(int(after_publication.as_number[0]))
+        if after_publication.as_text:
+            return DaysAfterPublication(text_to_int_hun(after_publication.as_text))
+        return DaysAfterPublication()
+
+    @classmethod
+    def convert_exact_date(cls, exact_date: model.Date) -> Date:
+        assert isinstance(exact_date.year, str)
+        assert isinstance(exact_date.month, str)
+        assert isinstance(exact_date.day, str)
+        return Date(
+            int(exact_date.year),
+            text_to_month_hun(exact_date.month),
+            int(exact_date.day)
+        )
+
+    @classmethod
+    def convert_reference(cls, reference: model.Reference) -> Tuple[Reference, ...]:
+        return tuple(
+            ref.reference for ref in ReferenceConversionHelper.convert_single_reference(None, reference)
+        )
+
+    @classmethod
+    def convert(cls, tree_element: model.EnforcementDate) -> Iterable[EnforcementDate]:
+        if tree_element.exact_date:
+            date = cls.convert_exact_date(tree_element.exact_date)
+        elif tree_element.after_publication:
+            date = cls.convert_after_publication_date(tree_element.after_publication)
+        else:
+            raise ValueError("No actual date in 'EnforcementDate'. Grammar is probably wrong")
+
+        if not tree_element.references:
+            yield EnforcementDate(position=None, date=date)
+        else:
+            for converted_reference in EnforcementDateToReference.convert(tree_element):
+                yield EnforcementDate(position=converted_reference.reference, date=date)
+
+
+class EnforcementDateToReference(ModelConverter):
+    CONVERTED_TYPE = model.EnforcementDate
+    @classmethod
+    def convert_reference(cls, reference: model.Reference) -> Tuple[Reference, ...]:
+        return tuple(
+            ref.reference for ref in ReferenceConversionHelper.convert_single_reference(None, reference)
+        )
+
+    @classmethod
+    def convert(cls, tree_element: model.EnforcementDate) -> Iterable[InTextReference]:
+        if tree_element.references:
+            # Some references will be relative to the previous ones.
+            # This may be considered a mistake in parsing the reference lists, but
+            # this 'relativization' can only be done in the context of the whole sentence.
+            # As an example, see:
+            # "... az 1. § (2) bekezdése, és az (5) bekezdés ..."
+            # This can be:
+            # "Az 1. § (2) bekezdése, és az (5) bekezdése a kihirdetést követő napon lép hatályba"
+            # Or:
+            # "Fontos kivétel 1. § (2) bekezdése, és az (5) bekezdés szerinti definíció"
+            last_reference = Reference()
+            for reference in tree_element.references:
+                for converted_reference in ReferenceConversionHelper.convert_single_reference(None, reference):
+                    fixed_reference = converted_reference.reference.relative_to(last_reference)
+                    yield attr.evolve(converted_reference, reference=fixed_reference)
+                    last_reference = fixed_reference
+
+
 @attr.s(slots=True, frozen=True)
 class GrammarResultContainer:
     CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
@@ -432,6 +508,8 @@ class GrammarResultContainer:
         ActReferenceToActIdAbbreviation,
         BlockAmendmentToBlockAmendmentMetadata,
         BlockAmendmentToInTextReference,
+        EnforcementDateToEnforcementDate,
+        EnforcementDateToReference,
     )
 
     tree: Any = attr.ib()

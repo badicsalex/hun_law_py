@@ -478,6 +478,68 @@ CASES: List[Tuple[
         ],
         [],
     ),
+    (
+        "A 229. §, a 231. §, a 233. § (1) bekezdés a) és c) pontja, (2) bekezdés d) és f) pontja, a 256. §, a 314. "
+        "§ és a 318. § 2013. február 1-jén lép hatályba.",
+        "  <    >    <    >    <                    >    <       >  <             >    <       >    <    >    <    "
+        ">      <    >                                  ",
+        [
+            ref(None, '229'),
+            ref(None, '231'),
+            ref(None, '233', '1', 'a'),
+            ref(None, '233', '1', 'c'),
+            ref(None, '233', '2', 'd'),
+            ref(None, '233', '2', 'f'),
+            ref(None, '256'),
+            ref(None, '314'),
+            ref(None, '318'),
+        ],
+        [],
+    ),
+    (
+        "A 229. §, a 231. §, a 233. § (1) bekezdés a) és c) pontja, (2) bekezdés d) és f) pontja, a 256. §, a 314. "
+        "§ és a 318. § direkt nem egy hatályba helyező mondat.",
+        "  <    >    <    >    <                    >    <       >  <             >    <       >    <    >    <    "
+        ">      <    >                                        ",
+        [
+            ref(None, '229'),
+            ref(None, '231'),
+            ref(None, '233', '1', 'a'),
+            ref(None, '233', '1', 'c'),
+            ref(None, None, '2', 'd'),
+            ref(None, None, '2', 'f'),
+            ref(None, '256'),
+            ref(None, '314'),
+            ref(None, '318'),
+        ],
+        [],
+    ),
+    (
+        "A 228. §, a 230. §, a 232. §, a 233. § (1) bekezdés b) pontja és (2) bekezdés a)–c) és e) pontja, a "
+        "235–255. §, a 257–260. §, a 261. § (2)–(5) bekezdése és (6) bekezdés b)–d) pontja, a 262–290. §, a 291. § "
+        "(1), (2), és (4)–(10) bekezdése, a 292–313. § és a 315–317. § sem hatálybahelyező mondat.",
+        "  <    >    <    >    <    >    <                           >    <                >    <       >    "
+        "<        >    <        >    <                      >    <                       >    <        >    <      "
+        "       >     <                >    <        >      <        >                            ",
+        [
+            ref(None, '228'),
+            ref(None, '230'),
+            ref(None, '232'),
+            ref(None, '233', '1', 'b'),
+            ref(None, None, '2', ('a', 'c')),
+            ref(None, None, '2', 'e'),
+            ref(None, ('235', '255')),
+            ref(None, ('257', '260')),
+            ref(None, '261', ('2', '5')),
+            ref(None, None, '6', ('b', 'd')),
+            ref(None, ('262', '290')),
+            ref(None, '291', ('1', '2')),
+            ref(None, '291', ('4', '10')),
+            ref(None, ('292', '313')),
+            ref(None, ('315', '317')),
+        ],
+        [],
+    ),
 ]
 
 
