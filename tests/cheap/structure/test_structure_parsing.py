@@ -24,11 +24,11 @@ import pytest
 
 from hun_law.utils import object_to_dict_recursive
 
-from .utils import quick_parse_structure
+from tests.cheap.utils import quick_parse_structure
 
 
 def structure_testcase_provider() -> Iterable[Any]:
-    data_dir = os.path.join(os.path.dirname(__file__), 'data/structure_tests')
+    data_dir = os.path.join(os.path.dirname(__file__), 'data')
     for fname in sorted(os.listdir(data_dir)):
         if not fname.endswith('.txt'):
             continue

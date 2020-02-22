@@ -20,7 +20,7 @@ from hun_law.structure import \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, NumericSubpoint, \
     Subtitle
 
-from .utils import quick_parse_structure
+from tests.cheap.utils import quick_parse_structure
 
 
 def test_simple_block_amendment_1() -> None:
