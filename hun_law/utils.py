@@ -392,10 +392,12 @@ MONTHS_HUN = (
     "augusztus",
     "szeptember",
     "október",
-    "november"
+    "november",
     "december"
 )
 
 
 def text_to_month_hun(s: str) -> int:
+    if s not in MONTHS_HUN:
+        raise KeyError("{} is not a valid month name".format(s))
     return MONTHS_HUN.index(s) + 1
