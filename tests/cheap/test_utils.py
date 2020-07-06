@@ -25,6 +25,11 @@ from hun_law.utils import \
     text_to_int_hun, int_to_text_hun, \
     text_to_int_roman, int_to_text_roman
 from hun_law.cache import CacheObject, init_cache
+from hun_law.structure import \
+    BlockAmendmentMetadata, SubtitleReferenceArticleRelative, RelativePosition, \
+    Reference, StructuralReference, \
+    Subtitle
+
 from .data.example_content import compression_test_parts
 
 
@@ -258,3 +263,35 @@ def test_text_to_int_roman() -> None:
         text_to_int_roman("Invalid")
     with pytest.raises(ValueError):
         text_to_int_roman("XIX/A")
+
+
+def test_obj_to_dict_can_handle_specials() -> None:
+    test_data = BlockAmendmentMetadata(
+        expected_type=Subtitle,
+        expected_id_range=("349", "349"),
+        position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
+        replaces=(
+            StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
+            Reference(act="Btk.", article="349"),
+        )
+    )
+
+    the_dict = object_to_dict_recursive(test_data)
+
+    # This should not throw
+    the_json = json.dumps(the_dict)
+    reconstructed_dict = json.loads(the_json)
+
+    reconstructed_data = dict_to_object_recursive(
+        reconstructed_dict,
+        [
+            BlockAmendmentMetadata,
+            Subtitle,
+            StructuralReference,
+            SubtitleReferenceArticleRelative,
+            RelativePosition,
+            Reference,
+        ]
+    )
+
+    assert reconstructed_data == test_data

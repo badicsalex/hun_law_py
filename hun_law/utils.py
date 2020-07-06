@@ -18,6 +18,7 @@
 import textwrap
 from string import ascii_uppercase
 from typing import Tuple, List, Iterable, TypeVar, Optional, Dict, Any, TextIO, Type
+from enum import Enum
 
 import attr
 
@@ -320,6 +321,8 @@ def object_to_dict_recursive(obj: Any) -> Any:
         return list(object_to_dict_recursive(v) for v in obj)
     if isinstance(obj, type):
         return {'__typename__': obj.__name__}
+    if isinstance(obj, Enum):
+        return {'__type__': obj.__class__.__name__, '__value__': obj.name}
 
     dct = attr.asdict(
         obj,
@@ -343,6 +346,9 @@ def dict_to_object_recursive(dct: Any, types_to_use: Iterable[Type], *, types_di
         return types_dict[dct['__typename__']]
 
     the_type = types_dict[dct['__type__']]
+    if issubclass(the_type, Enum):
+        return the_type[dct['__value__']]
+
     args_for_the_type = {}
     for k, v in dct.items():
         if k == '__type__':
