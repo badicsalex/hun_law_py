@@ -83,7 +83,7 @@ def delete_line(needle: str) -> FixupFn:
     return line_deleter
 
 
-def replace_line_content(needle: str, replacement: str, *, needle_prev_lines: Optional[Sequence[IndentedLine]] = None) -> FixupFn:
+def replace_line_content(needle: str, replacement: str, *, needle_prev_lines: Optional[Sequence[str]] = None) -> FixupFn:
     common_prefix_len = 0
     while common_prefix_len < len(needle) and \
             common_prefix_len < len(replacement) and \
