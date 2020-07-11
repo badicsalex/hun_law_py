@@ -115,6 +115,10 @@ after_article::AfterArticle::StructuralReference = [az] >article_id "." article_
 before_article::BeforeArticle::StructuralReference = [az] >article_id "." article_suffix ("megelőzően" | "megelőző" );
 subtitle_title::SubtitleTitle::StructuralReference = {!"alcíme" any_simple_expression} "alcíme";
 
+subtitle_number::SubtitleNumber::StructuralReference =
+    id:(number [["/"] /[A-Z]/])  "." subtitle_suffix;
+subtitle_suffix = /alcím[a-zéáőúöüóíű]+/ | "alcím";
+
 chapter_number::ChapterNumber::StructuralReference =
     id:(roman [["/"] /[A-Z]/])  "." chapter_suffix;
 chapter_suffix = /Fejezet[a-zéáőúöüóíű]+/ | "Fejezet";
@@ -130,7 +134,7 @@ title_number::TitleNumber::StructuralReference =
 title_suffix = /Cím[a-zéáőúöüóíű]+/ | "Cím";
 
 any_structural_reference =
-    | subtitle_title
+    | subtitle_number
     | chapter_number
     | part_number
     | title_number
@@ -182,6 +186,7 @@ insertion_suffix =
 structural_position_reference =
     | [chapter_number] structural_reference:after_article
     | [chapter_number] structural_reference:before_article
+    | subtitle_title
     | structural_reference:(>any_structural_reference)
     ;
 

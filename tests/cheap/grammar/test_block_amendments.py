@@ -485,6 +485,14 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             replaces=(StructuralReference("Btk.", chapter="XXIV"),)
         ),
     ),
+    (
+        "Az Nkt. 11/A. alcíme helyébe a következő rendelkezés lép:",
+        BlockAmendmentMetadata(
+            expected_type=Subtitle,
+            position=StructuralReference("Nkt.", subtitle="11/A"),
+            replaces=(StructuralReference("Nkt.", subtitle="11/A"),)
+        ),
+    ),
 
 )
 

@@ -218,6 +218,9 @@ class ReferenceConversionHelper:
         if isinstance(reference, model.AfterArticle):
             return Subtitle, StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "".join(reference.id)))
 
+        if isinstance(reference, model.SubtitleNumber):
+            return Subtitle, StructuralReference(act_id, subtitle="".join(reference.id))
+
         if isinstance(reference, model.ChapterNumber):
             return Chapter, StructuralReference(act_id, chapter="".join(reference.id))
 
