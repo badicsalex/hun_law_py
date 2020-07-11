@@ -438,6 +438,15 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             ),
         )
     ),
+    (
+        "A számvitelről szóló 2000. évi C. törvény (a továbbiakban: Szt.) 3. § (2) bekezdés 4. és 5. pontja helyébe a következő rendelkezések lépnek és a bekezdés a következő 5a. ponttal egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=NumericPoint,
+            expected_id_range=("4", "5a"),
+            position=ref("2000. évi C. törvény", "3", "2", "4"),
+            replaces=(ref("2000. évi C. törvény", "3", "2", ("4", "5")),),
+        )
+    ),
 
 
     # TODO:

@@ -161,7 +161,7 @@ block_amendment::BlockAmendment
         # non-subtitle cases
         amended_reference:reference amendment_suffix ":" |
         inserted_reference:insertion_reference insertion_suffix ":" |
-        amended_reference:reference amendment_suffix "," ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference insertion_suffix ":" |
+        amended_reference:reference amendment_suffix [","] ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference insertion_suffix ":" |
 
         # subtitle cases
         amended_reference:reference_with_subtitle amendment_suffix ":" |
