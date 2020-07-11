@@ -172,7 +172,7 @@ class ReferenceConversionHelper:
                 reference_collector.add_item(ref_type_name, (start_id_as_string, end_id_as_string), start_pos, end_pos)
 
     @classmethod
-    def convert_single_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[InTextReference]:
+    def convert_single_in_text_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[InTextReference]:
         reference_collector = ReferenceCollector()
         if act_id is not None:
             reference_collector.act = act_id
@@ -180,6 +180,27 @@ class ReferenceConversionHelper:
         cls._fill_reference_collector(parsed_ref, reference_collector)
         full_start_pos, full_end_pos = get_subtree_start_and_end_pos(parsed_ref)
         yield from reference_collector.iter(full_start_pos, full_end_pos)
+
+    @classmethod
+    def convert_potential_in_text_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[InTextReference]:
+        if not reference:
+            return None
+        converted_references = tuple(
+            cls.convert_single_in_text_reference(act_id, reference),
+        )
+        # Block amendments may only be contigous ranges, not actual lists.
+        if len(converted_references) != 1:
+            # Most likely a misparse, so don't fail horribly in this case, just pretend
+            # we did not find anything.
+            return None
+        return converted_references[0]
+
+    @classmethod
+    def convert_potential_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[Reference]:
+        result = cls.convert_potential_in_text_reference(act_id, reference)
+        if result:
+            return result.reference
+        return None
 
 
 class ActReferenceConversionHelper:
@@ -204,6 +225,7 @@ class ActReferenceConversionHelper:
 
 class CompoundReferenceToInTextReference(ModelConverter):
     CONVERTED_TYPE = model.CompoundReference
+
     @classmethod
     def convert(cls, tree_element: model.CompoundReference) -> Iterable[InTextReference]:
         act_id = None
@@ -215,11 +237,12 @@ class CompoundReferenceToInTextReference(ModelConverter):
         if tree_element.references:
             for reference in tree_element.references:
                 assert isinstance(reference, model.Reference)
-                yield from ReferenceConversionHelper.convert_single_reference(act_id, reference)
+                yield from ReferenceConversionHelper.convert_single_in_text_reference(act_id, reference)
 
 
 class ActReferenceToActIdAbbreviation(ModelConverter):
     CONVERTED_TYPE = model.ActReference
+
     @classmethod
     def convert(cls, tree_element: model.ActReference) -> Iterable[ActIdAbbreviation]:
         if tree_element.from_now_on is None:
@@ -237,28 +260,14 @@ class BlockAmendmentToInTextReference(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendment
 
     @classmethod
-    def convert_potential_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[InTextReference]:
-        if not reference:
-            return None
-        converted_references = tuple(
-            ReferenceConversionHelper.convert_single_reference(act_id, reference),
-        )
-        # Block amendments may only be contigous ranges, not actual lists.
-        if len(converted_references) != 1:
-            # Most likely a misparse, so don't fail horribly in this case, just pretend
-            # we did not find anything.
-            return None
-        return converted_references[0]
-
-    @classmethod
     def convert(cls, tree_element: model.BlockAmendment) -> Iterable[InTextReference]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
         act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
         yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
 
-        amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
-        inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
+        amended_reference = ReferenceConversionHelper.convert_potential_in_text_reference(act_id, tree_element.amended_reference)
+        inserted_reference = ReferenceConversionHelper.convert_potential_in_text_reference(act_id, tree_element.inserted_reference)
 
         if amended_reference is not None and inserted_reference is not None:
             # Act has to be cut off first, because otherwise relative_to does not do anything.
@@ -275,18 +284,74 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendment
 
     @classmethod
-    def convert_potential_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[Reference]:
-        if not reference:
-            return None
-        converted_references = tuple(
-            ReferenceConversionHelper.convert_single_reference(act_id, reference),
+    def get_reference_range_and_type(cls, reference: Reference) -> Tuple[Tuple[str, str], Type[Union[SubArticleElement, Article]]]:
+        expected_id_range, expected_type = reference.last_component_with_type()
+
+        assert expected_type is not None
+        assert not issubclass(expected_type, Act)
+
+        assert expected_id_range is not None
+        if isinstance(expected_id_range, str):
+            expected_id_range = (expected_id_range, expected_id_range)
+        return expected_id_range, expected_type
+
+    @classmethod
+    def convert_amendment_only(cls, amended_reference: Reference) -> BlockAmendmentMetadata:
+        expected_id_range, expected_type = cls.get_reference_range_and_type(amended_reference)
+        return BlockAmendmentMetadata(
+            expected_type=expected_type,
+            expected_id_range=expected_id_range,
+            position=amended_reference.first_in_range(),
+            replaces=(amended_reference,),
         )
-        # Block amendments may only be contigous ranges, not actual lists.
-        if len(converted_references) != 1:
-            # Most likely a misparse, so don't fail horribly in this case, just pretend
-            # we did not find anything.
-            return None
-        return converted_references[0].reference
+
+    @classmethod
+    def convert_insertion_only(cls, inserted_reference: Reference) -> BlockAmendmentMetadata:
+        expected_id_range, expected_type = cls.get_reference_range_and_type(inserted_reference)
+        return BlockAmendmentMetadata(
+            expected_type=expected_type,
+            expected_id_range=expected_id_range,
+            position=inserted_reference.first_in_range(),
+        )
+
+    @classmethod
+    def convert_amendment_and_insertion(cls, amended_reference: Reference, inserted_reference: Reference) -> BlockAmendmentMetadata:
+        amended_range, amended_type = cls.get_reference_range_and_type(amended_reference)
+        inserted_range, inserted_type = cls.get_reference_range_and_type(inserted_reference)
+        assert amended_type == inserted_type
+        assert amended_type.is_next_identifier(amended_range[1], inserted_range[0])
+        expected_id_range = (amended_range[0], inserted_range[1])
+        return BlockAmendmentMetadata(
+            expected_type=amended_type,
+            expected_id_range=expected_id_range,
+            position=amended_reference.first_in_range(),
+            replaces=(amended_reference,),
+        )
+
+    @classmethod
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+        assert isinstance(tree_element.act_reference, model.ActReference)
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+
+        amended_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.amended_reference)
+        inserted_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.inserted_reference)
+        if amended_reference is not None:
+            if inserted_reference:
+                yield cls.convert_amendment_and_insertion(amended_reference, inserted_reference)
+            else:
+                yield cls.convert_amendment_only(amended_reference)
+        elif inserted_reference is not None:
+            yield cls.convert_insertion_only(inserted_reference)
+        else:
+            # One or both references were misparsed probably, or grammar is wrong
+            # Don't fail horribly in this case, as the rest of the text is probably
+            # okay, and we can salvage the situation.
+            # TODO: Maybe we really should fail here.
+            pass
+
+
+class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
+    CONVERTED_TYPE = model.BlockAmendmentWithSubtitle
 
     @classmethod
     def convert_structural_reference(cls, act_id: str, reference: Optional[model.StructuralReference]) -> StructuralReference:
@@ -301,70 +366,7 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         return StructuralReference(act_id)
 
     @classmethod
-    def get_reference_range_and_type(cls, reference: Reference) -> Tuple[Tuple[str, str], Type[Union[SubArticleElement, Article]]]:
-        expected_id_range, expected_type = reference.last_component_with_type()
-
-        assert expected_type is not None
-        assert not issubclass(expected_type, Act)
-
-        assert expected_id_range is not None
-        if isinstance(expected_id_range, str):
-            expected_id_range = (expected_id_range, expected_id_range)
-        return expected_id_range, expected_type
-
-    @classmethod
-    def sae_amendment_only(cls, amended_reference: Reference) -> BlockAmendmentMetadata:
-        expected_id_range, expected_type = cls.get_reference_range_and_type(amended_reference)
-        return BlockAmendmentMetadata(
-            expected_type=expected_type,
-            expected_id_range=expected_id_range,
-            position=amended_reference.first_in_range(),
-            replaces=(amended_reference,),
-        )
-
-    @classmethod
-    def sae_insertion_only(cls, inserted_reference: Reference) -> BlockAmendmentMetadata:
-        expected_id_range, expected_type = cls.get_reference_range_and_type(inserted_reference)
-        return BlockAmendmentMetadata(
-            expected_type=expected_type,
-            expected_id_range=expected_id_range,
-            position=inserted_reference.first_in_range(),
-        )
-
-    @classmethod
-    def sae_amendment_and_insertion(cls, amended_reference: Reference, inserted_reference: Reference) -> BlockAmendmentMetadata:
-        amended_range, amended_type = cls.get_reference_range_and_type(amended_reference)
-        inserted_range, inserted_type = cls.get_reference_range_and_type(inserted_reference)
-        assert amended_type == inserted_type
-        assert amended_type.is_next_identifier(amended_range[1], inserted_range[0])
-        expected_id_range = (amended_range[0], inserted_range[1])
-        return BlockAmendmentMetadata(
-            expected_type=amended_type,
-            expected_id_range=expected_id_range,
-            position=amended_reference.first_in_range(),
-            replaces=(amended_reference,),
-        )
-
-    @classmethod
-    def convert_simple_case(cls, act_id: str, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
-        amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
-        inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
-        if amended_reference is not None:
-            if inserted_reference:
-                yield cls.sae_amendment_and_insertion(amended_reference, inserted_reference)
-            else:
-                yield cls.sae_amendment_only(amended_reference)
-        elif inserted_reference is not None:
-            yield cls.sae_insertion_only(inserted_reference)
-        else:
-            # One or both references were misparsed probably, or grammar is wrong
-            # Don't fail horribly in this case, as the rest of the text is probably
-            # okay, and we can salvage the situation.
-            # TODO: Maybe we really should fail here.
-            pass
-
-    @classmethod
-    def convert_id_range_for_subtitle_case(cls, reference: Optional[Reference]) -> Optional[Tuple[str, str]]:
+    def convert_id_range(cls, reference: Optional[Reference]) -> Optional[Tuple[str, str]]:
         if reference is None or reference.article is None:
             return None
         if isinstance(reference.article, str):
@@ -372,8 +374,8 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         return reference.article
 
     @classmethod
-    def subtitle_amendment_only(cls, structural_reference: StructuralReference, amended_reference: Reference) -> BlockAmendmentMetadata:
-        expected_id_range = cls.convert_id_range_for_subtitle_case(amended_reference)
+    def convert_amendment_only(cls, structural_reference: StructuralReference, amended_reference: Reference) -> BlockAmendmentMetadata:
+        expected_id_range = cls.convert_id_range(amended_reference)
         if structural_reference.subtitle is None:
             assert isinstance(amended_reference.article, str)
             structural_reference = StructuralReference(
@@ -392,8 +394,8 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         )
 
     @classmethod
-    def subtitle_insertion_only(cls, structural_reference: StructuralReference, inserted_reference: Optional[Reference]) -> BlockAmendmentMetadata:
-        expected_id_range = cls.convert_id_range_for_subtitle_case(inserted_reference)
+    def convert_insertion_only(cls, structural_reference: StructuralReference, inserted_reference: Optional[Reference]) -> BlockAmendmentMetadata:
+        expected_id_range = cls.convert_id_range(inserted_reference)
         return BlockAmendmentMetadata(
             expected_type=Subtitle,
             expected_id_range=expected_id_range,
@@ -401,32 +403,20 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         )
 
     @classmethod
-    def convert_subtitle_case(cls, act_id: str, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
-        assert isinstance(tree_element.act_reference, model.ActReference)
-        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
-
-        structural_reference = cls.convert_structural_reference(act_id, tree_element.structural_reference)
-        amended_reference = cls.convert_potential_reference(act_id, tree_element.amended_reference)
-        inserted_reference = cls.convert_potential_reference(act_id, tree_element.inserted_reference)
-        if amended_reference is not None:
-            if inserted_reference:
-                # TODO. Not even part of the grammar currently either.
-                raise ValueError("Simultaneous insertion and amendments with Subtitles not yet supported")
-            yield cls.subtitle_amendment_only(structural_reference, amended_reference)
-        else:
-            yield cls.subtitle_insertion_only(structural_reference, inserted_reference)
-
-    @classmethod
     def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
 
-        if (
-                isinstance(tree_element.amended_reference, model.ReferenceWithSubtitle) or
-                isinstance(tree_element.inserted_reference, model.ReferenceWithSubtitle)
-        ):
-            return cls.convert_subtitle_case(act_id, tree_element)
-        return cls.convert_simple_case(act_id, tree_element)
+        structural_reference = cls.convert_structural_reference(act_id, tree_element.structural_reference)
+        amended_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.amended_reference)
+        inserted_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.inserted_reference)
+        if amended_reference is not None:
+            if inserted_reference:
+                # TODO. Not even part of the grammar currently either.
+                raise ValueError("Simultaneous insertion and amendments with Subtitles not yet supported")
+            yield cls.convert_amendment_only(structural_reference, amended_reference)
+        else:
+            yield cls.convert_insertion_only(structural_reference, inserted_reference)
 
 
 class EnforcementDateToEnforcementDate(ModelConverter):
@@ -454,7 +444,7 @@ class EnforcementDateToEnforcementDate(ModelConverter):
     @classmethod
     def convert_reference(cls, reference: model.Reference) -> Tuple[Reference, ...]:
         return tuple(
-            ref.reference for ref in ReferenceConversionHelper.convert_single_reference(None, reference)
+            ref.reference for ref in ReferenceConversionHelper.convert_single_in_text_reference(None, reference)
         )
 
     @classmethod
@@ -475,10 +465,11 @@ class EnforcementDateToEnforcementDate(ModelConverter):
 
 class EnforcementDateToReference(ModelConverter):
     CONVERTED_TYPE = model.EnforcementDate
+
     @classmethod
     def convert_reference(cls, reference: model.Reference) -> Tuple[Reference, ...]:
         return tuple(
-            ref.reference for ref in ReferenceConversionHelper.convert_single_reference(None, reference)
+            ref.reference for ref in ReferenceConversionHelper.convert_single_in_text_reference(None, reference)
         )
 
     @classmethod
@@ -495,7 +486,7 @@ class EnforcementDateToReference(ModelConverter):
             # "Fontos kivétel 1. § (2) bekezdése, és az (5) bekezdés szerinti definíció"
             last_reference = Reference()
             for reference in tree_element.references:
-                for converted_reference in ReferenceConversionHelper.convert_single_reference(None, reference):
+                for converted_reference in ReferenceConversionHelper.convert_single_in_text_reference(None, reference):
                     fixed_reference = converted_reference.reference.relative_to(last_reference)
                     yield attr.evolve(converted_reference, reference=fixed_reference)
                     last_reference = fixed_reference
@@ -507,6 +498,7 @@ class GrammarResultContainer:
         CompoundReferenceToInTextReference,
         ActReferenceToActIdAbbreviation,
         BlockAmendmentToBlockAmendmentMetadata,
+        BlockAmendmentWithSubtitleToBlockAmendmentMetadata,
         BlockAmendmentToInTextReference,
         EnforcementDateToEnforcementDate,
         EnforcementDateToReference,

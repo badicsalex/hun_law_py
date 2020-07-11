@@ -21,6 +21,7 @@
 # ============ STARTING TOKENS ============
 start_default =
     | block_amendment $
+    | block_amendment_with_subtitle $
     | enforcement_date $
     | {any_simple_expression}+ $;
 
@@ -112,11 +113,13 @@ list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
 after_article::AfterArticle::StructuralReference = [az] >article_id "." article_suffix ("követően" | "követő" );
 before_article::BeforeArticle::StructuralReference = [az] >article_id "." article_suffix ("megelőzően" | "megelőző" );
 subtitle_title::SubtitleTitle::StructuralReference = {!"alcíme" any_simple_expression} "alcíme";
-chapter_number::ChapterNumber::StructuralReference = id:roman "." "Fejezete";
+
+chapter_number::ChapterNumber::StructuralReference =
+    id:(roman [["/"] /[A-Z]/])  "." chapter_suffix;
+chapter_suffix = /Fejezet[a-zéáőúöüóíű]+/ | "Fejezet";
+
 
 any_structural_reference =
-    | [chapter_number] structural_reference:after_article
-    | [chapter_number] structural_reference:before_article
     | structural_reference:subtitle_title
     | structural_reference:chapter_number
     ;
@@ -155,15 +158,24 @@ insertion_suffix =
     | "kiegészülve lép hatályba"
     ;
 
+structural_position_reference =
+    | [chapter_number] structural_reference:after_article
+    | [chapter_number] structural_reference:before_article
+    | >any_structural_reference
+    ;
+
 block_amendment::BlockAmendment
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference [>any_structural_reference]
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference [>structural_position_reference]
     (
         # non-subtitle cases
         amended_reference:reference amendment_suffix ":" |
         inserted_reference:insertion_reference insertion_suffix ":" |
-        amended_reference:reference amendment_suffix [","] ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference insertion_suffix ":" |
+        amended_reference:reference amendment_suffix [","] ("és" | "valamint" | "egyidejűleg") inserted_reference:insertion_reference insertion_suffix ":"
+    );
 
-        # subtitle cases
+block_amendment_with_subtitle::BlockAmendmentWithSubtitle
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference [>structural_position_reference]
+    (
         amended_reference:reference_with_subtitle amendment_suffix ":" |
         amended_reference:reference_with_subtitle amendment_suffix_with_subtitle ":" |
         insertion_token inserted_reference:reference_with_subtitle insertion_suffix ":"
