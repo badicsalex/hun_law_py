@@ -226,7 +226,7 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
 
 
 @pytest.mark.parametrize("s,correct_metadata", CASES)  # type: ignore
-def test_block_amendment_parsing(s: str, correct_metadata: EnforcementDate) -> None:
+def test_enforcement_date_parsing(s: str, correct_metadata: Tuple[EnforcementDate, ...]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.semantic_data
     assert correct_metadata == parsed_metadata
