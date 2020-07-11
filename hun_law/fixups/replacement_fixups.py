@@ -1285,6 +1285,12 @@ replacement_fixups: ReplacementsType = {
             "replacement": "„(4) Az ajánlat az egyetemes szolgáltatásra jogosult azon felhasználók ellátásához szükséges földgázmennyiség"
         }
     ],
+    "2015. évi CI. törvény": [
+        {
+            "needle": "rendelkezések lépnek és a bekezdés a következő 4a. ponttal egészül ki:",
+            "replacement": "rendelkezések lépnek:"
+        }
+    ],
     "2015. évi CIV. törvény": [
         {
             "needle": "„Felhatalmazás",
