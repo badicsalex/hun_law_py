@@ -22,6 +22,7 @@
 start_default =
     | block_amendment $
     | block_amendment_with_subtitle $
+    | block_amendment_structural $
     | enforcement_date $
     | {any_simple_expression}+ $;
 
@@ -118,10 +119,21 @@ chapter_number::ChapterNumber::StructuralReference =
     id:(roman [["/"] /[A-Z]/])  "." chapter_suffix;
 chapter_suffix = /Fejezet[a-zéáőúöüóíű]+/ | "Fejezet";
 
+part_number::PartNumber::StructuralReference =
+    [book_id:hungarian_ordinal_capital "Könyv"]
+    id:hungarian_ordinal_capital part_suffix;
+part_suffix = /Rész[a-zéáőúöüóíű]+/ | "Rész";
+
+title_number::TitleNumber::StructuralReference =
+    [book_id:hungarian_ordinal_capital "Könyv"]
+    id:(roman [["/"] /[A-Z]/]) "." title_suffix;
+title_suffix = /Cím[a-zéáőúöüóíű]+/ | "Cím";
 
 any_structural_reference =
-    | structural_reference:subtitle_title
-    | structural_reference:chapter_number
+    | subtitle_title
+    | chapter_number
+    | part_number
+    | title_number
     ;
 
 
@@ -135,6 +147,11 @@ insertion_reference::Reference =
     | [[az] article:article_reference [paragraph:paragraph_reference] | "a §" | "a bekezdés"] insertion_token (point:alphabetic_point_reference | point:numeric_point_reference)
     | [az] article:article_reference [paragraph:paragraph_reference] (point:alphabetic_point_reference | point:numeric_point_reference) insertion_token (subpoint:alphabetic_subpoint_reference | subpoint:numeric_subpoint_reference)
     ;
+
+title_insertion_with_book::TitleNumber::StructuralReference =
+    book_id:hungarian_ordinal_capital "Könyve"
+    insertion_token
+    id:(roman [["/"] /[A-Z]/]) "." title_suffix;
 
 subtitle_token = ("alcímmel" | "alcímekkel" | "alcím-megjelölése" | "alcím-megjelölés" |  "alcíme" | "alcím" ["címe"]);
 
@@ -153,6 +170,10 @@ amendment_suffix_with_subtitle =
     "helyébe a következő" ["rendelkezés és"] "alcím" ["és rendelkezés"] ("lép" | "lépnek")
     ;
 
+amendment_suffix_with_structural =
+    "helyébe a következő" ["cím" | "fejezet" | "rész"] "lép"
+    ;
+
 insertion_suffix =
     | "egészül ki"
     | "kiegészülve lép hatályba"
@@ -161,7 +182,7 @@ insertion_suffix =
 structural_position_reference =
     | [chapter_number] structural_reference:after_article
     | [chapter_number] structural_reference:before_article
-    | >any_structural_reference
+    | structural_reference:(>any_structural_reference)
     ;
 
 block_amendment::BlockAmendment
@@ -179,6 +200,16 @@ block_amendment_with_subtitle::BlockAmendmentWithSubtitle
         amended_reference:reference_with_subtitle amendment_suffix ":" |
         amended_reference:reference_with_subtitle amendment_suffix_with_subtitle ":" |
         insertion_token inserted_reference:reference_with_subtitle insertion_suffix ":"
+    );
+
+block_amendment_structural::BlockAmendmentStructural
+    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference
+    (
+        # structural cases
+        amended_reference:any_structural_reference amendment_suffix ":" |
+        amended_reference:any_structural_reference amendment_suffix_with_structural ":" |
+        insertion_token inserted_reference:any_structural_reference insertion_suffix ":" |
+        inserted_reference:title_insertion_with_book insertion_suffix ":"
     );
 
 
@@ -226,5 +257,10 @@ hungarian_ordinal = "első" | "második" | "harmadik" | "negyedik" | "ötödik" 
     "tizenhatodik" | "tizenhetedik" | "tizennyolcadik" | "tizenkilencedik" |
     "huszadik" | "harmincadik" | "negyvenedik" | "ötvenedik" |
     "hatvanadik" | "hetvenedik" | "nyolcvanadik" | "kilencvenedik";
+
+hungarian_ordinal_capital = "Első" | "Második" | "Harmadik" | "Negyedik" | "Ötödik" |
+    "Hatodik" | "Hetedik"| "Nyolcadik" | "Kilencedik" | "Tizedik" |
+    "Tizenegyedik" | "Tizenkettedik" | "Tizenharmadik" | "Tizennegyedik" | "Tizenötödik" |
+    "Tizenhatodik" | "Tizenhetedik" | "Tizennyolcadik" | "Tizenkilencedik";
 
 dash = "−" | "–" | "-" ;

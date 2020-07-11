@@ -24,7 +24,7 @@ from hun_law.structure import \
     BlockAmendmentMetadata, \
     Article, Paragraph, NumericPoint, AlphabeticPoint, AlphabeticSubpoint, \
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
-    Subtitle
+    Subtitle, Part, Title, Chapter
 
 from tests.cheap.utils import ref
 
@@ -273,7 +273,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
         BlockAmendmentMetadata(
             expected_type=Subtitle,
             expected_id_range=("212/A", "212/A"),
-            position=StructuralReference("Btk."),
+            position=StructuralReference("Btk.", chapter="XX"),
         )
     ),
     (
@@ -300,7 +300,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
         BlockAmendmentMetadata(
             expected_type=Subtitle,
             expected_id_range=("300/A", "300/A"),
-            position=StructuralReference("Btk."),
+            position=StructuralReference("Btk.", chapter="XXVII"),
         )
     ),
     (
@@ -348,7 +348,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
         BlockAmendmentMetadata(
             expected_type=Subtitle,
             expected_id_range=("261/A", "261/A"),
-            position=StructuralReference("Btk."),
+            position=StructuralReference("Btk.", chapter="XXIV"),
         ),
     ),
     (
@@ -447,25 +447,45 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
             replaces=(ref("2000. évi C. törvény", "3", "2", ("4", "5")),),
         )
     ),
+    (
+        "A Ptk. Hatodik Könyv Ötödik Része helyébe a következő rész lép:",
+        BlockAmendmentMetadata(
+            expected_type=Part,
+            position=StructuralReference("Ptk.", book="6", part="5"),
+            replaces=(StructuralReference("Ptk.", book="6", part="5"),),
+        ),
+    ),
+    (
+        "A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:",
+        BlockAmendmentMetadata(
+            expected_type=Title,
+            position=StructuralReference("Ptk.", book="3", title="VIII"),
+            replaces=(StructuralReference("Ptk.", book="3", title="VIII"),),
+        ),
+    ),
+    (
+        "A Ptk. Harmadik Könyve a következő VIII. Címmel egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Title,
+            position=StructuralReference("Ptk.", book="3", title="VIII"),
+        ),
+    ),
+    (
+        "Az Szt. a következő VI/A. Fejezettel egészül ki:",
+        BlockAmendmentMetadata(
+            expected_type=Chapter,
+            position=StructuralReference("Szt.", chapter="VI/A"),
+        ),
+    ),
+    (
+        "A Btk. XXIV. Fejezete helyébe a következő fejezet lép:",
+        BlockAmendmentMetadata(
+            expected_type=Chapter,
+            position=StructuralReference("Btk.", chapter="XXIV"),
+            replaces=(StructuralReference("Btk.", chapter="XXIV"),)
+        ),
+    ),
 
-
-    # TODO:
-    # (
-    #     "A Ptk. Hatodik Könyv Ötödik Része helyébe a következő rész lép:",
-    #     BlockAmendmentMetadata(
-    #         expected_type=Part,
-    #         position=StructuralReference("Ptk."),
-    #         replaces=(StructuralReference("Ptk.", book="6", part="5"),),
-    #     ),
-    # ),
-    # (
-    #     "A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:",
-    #     BlockAmendmentMetadata(
-    #         expected_type=Title,
-    #         position=StructuralReference("Ptk."),
-    #         replaces=(StructuralReference("Ptk.", book="3", title="8"),),
-    #     ),
-    # ),
 )
 
 # TODO:

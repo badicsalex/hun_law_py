@@ -24,8 +24,9 @@ import tatsu.model
 from hun_law.structure import Reference, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
     Act, SubArticleElement, \
-    ReferencePartType, \
-    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, Subtitle, \
+    ReferencePartType, BlockAmendmentExpectedType,\
+    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
+    Subtitle, Part, Title, Chapter,\
     ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
     EnforcementDate, DaysAfterPublication
 
@@ -202,6 +203,40 @@ class ReferenceConversionHelper:
             return result.reference
         return None
 
+    @classmethod
+    def convert_book_id(cls, book_id: Optional[str]) -> Optional[str]:
+        if book_id is None:
+            return None
+        return str(text_to_int_hun(book_id))
+
+    @classmethod
+    def convert_structural_reference(cls, act_id: str, reference: model.StructuralReference) -> Tuple[BlockAmendmentExpectedType, StructuralReference]:
+        assert reference.id is not None
+        if isinstance(reference, model.BeforeArticle):
+            return Subtitle, StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "".join(reference.id)))
+
+        if isinstance(reference, model.AfterArticle):
+            return Subtitle, StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "".join(reference.id)))
+
+        if isinstance(reference, model.ChapterNumber):
+            return Chapter, StructuralReference(act_id, chapter="".join(reference.id))
+
+        if isinstance(reference, model.TitleNumber):
+            return Title, StructuralReference(
+                act_id,
+                book=cls.convert_book_id(reference.book_id),
+                title="".join(reference.id),
+            )
+
+        if isinstance(reference, model.PartNumber):
+            return Part, StructuralReference(
+                act_id,
+                book=cls.convert_book_id(reference.book_id),
+                part=str(text_to_int_hun(reference.id)),
+            )
+
+        raise TypeError("Unknown Structural Reference type")
+
 
 class ActReferenceConversionHelper:
     """ Method namespace to help converting model.ActReferences """
@@ -354,18 +389,6 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendmentWithSubtitle
 
     @classmethod
-    def convert_structural_reference(cls, act_id: str, reference: Optional[model.StructuralReference]) -> StructuralReference:
-        if isinstance(reference, model.BeforeArticle):
-            assert reference.id is not None
-            return StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "".join(reference.id)))
-
-        if isinstance(reference, model.AfterArticle):
-            assert reference.id is not None
-            return StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "".join(reference.id)))
-
-        return StructuralReference(act_id)
-
-    @classmethod
     def convert_id_range(cls, reference: Optional[Reference]) -> Optional[Tuple[str, str]]:
         if reference is None or reference.article is None:
             return None
@@ -407,7 +430,10 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
 
-        structural_reference = cls.convert_structural_reference(act_id, tree_element.structural_reference)
+        if tree_element.structural_reference is not None:
+            _, structural_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.structural_reference)
+        else:
+            structural_reference = StructuralReference(act_id)
         amended_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.amended_reference)
         inserted_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.inserted_reference)
         if amended_reference is not None:
@@ -417,6 +443,34 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
             yield cls.convert_amendment_only(structural_reference, amended_reference)
         else:
             yield cls.convert_insertion_only(structural_reference, inserted_reference)
+
+
+class BlockAmendmentStructuralToBlockAmendmentMetadata(ModelConverter):
+    CONVERTED_TYPE = model.BlockAmendmentStructural
+
+    @classmethod
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+        assert isinstance(tree_element.act_reference, model.ActReference)
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+
+        if tree_element.amended_reference is not None:
+            if tree_element.inserted_reference is not None:
+                # TODO. Not even part of the grammar currently either.
+                raise ValueError("Simultaneous insertion and amendments with Structural References not yet supported")
+
+            expected_type, amended_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.amended_reference)
+            yield BlockAmendmentMetadata(
+                expected_type=expected_type,
+                position=amended_reference,
+                replaces=(amended_reference, ),
+            )
+        else:
+            assert tree_element.inserted_reference is not None
+            expected_type, inserted_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.inserted_reference)
+            yield BlockAmendmentMetadata(
+                expected_type=expected_type,
+                position=inserted_reference,
+            )
 
 
 class EnforcementDateToEnforcementDate(ModelConverter):
@@ -499,6 +553,7 @@ class GrammarResultContainer:
         ActReferenceToActIdAbbreviation,
         BlockAmendmentToBlockAmendmentMetadata,
         BlockAmendmentWithSubtitleToBlockAmendmentMetadata,
+        BlockAmendmentStructuralToBlockAmendmentMetadata,
         BlockAmendmentToInTextReference,
         EnforcementDateToEnforcementDate,
         EnforcementDateToReference,

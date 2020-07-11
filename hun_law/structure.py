@@ -189,6 +189,8 @@ class QuotedBlock:
 
 
 SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock', 'StructuralElement']
+
+
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()
@@ -489,6 +491,8 @@ BlockAmendment.ALLOWED_CHILDREN_TYPE = (
 ) + STRUCTURE_ELEMENT_TYPES
 
 ActChildType = Union['StructuralElement', 'Article']
+
+
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class Act:
     identifier: str
@@ -522,6 +526,8 @@ class Act:
 
 
 ReferencePartType = Union[None, str, Tuple[str, str]]
+
+
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class Reference:
     # TODO: There is some weird pylint bug with tuples.
@@ -652,10 +658,13 @@ class SemanticData:
         return self
 
 
+BlockAmendmentExpectedType = Type[Union[SubArticleElement, Article, StructuralElement]]
+
+
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class BlockAmendmentMetadata(SemanticData):
     position: Union[Reference, StructuralReference]
-    expected_type: Type[Union[SubArticleElement, Article, StructuralElement]]
+    expected_type: BlockAmendmentExpectedType
     expected_id_range: Optional[Tuple[str, str]] = None
     replaces: Tuple[Union[Reference, StructuralReference], ...] = tuple()
 
