@@ -23,6 +23,7 @@ start_default =
     | block_amendment $
     | block_amendment_with_subtitle $
     | block_amendment_structural $
+    | text_amendment $
     | enforcement_date $
     | {any_simple_expression}+ $;
 
@@ -239,6 +240,23 @@ enforcement_date::EnforcementDate =
     )
     "lép hatályba."
         ;
+
+# ============ TEXT AMENDMENT PARSING ==============
+
+text_amendment::TextAmendment =
+    /[Aa]z?/ { !act_reference any_simple_expression }* act_reference:act_reference
+    { references+:reference [list_separator [az]] }+
+    { parts+:text_amendment_part [list_separator [az]] }+
+    "lép" ["hatályba"] "."
+    ;
+
+text_amendment_part::TextAmendmentPart =
+    [az] original_text:quote
+    ("szövegrészek"| "szövegrész") ("helyébe" | "helyett")
+    [az] replacement_text:quote
+    ("szöveggel"| "szöveg" | "szövegrész")
+    ;
+
 
 # ============ SIMPLE TOKENS ============
 

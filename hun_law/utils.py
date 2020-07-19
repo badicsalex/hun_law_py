@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
+import collections
 import textwrap
 from string import ascii_uppercase
 from typing import Tuple, List, Iterable, TypeVar, Optional, Dict, Any, TextIO, Type
@@ -407,3 +408,13 @@ def text_to_month_hun(s: str) -> int:
     if s not in MONTHS_HUN:
         raise KeyError("{} is not a valid month name".format(s))
     return MONTHS_HUN.index(s) + 1
+
+
+def flatten(l: Iterable[Any]) -> Iterable[Any]:
+    l = collections.deque(l)
+    while l:
+        element = l.popleft()
+        if isinstance(element, list):
+            l.extendleft(reversed(element))
+        else:
+            yield element

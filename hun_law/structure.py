@@ -693,3 +693,10 @@ class SpecialEnforcementDate:
 class EnforcementDate(SemanticData):
     position: Optional[Reference]
     date: Union[Date, DaysAfterPublication, DayNextMonthAfterPublication, SpecialEnforcementDate]
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
+class TextAmendment(SemanticData):
+    position: Reference
+    original_text: str
+    replacement_text: str

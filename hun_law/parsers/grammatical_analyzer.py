@@ -28,9 +28,9 @@ from hun_law.structure import Reference, \
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
     Subtitle, Part, Title, Chapter,\
     ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
-    EnforcementDate, DaysAfterPublication
+    EnforcementDate, DaysAfterPublication, TextAmendment
 
-from hun_law.utils import text_to_month_hun, text_to_int_hun, Date
+from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
 
 from .grammar import model
 from .grammar.parser import ActGrammarParser  # type: ignore
@@ -181,6 +181,24 @@ class ReferenceConversionHelper:
         cls._fill_reference_collector(parsed_ref, reference_collector)
         full_start_pos, full_end_pos = get_subtree_start_and_end_pos(parsed_ref)
         yield from reference_collector.iter(full_start_pos, full_end_pos)
+
+    @classmethod
+    def convert_multiple_in_text_references(cls, act_id: Optional[str], references: Iterable[model.Reference]) -> Iterable[InTextReference]:
+        # Some references will be relative to the previous ones.
+        # This may be considered a mistake in parsing the reference lists, but
+        # this 'relativization' can only be done in the context of the whole sentence.
+        # As an example, see:
+        # "... az 1. § (2) bekezdése, és az (5) bekezdés ..."
+        # This can be:
+        # "Az 1. § (2) bekezdése, és az (5) bekezdése a kihirdetést követő napon lép hatályba"
+        # Or:
+        # "Fontos kivétel 1. § (2) bekezdése, és az (5) bekezdés szerinti definíció"
+        last_reference = Reference(act=act_id)
+        for reference in references:
+            for converted_reference in ReferenceConversionHelper.convert_single_in_text_reference(None, reference):
+                fixed_reference = converted_reference.reference.relative_to(last_reference)
+                yield attr.evolve(converted_reference, reference=fixed_reference)
+                last_reference = fixed_reference
 
     @classmethod
     def convert_potential_in_text_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[InTextReference]:
@@ -510,8 +528,8 @@ class EnforcementDateToEnforcementDate(ModelConverter):
         if not tree_element.references:
             yield EnforcementDate(position=None, date=date)
         else:
-            for converted_reference in EnforcementDateToReference.convert(tree_element):
-                yield EnforcementDate(position=converted_reference.reference, date=date)
+            for reference in ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.references):
+                yield EnforcementDate(position=reference.reference, date=date)
 
 
 class EnforcementDateToReference(ModelConverter):
@@ -520,21 +538,48 @@ class EnforcementDateToReference(ModelConverter):
     @classmethod
     def convert(cls, tree_element: model.EnforcementDate) -> Iterable[InTextReference]:
         if tree_element.references:
-            # Some references will be relative to the previous ones.
-            # This may be considered a mistake in parsing the reference lists, but
-            # this 'relativization' can only be done in the context of the whole sentence.
-            # As an example, see:
-            # "... az 1. § (2) bekezdése, és az (5) bekezdés ..."
-            # This can be:
-            # "Az 1. § (2) bekezdése, és az (5) bekezdése a kihirdetést követő napon lép hatályba"
-            # Or:
-            # "Fontos kivétel 1. § (2) bekezdése, és az (5) bekezdés szerinti definíció"
-            last_reference = Reference()
-            for reference in tree_element.references:
-                for converted_reference in ReferenceConversionHelper.convert_single_in_text_reference(None, reference):
-                    fixed_reference = converted_reference.reference.relative_to(last_reference)
-                    yield attr.evolve(converted_reference, reference=fixed_reference)
-                    last_reference = fixed_reference
+            return ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.references)
+        return ()
+
+
+class TextAmendmentToTextAmendment(ModelConverter):
+    CONVERTED_TYPE = model.TextAmendment
+
+    @classmethod
+    def convert_quote_to_string(cls, quote: Any) -> str:
+        assert quote[0] == "„"
+        assert quote[-1] == "”"
+        return "".join(flatten(quote[1:-1])).strip()
+
+    @classmethod
+    def convert_part(cls, reference: Reference, tree_element: model.TextAmendmentPart) -> TextAmendment:
+        return TextAmendment(
+            position=reference,
+            original_text=cls.convert_quote_to_string(tree_element.original_text),
+            replacement_text=cls.convert_quote_to_string(tree_element.replacement_text),
+        )
+
+    @classmethod
+    def convert(cls, tree_element: model.TextAmendment) -> Iterable[TextAmendment]:
+        assert tree_element.references is not None
+        assert tree_element.parts is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        for reference in ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references):
+            for amendment_part in tree_element.parts:
+                yield cls.convert_part(reference.reference, amendment_part)
+
+
+class TextAmendmentToReference(ModelConverter):
+    CONVERTED_TYPE = model.TextAmendment
+
+    @classmethod
+    def convert(cls, tree_element: model.TextAmendment) -> Iterable[InTextReference]:
+        assert tree_element.references is not None
+        assert tree_element.parts is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
+        yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
+        yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
 
 
 @attr.s(slots=True, frozen=True)
@@ -548,6 +593,8 @@ class GrammarResultContainer:
         BlockAmendmentToInTextReference,
         EnforcementDateToEnforcementDate,
         EnforcementDateToReference,
+        TextAmendmentToTextAmendment,
+        TextAmendmentToReference,
     )
 
     tree: Any = attr.ib()
