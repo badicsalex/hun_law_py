@@ -617,7 +617,7 @@ class ArticleParsingError(StructureParsingError):
 class ArticleParser:
     PARSED_TYPE = Article
 
-    HEADER_REGEX = re.compile("^(([0-9]+:)?([0-9]+(/[A-Z])?))\\. ?§ *(.*)$")
+    HEADER_REGEX = re.compile("^(([0-9]+:)?([0-9]+(/[A-Z])?))\\. ?§ +(.*)$")
 
     @classmethod
     def parse(cls, lines: Sequence[IndentedLine], extenally_determined_identifier: Optional[str] = None) -> Article:
