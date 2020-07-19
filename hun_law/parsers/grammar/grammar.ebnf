@@ -33,9 +33,7 @@ any_simple_expression =
     | quote
     | compound_reference
     | abbreviation
-    | word
-    | number
-    | /./ # Anything else
+    | any_token
     ;
 
 compound_reference::CompoundReference = (act_reference:act_reference {references+:reference [list_separator [az]]}*) | references+:reference;
@@ -114,7 +112,7 @@ list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
 
 after_article::AfterArticle::StructuralReference = [az] >article_id "." article_suffix ("követően" | "követő" );
 before_article::BeforeArticle::StructuralReference = [az] >article_id "." article_suffix ("megelőzően" | "megelőző" );
-subtitle_title::SubtitleTitle::StructuralReference = {!"alcíme" any_simple_expression} "alcíme";
+subtitle_title::SubtitleTitle::StructuralReference = {!"alcíme" any_token} "alcíme";
 
 subtitle_number::SubtitleNumber::StructuralReference =
     id:(number [["/"] /[A-Z]/])  "." subtitle_suffix;
@@ -192,7 +190,7 @@ structural_position_reference =
     ;
 
 block_amendment::BlockAmendment
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference [>structural_position_reference]
+    = /[Aa]z?/ {  !act_reference any_token }* act_reference:act_reference [>structural_position_reference]
     (
         # non-subtitle cases
         amended_reference:reference amendment_suffix ":" |
@@ -201,7 +199,7 @@ block_amendment::BlockAmendment
     );
 
 block_amendment_with_subtitle::BlockAmendmentWithSubtitle
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference [>structural_position_reference]
+    = /[Aa]z?/ {  !act_reference any_token }* act_reference:act_reference [>structural_position_reference]
     (
         amended_reference:reference_with_subtitle amendment_suffix ":" |
         amended_reference:reference_with_subtitle amendment_suffix_with_subtitle ":" |
@@ -209,7 +207,7 @@ block_amendment_with_subtitle::BlockAmendmentWithSubtitle
     );
 
 block_amendment_structural::BlockAmendmentStructural
-    = /[Aa]z?/ {  !act_reference any_simple_expression }* act_reference:act_reference
+    = /[Aa]z?/ {  !act_reference any_token }* act_reference:act_reference
     (
         # structural cases
         amended_reference:any_structural_reference amendment_suffix ":" |
@@ -244,7 +242,7 @@ enforcement_date::EnforcementDate =
 # ============ TEXT AMENDMENT PARSING ==============
 
 text_amendment::TextAmendment =
-    /[Aa]z?/ { !act_reference any_simple_expression }* act_reference:act_reference
+    /[Aa]z?/ { !act_reference any_token }* act_reference:act_reference
     { references+:reference [list_separator [az]] }+
     { parts+:text_amendment_part [list_separator [az]] }+
     "lép" ["hatályba"] "."
@@ -259,6 +257,8 @@ text_amendment_part::TextAmendmentPart =
 
 
 # ============ SIMPLE TOKENS ============
+
+any_token = word | number | /./;
 
 az = /az?/;
 number_with_dot = number "." ;
