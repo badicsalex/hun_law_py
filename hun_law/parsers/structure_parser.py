@@ -761,6 +761,10 @@ class ActStructureParser:
         return preamble, rest_of_lines
 
 
+class BlockAmendmentStructureParsingError(StructureParsingError):
+    pass
+
+
 class BlockAmendmentStructureParser:
     PARSERS_FOR_TYPE: Mapping[Type, Type[Union[ArticleParser, SubArticleElementParser]]] = {
         Article: ArticleParser,
@@ -780,21 +784,24 @@ class BlockAmendmentStructureParser:
             lines: Sequence[IndentedLine]
     ) -> BlockAmendment:
 
-        children: Tuple[SubArticleChildType, ...]
-        if issubclass(metadata.expected_type, StructuralElement):
-            parsers = cls.create_parsers()
-            children = tuple(ActBodyParser.parse_elements(parsers, lines))
-        else:
-            parser, expected_id = cls.get_parser_and_id(metadata)
-            children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
+        try:
+            children: Tuple[SubArticleChildType, ...]
+            if issubclass(metadata.expected_type, StructuralElement):
+                parsers = cls.create_parsers()
+                children = tuple(ActBodyParser.parse_elements(parsers, lines))
+            else:
+                parser, expected_id = cls.get_parser_and_id(metadata)
+                children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
 
-        return BlockAmendment(
-            identifier=None,
-            text=None,
-            intro=context_intro,
-            children=children,
-            wrap_up=context_wrap_up
-        )
+            return BlockAmendment(
+                identifier=None,
+                text=None,
+                intro=context_intro,
+                children=children,
+                wrap_up=context_wrap_up
+            )
+        except Exception as e:
+            raise BlockAmendmentStructureParsingError("Error parsing block amendment body. Metadata: {}".format(metadata))
 
     @classmethod
     def create_parsers(cls) -> ActBodyParsersType:
