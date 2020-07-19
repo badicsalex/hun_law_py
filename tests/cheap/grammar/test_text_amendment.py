@@ -139,8 +139,12 @@ CASES: Tuple[Tuple[str, Tuple[TextAmendment, ...]], ...] = (
     ),
 )
 
-# TODO: Title change:
+# TODO:
+#   Article Title change:
 #   "A Ptk. 5:99. § címében az „átruházása” szövegrész helyébe az „átruházása és megterhelése” szöveg lép."
+#
+#   Title change
+#   "6:534. § címe az „életviszonyok” szövegrész helyett az „értékviszonyok” szöveggel
 
 
 @ pytest.mark.parametrize("s,correct_metadata", CASES)  # type: ignore
