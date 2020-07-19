@@ -499,12 +499,6 @@ class EnforcementDateToEnforcementDate(ModelConverter):
         )
 
     @classmethod
-    def convert_reference(cls, reference: model.Reference) -> Tuple[Reference, ...]:
-        return tuple(
-            ref.reference for ref in ReferenceConversionHelper.convert_single_in_text_reference(None, reference)
-        )
-
-    @classmethod
     def convert(cls, tree_element: model.EnforcementDate) -> Iterable[EnforcementDate]:
         if tree_element.exact_date:
             date = cls.convert_exact_date(tree_element.exact_date)
@@ -522,12 +516,6 @@ class EnforcementDateToEnforcementDate(ModelConverter):
 
 class EnforcementDateToReference(ModelConverter):
     CONVERTED_TYPE = model.EnforcementDate
-
-    @classmethod
-    def convert_reference(cls, reference: model.Reference) -> Tuple[Reference, ...]:
-        return tuple(
-            ref.reference for ref in ReferenceConversionHelper.convert_single_in_text_reference(None, reference)
-        )
 
     @classmethod
     def convert(cls, tree_element: model.EnforcementDate) -> Iterable[InTextReference]:
