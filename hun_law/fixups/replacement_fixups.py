@@ -589,6 +589,10 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": ",,(3) A nyilvántartó bíróság jogszabályban meghatározott szervezetnek juttatja a vagyont, ha az alapító okirat, vagy",
             "replacement": "„(3) A nyilvántartó bíróság jogszabályban meghatározott szervezetnek juttatja a vagyont, ha az alapító okirat, vagy"
+        },
+        {
+            "needle": "az „a szülő” szövegrész helyett az „az a szülő, akinek szülői felügyeleti joga szünetel,” az „az átmeneti",
+            "replacement": "az „a szülő” szövegrész helyett az „az a szülő, akinek szülői felügyeleti joga szünetel” szöveggel, az „az átmeneti"
         }
     ],
     "2013. évi CCXLIII. törvény": [
