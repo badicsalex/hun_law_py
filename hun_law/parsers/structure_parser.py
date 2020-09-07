@@ -801,7 +801,7 @@ class BlockAmendmentStructureParser:
                 wrap_up=context_wrap_up
             )
         except Exception as e:
-            raise BlockAmendmentStructureParsingError("Error parsing block amendment body. Metadata: {}".format(metadata))
+            raise BlockAmendmentStructureParsingError("Error parsing block amendment body. Metadata: {}".format(metadata)) from e
 
     @classmethod
     def create_parsers(cls) -> ActBodyParsersType:
