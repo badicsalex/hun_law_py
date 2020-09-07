@@ -701,8 +701,16 @@ class TextAmendment(SemanticData):
     original_text: str
     replacement_text: str
 
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'TextAmendment':
+        position = self.position.resolve_abbreviations(abbreviations_map)
+        return attr.evolve(self, position=position)
+
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class Repeal(SemanticData):
     position: Reference
     text: Optional[str] = None
+
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'Repeal':
+        position = self.position.resolve_abbreviations(abbreviations_map)
+        return attr.evolve(self, position=position)

@@ -20,8 +20,8 @@ from typing import List, Tuple
 import pytest
 
 from hun_law.structure import Act, OutgoingReference, Reference, \
-    SemanticData, BlockAmendmentMetadata, Repeal, \
-    NumericPoint, AlphabeticSubpoint
+    SemanticData, BlockAmendmentMetadata, Repeal, TextAmendment, \
+    Paragraph, NumericPoint, AlphabeticSubpoint
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 from .utils import ref, quick_parse_structure
@@ -135,7 +135,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             ),
             (
                 ref(None, "41", None, "4"),
-                Repeal(position=ref("Katv.", "2", None, "21"))
+                Repeal(position=ref("2012. évi CXLVII. törvény", "2", None, "21"))
             ),
         ),
     ),
@@ -232,6 +232,49 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             (
                 ref(None, "17", None, "c"),
                 Repeal(position=ref("2020. évi I. törvény", "3", "1")),
+            ),
+        ),
+    ),
+    (
+        """
+            16. § Létezik a Rövidítésekről szóló 2020. évi III. törvény (a továbbiakban: Rvtv.).
+            17. § Hatályát veszti az Rvtv. 1. § (1)–(5) bekezdése.
+            18. § Az Rvtv. 12. § (7) bekezdésében a „fontatlan” szövegrész helyébe a „nem fontos” szöveg lép.
+            19. § Az Rvtv. 12. § (8) bekezdése helyébe a következő rendelkezés lép:
+                   „(8) Rövidíteni tudni kell.”
+        """,
+        (
+            (ref(None, "16"), ref("2020. évi III. törvény")),
+            (ref(None, "17"), ref("2020. évi III. törvény")),
+            (ref(None, "17"), ref("2020. évi III. törvény", "1", ("1", "5"))),
+            (ref(None, "18"), ref("2020. évi III. törvény")),
+            (ref(None, "18"), ref("2020. évi III. törvény", "12", "7")),
+            (ref(None, "19"), ref("2020. évi III. törvény")),
+            (ref(None, "19"), ref("2020. évi III. törvény", "12", "8")),
+        ),
+        (
+            (
+                ref(None, "17"),
+                Repeal(position=ref("2020. évi III. törvény", "1", ("1", "5"))),
+            ),
+            (
+                ref(None, "18"),
+                TextAmendment(
+                    position=ref("2020. évi III. törvény", "12", "7"),
+                    original_text="fontatlan",
+                    replacement_text="nem fontos",
+                ),
+            ),
+            (
+                ref(None, "19"),
+                BlockAmendmentMetadata(
+                    position=ref("2020. évi III. törvény", "12", "8"),
+                    expected_type=Paragraph,
+                    expected_id_range=('8', '8'),
+                    replaces=(
+                        ref("2020. évi III. törvény", "12", "8"),
+                    )
+                )
             ),
         ),
     ),
