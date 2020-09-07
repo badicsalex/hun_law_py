@@ -20,7 +20,7 @@ from typing import List, Tuple
 import pytest
 
 from hun_law.structure import Act, OutgoingReference, Reference, \
-    SemanticData, BlockAmendmentMetadata, \
+    SemanticData, BlockAmendmentMetadata, Repeal, \
     NumericPoint, AlphabeticSubpoint
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
@@ -45,7 +45,21 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "16/A")),
             (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "91", "2")),
         ),
-        (),
+        (
+            # TODO: does not get parsed because it ends with a ","
+            # (
+            #    ref(None, "17", None, "a"),
+            #    Repeal(position=ref("1959. évi IV. törvény", "261", "4")),
+            # ),
+            (
+                ref(None, "17", None, "c"),
+                Repeal(position=ref("1997. évi CXLI. törvény", "16/A")),
+            ),
+            (
+                ref(None, "17", None, "c"),
+                Repeal(position=ref("1997. évi CXLI. törvény", "91", "2")),
+            ),
+        ),
     ),
     (
         """

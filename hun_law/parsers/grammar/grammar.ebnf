@@ -25,6 +25,7 @@ start_default =
     | block_amendment_structural $
     | text_amendment $
     | enforcement_date $
+    | repeal $
     | {any_simple_expression}+ $;
 
 # ============ STRUCTURE PARSING ============
@@ -255,6 +256,15 @@ text_amendment_part::TextAmendmentPart =
     ("szöveggel"| "szöveg" | "szövegrész")
     ;
 
+# ============ REPEAL PARSING ==============
+
+repeal::Repeal =
+    ("Nem lép hatályba" | "Hatályát veszti")
+    az { !act_reference any_token }* act_reference:act_reference
+    { references+:reference [list_separator [az]] }+
+    { [az] texts+:quote ["szövegrész"] [list_separator [az]]}*
+    "."
+    ;
 
 # ============ SIMPLE TOKENS ============
 

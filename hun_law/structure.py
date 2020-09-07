@@ -700,3 +700,9 @@ class TextAmendment(SemanticData):
     position: Reference
     original_text: str
     replacement_text: str
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
+class Repeal(SemanticData):
+    position: Reference
+    text: Optional[str] = None

@@ -28,7 +28,7 @@ from hun_law.structure import Reference, \
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
     Subtitle, Part, Title, Chapter,\
     ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
-    EnforcementDate, DaysAfterPublication, TextAmendment
+    EnforcementDate, DaysAfterPublication, TextAmendment, Repeal
 
 from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
 
@@ -38,6 +38,12 @@ from .grammar.parser import ActGrammarParser  # type: ignore
 
 def get_subtree_start_and_end_pos(subtree: model.ModelBase) -> Tuple[int, int]:
     return subtree.parseinfo.pos, subtree.parseinfo.endpos
+
+
+def convert_quote_to_string(quote: Any) -> str:
+    assert quote[0] == "„"
+    assert quote[-1] == "”"
+    return "".join(flatten(quote[1:-1])).strip()
 
 
 @attr.s(slots=True, auto_attribs=True)
@@ -546,17 +552,11 @@ class TextAmendmentToTextAmendment(ModelConverter):
     CONVERTED_TYPE = model.TextAmendment
 
     @classmethod
-    def convert_quote_to_string(cls, quote: Any) -> str:
-        assert quote[0] == "„"
-        assert quote[-1] == "”"
-        return "".join(flatten(quote[1:-1])).strip()
-
-    @classmethod
     def convert_part(cls, reference: Reference, tree_element: model.TextAmendmentPart) -> TextAmendment:
         return TextAmendment(
             position=reference,
-            original_text=cls.convert_quote_to_string(tree_element.original_text),
-            replacement_text=cls.convert_quote_to_string(tree_element.replacement_text),
+            original_text=convert_quote_to_string(tree_element.original_text),
+            replacement_text=convert_quote_to_string(tree_element.replacement_text),
         )
 
     @classmethod
@@ -582,6 +582,34 @@ class TextAmendmentToReference(ModelConverter):
         yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
 
 
+class RepealToRepeal(ModelConverter):
+    CONVERTED_TYPE = model.Repeal
+
+    @classmethod
+    def convert(cls, tree_element: model.Repeal) -> Iterable[Repeal]:
+        assert tree_element.references is not None
+        assert tree_element.texts is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        for reference in ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references):
+            if not tree_element.texts:
+                yield Repeal(position=reference.reference)
+            else:
+                for text in tree_element.texts:
+                    yield Repeal(position=reference.reference, text=convert_quote_to_string(text))
+
+
+class RepealToReference(ModelConverter):
+    CONVERTED_TYPE = model.Repeal
+
+    @classmethod
+    def convert(cls, tree_element: model.Repeal) -> Iterable[InTextReference]:
+        assert tree_element.references is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
+        yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
+        yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
+
+
 @attr.s(slots=True, frozen=True)
 class GrammarResultContainer:
     CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
@@ -595,6 +623,8 @@ class GrammarResultContainer:
         EnforcementDateToReference,
         TextAmendmentToTextAmendment,
         TextAmendmentToReference,
+        RepealToRepeal,
+        RepealToReference,
     )
 
     tree: Any = attr.ib()
