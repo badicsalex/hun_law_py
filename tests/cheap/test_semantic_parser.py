@@ -46,11 +46,10 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
             (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "91", "2")),
         ),
         (
-            # TODO: does not get parsed because it ends with a ","
-            # (
-            #    ref(None, "17", None, "a"),
-            #    Repeal(position=ref("1959. évi IV. törvény", "261", "4")),
-            # ),
+            (
+                ref(None, "17", None, "a"),
+                Repeal(position=ref("1959. évi IV. törvény", "261", "4")),
+            ),
             (
                 ref(None, "17", None, "c"),
                 Repeal(position=ref("1997. évi CXLI. törvény", "16/A")),
@@ -105,6 +104,38 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                         ref('2012. évi CXLVII. törvény', '2', None, ('19', '20')),
                     )
                 )
+            ),
+            (
+                ref(None, "41", None, "1"),
+                Repeal(position=ref("1990. évi XCIII. törvény", "17", "1", "c"), text="vagy egészségügyi hozzájárulás"),
+            ),
+            (
+                ref(None, "41", None, "2", "a"),
+                Repeal(position=ref("2000. évi C. törvény", "79", "4"), text="az egészségügyi hozzájárulás,"),
+            ),
+            (
+                ref(None, "41", None, "2", "b"),
+                Repeal(position=ref("2000. évi C. törvény", "103", "2", "c"), text="egészségügyi hozzájárulás,"),
+            ),
+            (
+                ref(None, "41", None, "3", "a"),
+                Repeal(position=ref("2004. évi CXXIII. törvény", ("8/A", "8/B")))
+            ),
+            (
+                ref(None, "41", None, "3", "b"),
+                Repeal(position=ref("2004. évi CXXIII. törvény", ("16/A", "16/B")))
+            ),
+            (
+                ref(None, "41", None, "3", "c"),
+                Repeal(position=ref("2004. évi CXXIII. törvény", "17/A", "1"))
+            ),
+            (
+                ref(None, "41", None, "3", "c"),
+                Repeal(position=ref("2004. évi CXXIII. törvény", "17/A", "3"))
+            ),
+            (
+                ref(None, "41", None, "4"),
+                Repeal(position=ref("Katv.", "2", None, "21"))
             ),
         ),
     ),
@@ -168,6 +199,39 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                         ref("2011. évi LXXV. törvény", "1", "1", "4"),
                     )
                 )
+            ),
+        ),
+    ),
+    (
+        """
+            17. § Hatályát veszti a Tesztelésről Szóló 2020. évi I. törvény (a továbbiakban: Teszttv.)
+                  a)   1. § (1) és (3) bekezdése,
+                  b)   2. §-a, valamint
+                  c)   3. § (1) bekezdése.
+        """,
+        (
+            (ref(None, "17"), ref("2020. évi I. törvény")),
+            (ref(None, "17", None, "a"), ref("2020. évi I. törvény", "1", "1")),
+            (ref(None, "17", None, "a"), ref("2020. évi I. törvény", "1", "3")),
+            (ref(None, "17", None, "b"), ref("2020. évi I. törvény", "2")),
+            (ref(None, "17", None, "c"), ref("2020. évi I. törvény", "3", "1")),
+        ),
+        (
+            (
+                ref(None, "17", None, "a"),
+                Repeal(position=ref("2020. évi I. törvény", "1", "1")),
+            ),
+            (
+                ref(None, "17", None, "a"),
+                Repeal(position=ref("2020. évi I. törvény", "1", "3")),
+            ),
+            (
+                ref(None, "17", None, "b"),
+                Repeal(position=ref("2020. évi I. törvény", "2")),
+            ),
+            (
+                ref(None, "17", None, "c"),
+                Repeal(position=ref("2020. évi I. törvény", "3", "1")),
             ),
         ),
     ),

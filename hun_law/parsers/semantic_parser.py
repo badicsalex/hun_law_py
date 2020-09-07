@@ -101,9 +101,21 @@ class ActSemanticsParser:
             cls.recursive_parse(child, element_reference, prefix, postfix, state)
 
     @classmethod
+    def fix_list_element_end(cls, text: str, end_sentence: bool) -> str:
+        # The order here matters, so as to handle the ", és"-style cases
+        for junk_str in (" és", " valamint", " illetve", " vagy", ";", ","):
+            if text.endswith(junk_str):
+                text = text[:-len(junk_str)]
+        if end_sentence and text[-1] not in ('.', ':', '!', '?'):
+            text = text + '.'
+        return text
+
+    @classmethod
     def parse_text(cls, middle: str, prefix: str, postfix: str, element_reference: Reference, state: SemanticParseState) -> None:
         # TODO: pylint is right here, should refactor.
         #pylint: disable=too-many-arguments
+
+        middle = cls.fix_list_element_end(middle, not postfix)
         text = prefix + middle + postfix
         if len(text) > 10000:
             return
