@@ -268,11 +268,11 @@ def test_text_to_int_roman() -> None:
 def test_obj_to_dict_can_handle_specials() -> None:
     test_data = BlockAmendmentMetadata(
         expected_type=Subtitle,
-        expected_id_range=("349", "349"),
-        position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
+        expected_id_range=("123", "123"),
+        position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "123")),
         replaces=(
-            StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
-            Reference(act="Btk.", article="349"),
+            StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "123")),
+            Reference(act="Btk.", article="123"),
         )
     )
 
