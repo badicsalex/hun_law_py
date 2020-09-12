@@ -188,10 +188,12 @@ class TypeNameConverter(Converter):
     types: Dict[str, Type]
 
     def setup(self, the_type: TypeOrGeneric, converter_factory: 'ConverterFactory') -> None:
+        if is_union_type(the_type.__args__[0]):
+            the_type = the_type.__args__[0]
         all_possible_types: Set[Type] = set()
         for contained_type in the_type.__args__:
             if not isclass(contained_type):
-                raise ValueError("Type[] has to contain only proper classes as arguments")
+                raise ValueError("Type[] has to contain only proper classes as arguments ({})".format(contained_type))
             all_possible_types.update(get_subclasses_recursive(contained_type))
         self.types = {t.__name__: t for t in all_possible_types}
 

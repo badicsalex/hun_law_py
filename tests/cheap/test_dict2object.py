@@ -260,6 +260,11 @@ TEST_DATA: List[Tuple[TypeOrGeneric, Any, Any]] = [
         SubclassesAAA,
         'SubclassesAAA'
     ),
+    (
+        Type[Union[SubclassesB, SubclassesAA]],
+        SubclassesAA,
+        'SubclassesAA'
+    ),
 ]
 
 
