@@ -253,8 +253,12 @@ TEST_DATA: List[Tuple[TypeOrGeneric, Any, Any]] = [
         Union[int, MyEnum, Tuple[int]],
         MyEnum.VALUE_WHAT,
         'VALUE_WHAT',
-    )
-
+    ),
+    (
+        Type[SubclassesA],
+        SubclassesAAA,
+        'SubclassesAAA'
+    ),
 ]
 
 

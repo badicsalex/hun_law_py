@@ -26,11 +26,15 @@ TypeOrGeneric = Any
 
 
 def is_list_type(t: TypeOrGeneric) -> bool:
-    return t is list or isinstance(t, type(List[int])) and isclass(t.__origin__) and issubclass(t.__origin__, list)  # type: ignore
+    return t is list or isinstance(t, type(List[int])) and isclass(t.__origin__) and t.__origin__ in (list, List)  # type: ignore
 
 
 def is_tuple_type(t: TypeOrGeneric) -> bool:
-    return t is tuple or isinstance(t, type(Tuple[int])) and isclass(t.__origin__) and issubclass(t.__origin__, tuple)  # type: ignore
+    return t is tuple or isinstance(t, type(Tuple[int])) and isclass(t.__origin__) and t.__origin__ in (tuple, Tuple)  # type: ignore
+
+
+def is_type_type(t: TypeOrGeneric) -> bool:
+    return t is type or isinstance(t, type(Type[object])) and isclass(t.__origin__) and t.__origin__ in (type, Type)  # type: ignore
 
 
 def is_union_type(t: TypeOrGeneric) -> bool:
@@ -174,6 +178,31 @@ class EnumConverter(Converter):
 
     def input_types(self) -> Iterable[Type]:
         return (self.the_type, )
+
+    def converted_type(self) -> Type:
+        return str
+
+
+class TypeNameConverter(Converter):
+    __slots__ = ('types',)
+    types: Dict[str, Type]
+
+    def setup(self, the_type: TypeOrGeneric, converter_factory: 'ConverterFactory') -> None:
+        all_possible_types: Set[Type] = set()
+        for contained_type in the_type.__args__:
+            if not isclass(contained_type):
+                raise ValueError("Type[] has to contain only proper classes as arguments")
+            all_possible_types.update(get_subclasses_recursive(contained_type))
+        self.types = {t.__name__: t for t in all_possible_types}
+
+    def to_object(self, data: Any) -> Any:
+        return self.types[data]
+
+    def to_dict(self, data: Any) -> Any:
+        return data.__name__
+
+    def input_types(self) -> Iterable[Type]:
+        return (type, )
 
     def converted_type(self) -> Type:
         return str
@@ -333,6 +362,8 @@ class ConverterFactory:
                 converter = TupleConverter()
         elif isclass(the_type) and issubclass(the_type, Enum):
             converter = EnumConverter()
+        elif is_type_type(the_type):
+            converter = TypeNameConverter()
         elif handle_subclasses and isclass(the_type) and the_type.__subclasses__():
             converter = UnionConverter()
             the_types = [the_type]
