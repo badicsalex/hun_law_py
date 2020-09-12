@@ -108,6 +108,7 @@ gc.collect()
 TEST_DATA: List[Tuple[TypeOrGeneric, Any, Any]] = [
     (int, 5, 5),
     (str, 'lel', 'lel'),
+    (bool, True, True),
     (type(None), None, None),
     (
         List[int],

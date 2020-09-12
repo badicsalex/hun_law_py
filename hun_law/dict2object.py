@@ -351,7 +351,7 @@ class ConverterFactory:
             return self.cache[cache_key]
 
         converter: Converter
-        if the_type in (int, float, str, type(None)):
+        if the_type in (bool, int, float, str, type(None)):
             converter = NoopConverter()
         elif is_list_type(the_type):
             converter = ListConverter()
