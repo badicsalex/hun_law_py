@@ -14,13 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set, _GenericAlias  # type: ignore
+from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set
 from abc import ABC, abstractmethod
 from inspect import isclass
 
 import attr
 
-TypeOrGeneric = Union[Type, _GenericAlias]
+# TODO: this should be a proper Union of real and generic types.
+TypeOrGeneric = Any
 
 
 def is_list_type(t: TypeOrGeneric) -> bool:
@@ -78,7 +79,6 @@ class NoopConverter(Converter):
     the_type: Type
 
     def setup(self, the_type: TypeOrGeneric, converter_factory: 'ConverterFactory') -> None:
-        assert not isinstance(the_type, _GenericAlias)
         self.the_type = the_type
 
     def to_object(self, data: Any) -> Any:
