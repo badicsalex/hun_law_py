@@ -16,6 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Tuple, List, Type, Any, Union, Optional
 import gc
+from enum import Enum
 
 import pytest
 import attr
@@ -91,6 +92,12 @@ class SubclassesB:
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class SubclassesBA(SubclassesB):
     y: int
+
+
+class MyEnum(Enum):
+    VALUE1 = 1
+    VALUE_WHAT = 1337
+    ENUM_NAMES_YEEE = 25252
 
 
 attr.resolve_types(Recursive)
@@ -236,6 +243,16 @@ TEST_DATA: List[Tuple[TypeOrGeneric, Any, Any]] = [
             {'i': 3, 'j': 4, 'k': 5, '__type__': 'SubclassesAAA'},
             'no',
         ]
+    ),
+    (
+        MyEnum,
+        MyEnum.ENUM_NAMES_YEEE,
+        'ENUM_NAMES_YEEE',
+    ),
+    (
+        Union[int, MyEnum, Tuple[int]],
+        MyEnum.VALUE_WHAT,
+        'VALUE_WHAT',
     )
 
 ]

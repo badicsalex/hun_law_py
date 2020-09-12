@@ -17,6 +17,7 @@
 from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set
 from abc import ABC, abstractmethod
 from inspect import isclass
+from enum import Enum
 
 import attr
 
@@ -158,6 +159,26 @@ class TupleConverter(Converter):
         return list
 
 
+class EnumConverter(Converter):
+    __slots__ = ('the_type',)
+    the_type: Type
+
+    def setup(self, the_type: TypeOrGeneric, converter_factory: 'ConverterFactory') -> None:
+        self.the_type = the_type
+
+    def to_object(self, data: Any) -> Any:
+        return self.the_type[data]
+
+    def to_dict(self, data: Any) -> Any:
+        return data.name
+
+    def input_types(self) -> Iterable[Type]:
+        return (self.the_type, )
+
+    def converted_type(self) -> Type:
+        return str
+
+
 class AttrsClassConverter(Converter):
     __slots__ = ('the_class', 'subconverters',)
     the_class: TypeOrGeneric
@@ -292,6 +313,10 @@ class ConverterFactory:
         self.cache = {}
 
     def create(self, the_type: TypeOrGeneric, *, handle_subclasses: bool = True) -> Converter:
+        # It's called a dispatch function, pylint.
+        # OK, TBH the condition / converter thing could
+        # almost be a big tuple if not for the Union magic.
+        # pylint: disable=too-many-branches
         cache_key = (the_type, handle_subclasses)
         if cache_key in self.cache:
             return self.cache[cache_key]
@@ -306,6 +331,8 @@ class ConverterFactory:
                 converter = VarLenTupleConverter()
             else:
                 converter = TupleConverter()
+        elif isclass(the_type) and issubclass(the_type, Enum):
+            converter = EnumConverter()
         elif handle_subclasses and isclass(the_type) and the_type.__subclasses__():
             converter = UnionConverter()
             the_types = [the_type]
