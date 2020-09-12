@@ -42,7 +42,7 @@ def get_subclasses_recursive(cls: TypeOrGeneric) -> Iterable[TypeOrGeneric]:
         return
     if is_list_type(cls) or is_tuple_type(cls):
         return
-    if hasattr(cls, '__subclasses__'):
+    if isclass(cls):
         for candidate in cls.__subclasses__():
             yield from get_subclasses_recursive(candidate)
 
