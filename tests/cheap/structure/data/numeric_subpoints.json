@@ -1,12 +1,10 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
             "identifier": "34",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "intro": "E törvény alkalmazásában:",
                     "children": [
                         {

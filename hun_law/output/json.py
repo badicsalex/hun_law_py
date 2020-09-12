@@ -17,12 +17,12 @@
 import json
 from typing import Any, TextIO
 
-from hun_law.utils import object_to_dict_recursive
+from hun_law import dict2object
 
 
 def serialize_to_json_file(act: Any, f: TextIO) -> Any:
     json.dump(
-        object_to_dict_recursive(act),
+        dict2object.to_dict(act, type(act)),
         f,
         indent='  ',
         ensure_ascii=False,

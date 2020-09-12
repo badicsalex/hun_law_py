@@ -1,11 +1,9 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Ebben a torvenyben mas nincs."
                 }
             ],

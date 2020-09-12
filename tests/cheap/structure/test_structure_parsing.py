@@ -22,7 +22,7 @@ from typing import Iterable, Any
 
 import pytest
 
-from hun_law.utils import object_to_dict_recursive
+from hun_law import dict2object
 
 from tests.cheap.utils import quick_parse_structure
 
@@ -45,7 +45,7 @@ def structure_testcase_provider() -> Iterable[Any]:
 @pytest.mark.parametrize("text,expected_structure", structure_testcase_provider())  # type: ignore
 def test_structure_parsing_exact(text: str, expected_structure: Any) -> None:
     resulting_structure = quick_parse_structure(text)
-    result_as_dict = object_to_dict_recursive(resulting_structure)
+    result_as_dict = dict2object.to_dict(resulting_structure, type(resulting_structure))
 
     json.dump(result_as_dict, sys.stdout, indent='    ', ensure_ascii=False, sort_keys=True)
 

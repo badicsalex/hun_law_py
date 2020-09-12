@@ -1,12 +1,10 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
             "identifier": "1",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "intro": "Don't forget",
                     "children": [
@@ -40,7 +38,6 @@
                     ]
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "2",
                     "intro": "Oh by the way",
                     "children": [
@@ -69,12 +66,10 @@
                     ]
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "3",
                     "text": "By the way 2, if there is only one point reference like a) we still should not parse it as points, because it's wrong."
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "4",
                     "intro": "This is especially true if there is a fake numeric point like 1. but then there are",
                     "children": [
@@ -92,7 +87,6 @@
                     "wrap_up": "Then it should be alphabetic subpoints. Even without indentation."
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "5",
                     "intro": "This is especially true if there is a fake numeric point like",
                     "children": [

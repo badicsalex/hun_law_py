@@ -1,5 +1,4 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Subtitle",
@@ -10,7 +9,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Ajj, mehet."
                 }
             ],
@@ -25,7 +23,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "children": [
                         {
                             "__type__": "NumericPoint",
@@ -47,7 +44,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Sot, nem kell felni a felkover dolgoktol sem."
                 }
             ],

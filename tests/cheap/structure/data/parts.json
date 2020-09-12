@@ -1,5 +1,4 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Part",
@@ -20,7 +19,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "text": "Az elkövető büntetőjogi felelősségét csak olyan cselekmény miatt lehet megállapítani, amelyet – a nemzetközi jog általánosan elismert szabályai alapján büntetendő cselekmények kivételével – törvény az elkövetés idején büntetni rendelt."
                 }
@@ -47,7 +45,6 @@
             "identifier": "2",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "intro": "Aki valamely nemzeti, etnikai, faji vagy vallási csoport teljes vagy részleges megsemmisítése céljából",
                     "children": [
@@ -79,7 +76,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "text": "E törvény alkalmazásában"
                 }

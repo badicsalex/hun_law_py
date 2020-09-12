@@ -1,11 +1,9 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Egy sorban levo szakasz."
                 }
             ],
@@ -15,7 +13,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Ket sorban levo szakasz."
                 }
             ],
@@ -25,7 +22,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Sortores a szakasz elott."
                 }
             ],
@@ -35,7 +31,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Sortores a szakasz kozben."
                 }
             ],
@@ -45,7 +40,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Vege."
                 }
             ],

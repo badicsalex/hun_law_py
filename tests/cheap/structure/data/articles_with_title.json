@@ -1,5 +1,4 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
@@ -7,7 +6,6 @@
             "title": "A törvény hatálya",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "E törvény a mellérendeltség és egyenjogúság elve szerint szabályozza a személyek alapvető vagyoni és személyi viszonyait."
                 }
             ]
@@ -18,12 +16,10 @@
             "title": "Értelmezési alapelv",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "text": "E törvény rendelkezéseit Magyarország alkotmányos rendjével összhangban kell értelmezni."
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "2",
                     "text": "A polgári jogi viszonyokra vonatkozó jogszabályokat e törvénnyel összhangban kell értelmezni."
                 }

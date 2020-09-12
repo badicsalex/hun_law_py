@@ -1,5 +1,4 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Subtitle",
@@ -10,7 +9,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "E törvény hatálya kiterjed a gondnokoltak, az előzetes jognyilatkozatot tett személyek és az előzetes jognyilatkozataik adatainak a nyilvántartására (a továbbiakban együtt: nyilvántartások)."
                 }
             ],
@@ -25,7 +23,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "A gondnokoltak nyilvántartásában szereplő adatok kezelésének célja a gondnokság alá helyezés tényének igazolása a gondnokság alá helyezett személy jogai gyakorlásának elősegítése, illetve harmadik személyek jogainak védelme érdekében."
                 }
             ],
@@ -35,7 +32,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "intro": "A gondnokoltak nyilvántartása a következő adatokat és a változás időpontjának megjelölésével az adatváltozásokat tartalmazza:",
                     "children": [
@@ -104,12 +100,10 @@
                     ]
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "2",
                     "text": "A gondnokoltak nyilvántartásában fel kell tüntetni a gondnokolt halálának tényét és időpontját."
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "3",
                     "text": "Az (1) bekezdés b)–f) pontja szerinti adatokat a gondnokoltak nyilvántartása közhitelesen tartalmazza."
                 }

@@ -1,5 +1,4 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Subtitle",
@@ -10,7 +9,6 @@
             "__type__": "Article",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "text": "A foglalkoztatás elősegítéséről és a munkanélküliek ellátásáról szóló 1991. évi IV. törvény (a továbbiakban: Flt.) 4. § (1) bekezdése helyébe a következő rendelkezés lép:"
                 }

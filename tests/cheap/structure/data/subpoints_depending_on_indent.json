@@ -1,17 +1,14 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
             "identifier": "1",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "identifier": "1",
                     "text": "A bíróság polgári peres és nemperes eljárás vagy büntetőeljárás lefolytatása céljából a gondnokoltak nyilvántartásában kezelt adatok teljes körét közvetlen adathozzáféréssel (a továbbiakban: közvetlen hozzáférés) jogosult megismerni és kezelni."
                 },
                 {
-                    "__type__": "Paragraph",
                     "identifier": "2",
                     "intro": "A gondnokoltak nyilvántartásában az érintettre vonatkozóan szereplő alábbi adatokat a cselekvőképesség fennállásának vizsgálata céljából konkrét ügyben közvetlen hozzáféréssel jogosult megismerni és kezelni:",
                     "children": [

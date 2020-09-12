@@ -26,8 +26,9 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfdevice import PDFTextDevice
 from pdfminer.pdffont import PDFUnicodeNotDefined, PDFFont
 
-from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2, object_to_dict_recursive, dict_to_object_recursive
+from hun_law.utils import IndentedLine, IndentedLinePart, EMPTY_LINE, chr_latin2
 from hun_law.cache import CacheObject
+from hun_law import dict2object
 
 from . import Extractor
 from .file import PDFFileDescriptor
@@ -240,17 +241,17 @@ def extract_lines(potb: PdfOfTextBoxes) -> PdfOfLines:
     return result
 
 
+PDF_OF_LINES_CONVERTER = dict2object.get_converter(PdfOfLines)
+
+
 @Extractor(PDFFileDescriptor)
 def CachedPdfParser(f: PDFFileDescriptor) -> Iterable[PdfOfLines]:
-    cache_object = CacheObject(f.cache_id + ".parsed_v3.gz")
+    cache_object = CacheObject(f.cache_id + ".parsed_v4.gz")
     if cache_object.exists():
-        result = dict_to_object_recursive(
-            cache_object.read_json(),
-            (PdfOfLines, PageOfLines, IndentedLine, IndentedLinePart)
-        )
+        result = PDF_OF_LINES_CONVERTER.to_object(cache_object.read_json())
         yield result
     else:
         textboxes = extract_textboxes(f)
         result = extract_lines(textboxes)
-        cache_object.write_json(object_to_dict_recursive(result))
+        cache_object.write_json(PDF_OF_LINES_CONVERTER.to_dict(result))
         yield result

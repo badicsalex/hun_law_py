@@ -1,12 +1,10 @@
 {
-    "__type__": "Act",
     "children": [
         {
             "__type__": "Article",
             "identifier": "192",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "intro": "E törvény",
                     "children": [
                         {
@@ -29,7 +27,6 @@
             "identifier": "193",
             "children": [
                 {
-                    "__type__": "Paragraph",
                     "text": "Ures sor, hogy hiba legyen"
                 }
             ]
