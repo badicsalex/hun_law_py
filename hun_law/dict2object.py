@@ -225,7 +225,14 @@ class AttrsClassConverter(Converter):
             self.subconverters[field.name] = converter_factory.create(field.type)
 
     def to_object(self, data: Any) -> Any:
-        converted_data = {k: self.subconverters[k].to_object(v) for k, v in data.items() if k != '__type__'}
+        converted_data = {}
+        for k, v in data.items():
+            if k == '__type__':
+                continue
+            subconverter = self.subconverters[k]
+            if k[0] == '_':
+                k = k[1:]
+            converted_data[k] = subconverter.to_object(v)
         return self.the_class(**converted_data)
 
     def to_dict(self, data: Any) -> Any:

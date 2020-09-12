@@ -94,6 +94,12 @@ class SubclassesBA(SubclassesB):
     y: int
 
 
+@attr.s(slots=True, frozen=True, auto_attribs=True)
+class ProtectedFields:
+    public: str
+    _protected: str
+
+
 class MyEnum(Enum):
     VALUE1 = 1
     VALUE_WHAT = 1337
@@ -265,6 +271,11 @@ TEST_DATA: List[Tuple[TypeOrGeneric, Any, Any]] = [
         SubclassesAA,
         'SubclassesAA'
     ),
+    (
+        ProtectedFields,
+        ProtectedFields('a', 'b'),
+        {'public': 'a', '_protected': 'b'}
+    )
 ]
 
 
