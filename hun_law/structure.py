@@ -17,6 +17,9 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable, Any
+import gc
+import inspect
+import sys
 
 import attr
 
@@ -714,3 +717,15 @@ class Repeal(SemanticData):
     def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'Repeal':
         position = self.position.resolve_abbreviations(abbreviations_map)
         return attr.evolve(self, position=position)
+
+
+def __do_post_processing() -> None:
+    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
+        if attr.has(cls):
+            attr.resolve_types(cls)
+
+    # Needed for attr.s(slots=True), and __subclasses__ to work correctly.
+    gc.collect()
+
+
+__do_post_processing()
