@@ -326,8 +326,12 @@ class ConverterFactory:
 
 
 def to_object(data: Any, the_type: TypeOrGeneric) -> Any:
-    return ConverterFactory().create(the_type).to_object(data)
+    return get_converter(the_type).to_object(data)
 
 
 def to_dict(data: Any, the_type: TypeOrGeneric) -> Any:
-    return ConverterFactory().create(the_type).to_dict(data)
+    return get_converter(the_type).to_dict(data)
+
+
+def get_converter(the_type: TypeOrGeneric) -> Converter:
+    return ConverterFactory().create(the_type)
