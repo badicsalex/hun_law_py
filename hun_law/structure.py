@@ -267,6 +267,10 @@ class SubArticleElement(ABC):
     def relative_reference(self) -> 'Reference':
         pass
 
+    @abstractmethod
+    def at_reference(self, reference: 'Reference') -> 'SubArticleElement':
+        pass
+
 
 @attr.s(slots=True, frozen=True)
 class AlphabeticSubpoint(SubArticleElement):
@@ -286,6 +290,9 @@ class AlphabeticSubpoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(subpoint=self.identifier)
 
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        raise ValueError("Alphabetic subpoints never have children")
+
 
 @attr.s(slots=True, frozen=True)
 class NumericSubpoint(SubArticleElement):
@@ -300,6 +307,9 @@ class NumericSubpoint(SubArticleElement):
     @property
     def relative_reference(self) -> 'Reference':
         return Reference(subpoint=self.identifier)
+
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        raise ValueError("Alphabetic subpoints never have children")
 
 
 @attr.s(slots=True, frozen=True)
@@ -334,6 +344,10 @@ class NumericPoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(point=self.identifier)
 
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        assert isinstance(reference.subpoint, str)
+        return self.subpoint(reference.subpoint)
+
 
 @attr.s(slots=True, frozen=True)
 class AlphabeticPoint(SubArticleElement):
@@ -356,6 +370,10 @@ class AlphabeticPoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(point=self.identifier)
 
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        assert isinstance(reference.subpoint, str)
+        return self.subpoint(reference.subpoint)
+
 
 @attr.s(slots=True, frozen=True)
 class BlockAmendment(SubArticleElement):
@@ -373,6 +391,9 @@ class BlockAmendment(SubArticleElement):
     @property
     def relative_reference(self) -> 'Reference':
         raise TypeError("Block Amendments cannot be referred to.")
+
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        raise ValueError("Children of BlockAmendments cannotbe reached with at_reference")
 
 
 @attr.s(slots=True, frozen=True)
@@ -417,6 +438,13 @@ class Paragraph(SubArticleElement):
     @property
     def relative_reference(self) -> 'Reference':
         return Reference(paragraph=self.identifier)
+
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        assert isinstance(reference.point, str)
+        point = self.point(reference.point)
+        if reference.subpoint is None:
+            return point
+        return point.at_reference(Reference(subpoint=reference.subpoint))
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
@@ -483,6 +511,18 @@ class Article:
     def relative_reference(self) -> 'Reference':
         return Reference(article=self.identifier)
 
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        assert not isinstance(reference.paragraph, tuple)
+        paragraph = self.paragraph_map[reference.paragraph]
+        if reference.point is None:
+            return paragraph
+        return paragraph.at_reference(
+            Reference(
+                point=reference.point,
+                subpoint=reference.subpoint
+            )
+        )
+
 
 BlockAmendment.ALLOWED_CHILDREN_TYPE = (
     Article,
@@ -522,6 +562,16 @@ class Act:
         assert self.articles_map[str(article_id)].identifier == str(article_id)
         return self.articles_map[str(article_id)]
 
+    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+        assert reference.act is None or reference.act == self.identifier
+        assert isinstance(reference.article, str)
+        return self.articles_map[reference.article].at_reference(
+            Reference(
+                paragraph=reference.paragraph,
+                point=reference.point,
+                subpoint=reference.subpoint
+            )
+        )
     def outgoing_references_from(self, reference: 'Reference') -> Iterable['OutgoingReference']:
         if self.outgoing_references is None:
             return ()

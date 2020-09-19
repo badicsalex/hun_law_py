@@ -262,3 +262,38 @@ def test_next_identifiers_alphabetic() -> None:
     assert not AlphabeticSubpoint.is_next_identifier("ac", "aa")
 
     assert not AlphabeticSubpoint.is_next_identifier("ac", "bd")
+
+
+def test_at_reference() -> None:
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:1"
+    )) is TEST_STRUCTURE.article("1:1").paragraph()
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:2",
+        paragraph="1"
+    )) is TEST_STRUCTURE.article("1:2").paragraph("1")
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:2",
+        paragraph="2",
+    )) is TEST_STRUCTURE.article("1:2").paragraph("2")
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:2",
+        paragraph="2",
+        point="a",
+    )) is TEST_STRUCTURE.article("1:2").paragraph("2").point("a")
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:2",
+        paragraph="2",
+        point="b",
+        subpoint="bb",
+    )) is TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb")
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="2:2",
+        paragraph="1",
+        point="1a",
+    )) is TEST_STRUCTURE.article("2:2").paragraph("1").point("1a")
