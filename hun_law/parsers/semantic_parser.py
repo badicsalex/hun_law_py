@@ -21,10 +21,10 @@ from typing import List, Iterable, Tuple, Mapping
 import attr
 
 from hun_law.structure import \
-    Act, Article, Paragraph, QuotedBlock, BlockAmendment, StructuralElement, SemanticData, \
-    Reference, OutgoingReference, InTextReference,\
+    Act, Article, Paragraph, QuotedBlock, SemanticData, \
+    OutgoingReference, \
     BlockAmendmentMetadata, \
-    ActIdAbbreviation, SubArticleChildType
+    ActIdAbbreviation, SubArticleElement
 from .structure_parser import BlockAmendmentStructureParser, SubArticleParsingError
 from .grammatical_analyzer import GrammaticalAnalyzer
 
@@ -33,44 +33,48 @@ from .grammatical_analyzer import GrammaticalAnalyzer
 class SemanticParseState:
     analyzer: GrammaticalAnalyzer = attr.ib(factory=GrammaticalAnalyzer)
     act_id_abbreviations: List[ActIdAbbreviation] = attr.ib(factory=list)
-    outgoing_references: List[OutgoingReference] = attr.ib(factory=list)
-    semantic_data: List[Tuple[Reference, SemanticData]] = attr.ib(factory=list)
 
 
 class ActSemanticsParser:
     INTERESTING_SUBSTRINGS = (")", "§", "törvén")
 
     @classmethod
-    def parse(cls, act: Act) -> Act:
+    def add_semantics_to_act(cls, act: Act) -> Act:
         # TODO: Rewrite this to be more functional instead of passing
         # a mutable state
         state = SemanticParseState()
-        for article in act.articles:
-            for paragraph in article.paragraphs:
-                cls.recursive_parse(paragraph, article.relative_reference, "", "", state)
+        new_children = []
+        for child in act.children:
+            if isinstance(child, Article):
+                child = cls.add_semantics_to_article(child, state)
+            new_children.append(child)
         return attr.evolve(
             act,
-            act_id_abbreviations=tuple(state.act_id_abbreviations),
-            outgoing_references=tuple(state.outgoing_references),
-            semantic_data=tuple(state.semantic_data),
+            children=tuple(new_children)
         )
 
     @classmethod
-    def recursive_parse(
+    def add_semantics_to_article(cls, article: Article, state: SemanticParseState) -> Article:
+        new_children = tuple(cls.add_semantics_to_sae(child, '', '', state) for child in article.children)
+        return attr.evolve(
+            article,
+            children=new_children
+        )
+
+    @classmethod
+    def add_semantics_to_sae(
             cls,
-            element: SubArticleChildType,
-            parent_reference: Reference,
+            element: SubArticleElement,
             prefix: str, postfix: str,
             state: SemanticParseState
-    ) -> None:
-        # TODO: pylint is right here, should refactor.
-        #pylint: disable=too-many-arguments
-        if isinstance(element, (QuotedBlock, BlockAmendment, Article, StructuralElement)):
-            return
-        element_reference = element.relative_reference.relative_to(parent_reference)
+    ) -> SubArticleElement:
         if element.text is not None:
-            cls.parse_text(element.text, prefix, postfix, element_reference, state)
-            return
+            outgoing_references, semantic_data = cls.parse_text(element.text, prefix, postfix, state)
+            return attr.evolve(
+                element,
+                outgoing_references=outgoing_references,
+                semantic_data=semantic_data
+            )
 
         # First parse the intro of this element, because although we will
         # parse the same text when in context of the children, we throw away
@@ -85,8 +89,10 @@ class ActSemanticsParser:
         #
         # In this case, we hope that the string "From now on" can be parsed without
         # the second part of the sentence.
-        assert element.intro is not None
-        cls.parse_text(element.intro, prefix, '', element_reference, state)
+        if element.intro is not None:
+            outgoing_references, semantic_data = cls.parse_text(element.intro, prefix, '', state)
+        else:
+            outgoing_references, semantic_data = (), ()
 
         # TODO: Parse the wrap up of "this element"
 
@@ -97,8 +103,18 @@ class ActSemanticsParser:
             postfix = " " + element.wrap_up + postfix
 
         assert element.children is not None
+        new_children = []
         for child in element.children:
-            cls.recursive_parse(child, element_reference, prefix, postfix, state)
+            if isinstance(child, SubArticleElement):
+                child = cls.add_semantics_to_sae(child, prefix, postfix, state)
+            new_children.append(child)
+
+        return attr.evolve(
+            element,
+            children=tuple(new_children),
+            outgoing_references=outgoing_references,
+            semantic_data=semantic_data
+        )
 
     @classmethod
     def fix_list_element_end(cls, text: str, end_sentence: bool) -> str:
@@ -111,16 +127,15 @@ class ActSemanticsParser:
         return text
 
     @classmethod
-    def parse_text(cls, middle: str, prefix: str, postfix: str, element_reference: Reference, state: SemanticParseState) -> None:
-        # TODO: pylint is right here, should refactor.
-        #pylint: disable=too-many-arguments
+    def parse_text(cls, middle: str, prefix: str, postfix: str, state: SemanticParseState) \
+            -> Tuple[Tuple[OutgoingReference, ...], Tuple[SemanticData, ...]]:
 
         middle = cls.fix_list_element_end(middle, not postfix)
         text = prefix + middle + postfix
         if len(text) > 10000:
-            return
+            return (), ()
         if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
-            return
+            return (), ()
 
         analysis_result = state.analyzer.analyze(text)
 
@@ -128,30 +143,25 @@ class ActSemanticsParser:
 
         abbreviations_map = {a.abbreviation: a.act for a in state.act_id_abbreviations}
 
-        state.outgoing_references.extend(cls.convert_parsed_references(
+        outgoing_references = cls.convert_parsed_references(
             analysis_result.all_references,
-            element_reference,
             len(prefix), len(text) - len(postfix),
             abbreviations_map,
-        ))
+        )
 
-        for semantic_data_element in analysis_result.semantic_data:
-            state.semantic_data.append((
-                element_reference,
-                semantic_data_element.resolve_abbreviations(abbreviations_map),
-            ))
+        semantic_data = tuple(s.resolve_abbreviations(abbreviations_map) for s in analysis_result.semantic_data)
+        return outgoing_references, semantic_data
 
-    @classmethod
+    @ classmethod
     def convert_parsed_references(
             cls,
-            parsed_references: Iterable[InTextReference],
-            element_reference: Reference,
+            parsed_references: Iterable[OutgoingReference],
             prefixlen: int,
             textlen: int,
             abbreviations_map: Mapping[str, str],
-    ) -> Iterable[OutgoingReference]:
+    ) -> Tuple[OutgoingReference, ...]:
         # TODO: pylint is right here, should refactor.
-        #pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments
         result = []
         for in_text_reference in parsed_references:
             # The end of the parsed reference is inside the target string
@@ -162,14 +172,13 @@ class ActSemanticsParser:
 
             result.append(
                 OutgoingReference(
-                    from_reference=element_reference,
                     start_pos=max(in_text_reference.start_pos - prefixlen, 0),
                     end_pos=(in_text_reference.end_pos - prefixlen),
-                    to_reference=in_text_reference.reference.resolve_abbreviations(abbreviations_map)
+                    reference=in_text_reference.reference.resolve_abbreviations(abbreviations_map)
                 )
             )
         result.sort()
-        return result
+        return tuple(result)
 
 
 class ActBlockAmendmentParser:

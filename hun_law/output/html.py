@@ -67,7 +67,7 @@ def generate_text_with_ref_links(
 ) -> None:
     links_to_create = []
     for outgoing_ref in outgoing_references:
-        absolute_ref = outgoing_ref.to_reference.relative_to(current_ref)
+        absolute_ref = outgoing_ref.reference.relative_to(current_ref)
         links_to_create.append((outgoing_ref.start_pos, outgoing_ref.end_pos, get_href_for_ref(absolute_ref)))
 
     links_to_create.sort()
@@ -143,7 +143,9 @@ def generate_html_nodes_for_sub_article_element(act: Act, e: SubArticleElement, 
     id_element = ET.Element('div', {"id": id_string, 'class': '{}_id'.format(element_type_as_text)})
     id_element.text = e.header_prefix(e.identifier)
     yield id_element
-    outgoing_references = act.outgoing_references_from(current_ref)
+    outgoing_references = e.outgoing_references
+    if outgoing_references is None:
+        outgoing_references = ()
     if e.text:
         container = ET.Element('div', {'class': '{}_text'.format(element_type_as_text)})
         generate_text_with_ref_links(container, e.text, current_ref, outgoing_references)

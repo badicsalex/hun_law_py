@@ -54,10 +54,7 @@ def test_json_output(tmpdir: Any) -> None:
 
     # This should not throw
     act: Act = dict2object.to_object(body, Act)
-    assert act.semantic_data is not None
-    enforcement_dates = tuple(d[1] for d in act.semantic_data if isinstance(d[1], EnforcementDate))
-    assert len(enforcement_dates) == 1
-    assert enforcement_dates[0] == EnforcementDate(position=None, date=Date(2014, 3, 15))
+    assert act.article('27').paragraph().semantic_data == (EnforcementDate(position=None, date=Date(2014, 3, 15)),)
 
 
 class AFindingHTMLParser(HTMLParser):

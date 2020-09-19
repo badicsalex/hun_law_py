@@ -57,5 +57,5 @@ def EnrichActWithBlockAmendments(structure_only: StructureOnlyAct) -> Iterable[B
 
 @Extractor(BlockAmendmentOnlyAct)
 def EnrichActWithOtherSemanticData(block_amendment_only: BlockAmendmentOnlyAct) -> Iterable[Act]:
-    act = ActSemanticsParser.parse(block_amendment_only.act)
+    act = ActSemanticsParser.add_semantics_to_act(block_amendment_only.act)
     yield act

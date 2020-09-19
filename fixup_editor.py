@@ -143,7 +143,7 @@ def detect_errors_and_try_fix(raw: MagyarKozlonyLawRawText) -> None:
         try:
             act = ActStructureParser.parse(raw.identifier, raw.subject, tuple(fixupped_body))
             act = ActBlockAmendmentParser.parse(act)
-            act = ActSemanticsParser.parse(act)
+            act = ActSemanticsParser.add_semantics_to_act(act)
             print("Parsing successful")
             break
         except:  # pylint: disable=bare-except

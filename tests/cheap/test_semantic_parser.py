@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import pytest
 
@@ -27,7 +27,7 @@ from hun_law.parsers.semantic_parser import ActSemanticsParser
 from .utils import ref, quick_parse_structure
 
 
-CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...], Tuple[Tuple[Reference, SemanticData], ...]]] = [
+CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Reference, SemanticData], ...]], ...]]] = [
     (
         """
             17. §          Hatályát veszti
@@ -37,26 +37,30 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                            c)   az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése.
         """,
         (
-            (ref(None, "17", None, "a"), ref("1959. évi IV. törvény")),
-            (ref(None, "17", None, "a"), ref("1959. évi IV. törvény", "261", "4")),
-            # TODO: Act-like decree ref in b)
-            (ref(None, "17", None, "b"), ref(None, "83/A")),
-            (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény")),
-            (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "16/A")),
-            (ref(None, "17", None, "c"), ref("1997. évi CXLI. törvény", "91", "2")),
-        ),
-        (
             (
                 ref(None, "17", None, "a"),
-                Repeal(position=ref("1959. évi IV. törvény", "261", "4")),
+                (
+                    ref("1959. évi IV. törvény"),
+                    ref("1959. évi IV. törvény", "261", "4"),
+                    Repeal(position=ref("1959. évi IV. törvény", "261", "4")),
+                ),
+            ),
+            # TODO: Act-like decree ref in b)
+            (
+                ref(None, "17", None, "b"),
+                (
+                    ref(None, "83/A"),
+                ),
             ),
             (
                 ref(None, "17", None, "c"),
-                Repeal(position=ref("1997. évi CXLI. törvény", "16/A")),
-            ),
-            (
-                ref(None, "17", None, "c"),
-                Repeal(position=ref("1997. évi CXLI. törvény", "91", "2")),
+                (
+                    ref("1997. évi CXLI. törvény"),
+                    ref("1997. évi CXLI. törvény", "16/A"),
+                    ref("1997. évi CXLI. törvény", "91", "2"),
+                    Repeal(position=ref("1997. évi CXLI. törvény", "16/A")),
+                    Repeal(position=ref("1997. évi CXLI. törvény", "91", "2")),
+                ),
             ),
         ),
     ),
@@ -78,64 +82,85 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                 4. a Katv. 2. § 21. pontja;
         """,
         (
-            (ref(None, "40", "1"), ref("2012. évi CXLVII. törvény")),
-            (ref(None, "40", "1"), ref("2012. évi CXLVII. törvény", "2", None, ("19", "20"))),
-            (ref(None, "41", None, "1"), ref("1990. évi XCIII. törvény")),
-            (ref(None, "41", None, "1"), ref("1990. évi XCIII. törvény", "17", "1", "c")),
-            (ref(None, "41", None, "2"), ref("2000. évi C. törvény")),
-            (ref(None, "41", None, "2", "a"), ref("2000. évi C. törvény", "79", "4")),
-            (ref(None, "41", None, "2", "b"), ref("2000. évi C. törvény", "103", "2", "c")),
-            (ref(None, "41", None, "3"), ref("2004. évi CXXIII. törvény")),
-            (ref(None, "41", None, "3", "a"), ref("2004. évi CXXIII. törvény", ("8/A", "8/B"))),
-            (ref(None, "41", None, "3", "b"), ref("2004. évi CXXIII. törvény", ("16/A", "16/B"))),
-            (ref(None, "41", None, "3", "c"), ref("2004. évi CXXIII. törvény", "17/A", "1")),
-            (ref(None, "41", None, "3", "c"), ref("2004. évi CXXIII. törvény", "17/A", "3")),
-            (ref(None, "41", None, "4"), ref("2012. évi CXLVII. törvény")),
-            (ref(None, "41", None, "4"), ref("2012. évi CXLVII. törvény", "2", None, "21")),
-        ),
-        (
             (
                 ref(None, "40", "1"),
-                BlockAmendmentMetadata(
-                    position=ref('2012. évi CXLVII. törvény', '2', None, '19'),
-                    expected_type=NumericPoint,
-                    expected_id_range=('19', '20'),
-                    replaces=(
-                        ref('2012. évi CXLVII. törvény', '2', None, ('19', '20')),
+                (
+                    ref("2012. évi CXLVII. törvény"),
+                    ref("2012. évi CXLVII. törvény", "2", None, ("19", "20")),
+                    BlockAmendmentMetadata(
+                        position=ref('2012. évi CXLVII. törvény', '2', None, '19'),
+                        expected_type=NumericPoint,
+                        expected_id_range=('19', '20'),
+                        replaces=(
+                            ref('2012. évi CXLVII. törvény', '2', None, ('19', '20')),
+                        )
                     )
-                )
+                ),
             ),
             (
                 ref(None, "41", None, "1"),
-                Repeal(position=ref("1990. évi XCIII. törvény", "17", "1", "c"), text="vagy egészségügyi hozzájárulás"),
+                (
+                    ref("1990. évi XCIII. törvény"),
+                    ref("1990. évi XCIII. törvény", "17", "1", "c"),
+                    Repeal(position=ref("1990. évi XCIII. törvény", "17", "1", "c"), text="vagy egészségügyi hozzájárulás"),
+                ),
+            ),
+            (
+                ref(None, "41", None, "2"),
+                (
+                    ref("2000. évi C. törvény"),
+                ),
             ),
             (
                 ref(None, "41", None, "2", "a"),
-                Repeal(position=ref("2000. évi C. törvény", "79", "4"), text="az egészségügyi hozzájárulás,"),
+                (
+                    ref("2000. évi C. törvény", "79", "4"),
+                    Repeal(position=ref("2000. évi C. törvény", "79", "4"), text="az egészségügyi hozzájárulás,"),
+                ),
             ),
             (
                 ref(None, "41", None, "2", "b"),
-                Repeal(position=ref("2000. évi C. törvény", "103", "2", "c"), text="egészségügyi hozzájárulás,"),
+                (
+                    ref("2000. évi C. törvény", "103", "2", "c"),
+                    Repeal(position=ref("2000. évi C. törvény", "103", "2", "c"), text="egészségügyi hozzájárulás,"),
+                ),
+            ),
+            (
+                ref(None, "41", None, "3"),
+                (
+                    ref("2004. évi CXXIII. törvény"),
+                ),
             ),
             (
                 ref(None, "41", None, "3", "a"),
-                Repeal(position=ref("2004. évi CXXIII. törvény", ("8/A", "8/B")))
+                (
+                    ref("2004. évi CXXIII. törvény", ("8/A", "8/B")),
+                    Repeal(position=ref("2004. évi CXXIII. törvény", ("8/A", "8/B"))),
+                ),
             ),
             (
                 ref(None, "41", None, "3", "b"),
-                Repeal(position=ref("2004. évi CXXIII. törvény", ("16/A", "16/B")))
+                (
+                    ref("2004. évi CXXIII. törvény", ("16/A", "16/B")),
+                    Repeal(position=ref("2004. évi CXXIII. törvény", ("16/A", "16/B"))),
+                ),
             ),
             (
                 ref(None, "41", None, "3", "c"),
-                Repeal(position=ref("2004. évi CXXIII. törvény", "17/A", "1"))
-            ),
-            (
-                ref(None, "41", None, "3", "c"),
-                Repeal(position=ref("2004. évi CXXIII. törvény", "17/A", "3"))
+                (
+                    ref("2004. évi CXXIII. törvény", "17/A", "1"),
+                    ref("2004. évi CXXIII. törvény", "17/A", "3"),
+                    Repeal(position=ref("2004. évi CXXIII. törvény", "17/A", "1")),
+                    Repeal(position=ref("2004. évi CXXIII. törvény", "17/A", "3")),
+                ),
             ),
             (
                 ref(None, "41", None, "4"),
-                Repeal(position=ref("2012. évi CXLVII. törvény", "2", None, "21"))
+                (
+                    ref("2012. évi CXLVII. törvény"),
+                    ref("2012. évi CXLVII. törvény", "2", None, "21"),
+                    Repeal(position=ref("2012. évi CXLVII. törvény", "2", None, "21")),
+                ),
             ),
         ),
     ),
@@ -149,12 +174,26 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                     2. második pont, ami referál a 12/A. § (1)–(5) bekezdéseire.
         """,
         (
-            (ref(None, "1"), ref(None, point="a")),
-            (ref(None, "2", "1"), ref(None, None, "2", "1")),
-            (ref(None, "2", "1"), ref(None, point="a")),
-            (ref(None, "2", "2", "2"), ref(None, "12/A", ("1", "5"))),
+            (
+                ref(None, "1"),
+                (
+                    ref(None, point="a"),
+                ),
+            ),
+            (
+                ref(None, "2", "1"),
+                (
+                    ref(None, None, "2", "1"),
+                    ref(None, point="a"),
+                ),
+            ),
+            (
+                ref(None, "2", "2", "2"),
+                (
+                    ref(None, "12/A", ("1", "5")),
+                ),
+            ),
         ),
-        (),
     ),
     (
         """
@@ -172,33 +211,35 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                        „4. gyűjtőszámlahitel: nem annyira fontos”
         """,
         (
-            (ref(None, "1", "1"), ref("2011. évi LXXV. törvény")),
-            (ref(None, "1", "1"), ref("2011. évi LXXV. törvény", "1", "1", "1", "c")),
-            (ref(None, "1", "2"), ref("2011. évi LXXV. törvény")),
-            (ref(None, "1", "2"), ref("2011. évi LXXV. törvény", "1", "1", "4")),
-        ),
-        (
             (
                 ref(None, "1", "1"),
-                BlockAmendmentMetadata(
-                    position=ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
-                    expected_type=AlphabeticSubpoint,
-                    expected_id_range=('c', 'c'),
-                    replaces=(
-                        ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
-                    )
-                )
+                (
+                    ref("2011. évi LXXV. törvény"),
+                    ref("2011. évi LXXV. törvény", "1", "1", "1", "c"),
+                    BlockAmendmentMetadata(
+                        position=ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
+                        expected_type=AlphabeticSubpoint,
+                        expected_id_range=('c', 'c'),
+                        replaces=(
+                            ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
+                        )
+                    ),
+                ),
             ),
             (
                 ref(None, "1", "2"),
-                BlockAmendmentMetadata(
-                    position=ref("2011. évi LXXV. törvény", "1", "1", "4"),
-                    expected_type=NumericPoint,
-                    expected_id_range=('4', '4'),
-                    replaces=(
-                        ref("2011. évi LXXV. törvény", "1", "1", "4"),
-                    )
-                )
+                (
+                    ref("2011. évi LXXV. törvény"),
+                    ref("2011. évi LXXV. törvény", "1", "1", "4"),
+                    BlockAmendmentMetadata(
+                        position=ref("2011. évi LXXV. törvény", "1", "1", "4"),
+                        expected_type=NumericPoint,
+                        expected_id_range=('4', '4'),
+                        replaces=(
+                            ref("2011. évi LXXV. törvény", "1", "1", "4"),
+                        )
+                    ),
+                ),
             ),
         ),
     ),
@@ -210,28 +251,33 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                   c)   3. § (1) bekezdése.
         """,
         (
-            (ref(None, "17"), ref("2020. évi I. törvény")),
-            (ref(None, "17", None, "a"), ref("2020. évi I. törvény", "1", "1")),
-            (ref(None, "17", None, "a"), ref("2020. évi I. törvény", "1", "3")),
-            (ref(None, "17", None, "b"), ref("2020. évi I. törvény", "2")),
-            (ref(None, "17", None, "c"), ref("2020. évi I. törvény", "3", "1")),
-        ),
-        (
             (
-                ref(None, "17", None, "a"),
-                Repeal(position=ref("2020. évi I. törvény", "1", "1")),
+                ref(None, "17"),
+                (
+                    ref("2020. évi I. törvény"),
+                ),
             ),
             (
-                ref(None, "17", None, "a"),
-                Repeal(position=ref("2020. évi I. törvény", "1", "3")),
+                ref(None, "17", None, "a"), (
+                    ref("2020. évi I. törvény", "1", "1"),
+                    ref("2020. évi I. törvény", "1", "3"),
+                    Repeal(position=ref("2020. évi I. törvény", "1", "1")),
+                    Repeal(position=ref("2020. évi I. törvény", "1", "3")),
+                ),
             ),
             (
                 ref(None, "17", None, "b"),
-                Repeal(position=ref("2020. évi I. törvény", "2")),
+                (
+                    ref("2020. évi I. törvény", "2"),
+                    Repeal(position=ref("2020. évi I. törvény", "2")),
+                ),
             ),
             (
                 ref(None, "17", None, "c"),
-                Repeal(position=ref("2020. évi I. törvény", "3", "1")),
+                (
+                    ref("2020. évi I. törvény", "3", "1"),
+                    Repeal(position=ref("2020. évi I. törvény", "3", "1")),
+                ),
             ),
         ),
     ),
@@ -244,43 +290,52 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Reference], ...]
                    „(8) Rövidíteni tudni kell.”
         """,
         (
-            (ref(None, "16"), ref("2020. évi III. törvény")),
-            (ref(None, "17"), ref("2020. évi III. törvény")),
-            (ref(None, "17"), ref("2020. évi III. törvény", "1", ("1", "5"))),
-            (ref(None, "18"), ref("2020. évi III. törvény")),
-            (ref(None, "18"), ref("2020. évi III. törvény", "12", "7")),
-            (ref(None, "19"), ref("2020. évi III. törvény")),
-            (ref(None, "19"), ref("2020. évi III. törvény", "12", "8")),
-        ),
-        (
+            (
+                ref(None, "16"),
+                (
+                    ref("2020. évi III. törvény"),
+                ),
+            ),
             (
                 ref(None, "17"),
-                Repeal(position=ref("2020. évi III. törvény", "1", ("1", "5"))),
+                (
+                    ref("2020. évi III. törvény"),
+                    ref("2020. évi III. törvény", "1", ("1", "5")),
+                    Repeal(position=ref("2020. évi III. törvény", "1", ("1", "5"))),
+                ),
             ),
             (
                 ref(None, "18"),
-                TextAmendment(
-                    position=ref("2020. évi III. törvény", "12", "7"),
-                    original_text="fontatlan",
-                    replacement_text="nem fontos",
+                (
+                    ref("2020. évi III. törvény"),
+                    ref("2020. évi III. törvény", "12", "7"),
+                    TextAmendment(
+                        position=ref("2020. évi III. törvény", "12", "7"),
+                        original_text="fontatlan",
+                        replacement_text="nem fontos",
+                    ),
                 ),
             ),
             (
                 ref(None, "19"),
-                BlockAmendmentMetadata(
-                    position=ref("2020. évi III. törvény", "12", "8"),
-                    expected_type=Paragraph,
-                    expected_id_range=('8', '8'),
-                    replaces=(
-                        ref("2020. évi III. törvény", "12", "8"),
+                (
+                    ref("2020. évi III. törvény"),
+                    ref("2020. évi III. törvény", "12", "8"),
+                    BlockAmendmentMetadata(
+                        position=ref("2020. évi III. törvény", "12", "8"),
+                        expected_type=Paragraph,
+                        expected_id_range=('8', '8'),
+                        replaces=(
+                            ref("2020. évi III. törvény", "12", "8"),
+                        )
                     )
-                )
+                ),
             ),
         ),
     ),
 ]
 
-CASES_WITH_POSITIONS: List[Tuple[str, Tuple[OutgoingReference, ...]]] = [
+CASES_WITH_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, OutgoingReference], ...]]] = [
     (
         """
             1. §    A tesztelésről szóló 2345. évi I. törvény
@@ -292,35 +347,49 @@ CASES_WITH_POSITIONS: List[Tuple[str, Tuple[OutgoingReference, ...]]] = [
                     jól van feldolgozva.
             """,
         (
-            OutgoingReference(
+            (
                 ref(None, "1"),
-                21, 41,
-                ref("2345. évi I. törvény")
+                OutgoingReference(
+                    21, 41,
+                    ref("2345. évi I. törvény")
+                ),
             ),
-            OutgoingReference(
+            (
                 ref(None, "1", None, "a"),
-                0, 4,
-                ref("2345. évi I. törvény", "8")
+                OutgoingReference(
+
+                    0, 4,
+                    ref("2345. évi I. törvény", "8")
+                ),
             ),
-            OutgoingReference(
+            (
                 ref(None, "1", None, "a", "aa"),
-                0, 13,
-                ref("2345. évi I. törvény", "8", "5")
+                OutgoingReference(
+
+                    0, 13,
+                    ref("2345. évi I. törvény", "8", "5")
+                ),
             ),
-            OutgoingReference(
+            (
                 ref(None, "1", None, "a", "ab"),
-                0, 22,
-                ref("2345. évi I. törvény", "8", "6", "a")
+                OutgoingReference(
+                    0, 22,
+                    ref("2345. évi I. törvény", "8", "6", "a")
+                ),
             ),
-            OutgoingReference(
+            (
                 ref(None, "1", None, "b"),
-                0, 7,
-                ref("2345. évi I. törvény", "10")
+                OutgoingReference(
+                    0, 7,
+                    ref("2345. évi I. törvény", "10")
+                ),
             ),
-            OutgoingReference(
+            (
                 ref(None, "1", None, "c"),
-                22, 36,
-                ref(None, "1", None, "c")
+                OutgoingReference(
+                    22, 36,
+                    ref(None, "1", None, "c")
+                ),
             ),
         )
     ),
@@ -329,19 +398,25 @@ CASES_WITH_POSITIONS: List[Tuple[str, Tuple[OutgoingReference, ...]]] = [
 
 def quick_parse_with_semantics(act_text: str) -> Act:
     act = quick_parse_structure(act_text, parse_block_amendments=True)
-    return ActSemanticsParser.parse(act)
+    return ActSemanticsParser.add_semantics_to_act(act)
 
 
-@pytest.mark.parametrize("act_text,references,semantic_data", CASES_WITHOUT_POSITIONS)  # type: ignore
-def test_outgoing_references_without_position(act_text: str, references: Tuple[Tuple[Reference, Reference], ...], semantic_data: Tuple[Tuple[Reference, SemanticData], ...]) -> None:
+@ pytest.mark.parametrize("act_text,act_data", CASES_WITHOUT_POSITIONS)  # type: ignore
+def test_outgoing_references_without_position(act_text: str, act_data: Tuple[Tuple[Reference, Tuple[Union[Reference, SemanticData], ...]], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
-    assert act.outgoing_references is not None
-    outgoing_references = tuple((r.from_reference, r.to_reference) for r in act.outgoing_references)
-    assert outgoing_references == references
-    assert act.semantic_data == semantic_data
+    for reference, data in act_data:
+        expected_outgoing_references = tuple(d for d in data if isinstance(d, Reference))
+        expected_semantic_data = tuple(d for d in data if isinstance(d, SemanticData))
+        element = act.at_reference(reference)
+        assert element.outgoing_references is not None
+        outgoing_references = tuple(r.reference for r in element.outgoing_references)
+        assert outgoing_references == expected_outgoing_references
+        assert element.semantic_data == expected_semantic_data
 
 
-@pytest.mark.parametrize("act_text,outgoing_references", CASES_WITH_POSITIONS)  # type: ignore
-def test_outgoing_ref_positions_are_okay(act_text: str, outgoing_references: Tuple[OutgoingReference]) -> None:
+@ pytest.mark.parametrize("act_text,act_data", CASES_WITH_POSITIONS)  # type: ignore
+def test_outgoing_ref_positions_are_okay(act_text: str, act_data: Tuple[Tuple[Reference, OutgoingReference], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
-    assert act.outgoing_references == outgoing_references
+    for reference, outgoing_reference in act_data:
+        element = act.at_reference(reference)
+        assert element.outgoing_references == (outgoing_reference,)

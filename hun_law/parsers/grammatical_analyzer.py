@@ -27,7 +27,7 @@ from hun_law.structure import Reference, \
     ReferencePartType, BlockAmendmentExpectedType,\
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
     Subtitle, Part, Title, Chapter,\
-    ActIdAbbreviation, InTextReference, BlockAmendmentMetadata, SemanticData, \
+    ActIdAbbreviation, OutgoingReference, BlockAmendmentMetadata, SemanticData, \
     EnforcementDate, DaysAfterPublication, TextAmendment, Repeal
 
 from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
@@ -118,7 +118,7 @@ class ReferenceCollector:
             ref_list.append(item_to_add)
         self.deferred_item = None
 
-    def iter(self, start_override: Optional[int], end_override: int) -> Iterable[InTextReference]:
+    def iter(self, start_override: Optional[int], end_override: int) -> Iterable[OutgoingReference]:
         self.commit_deferred_item()
         ref_args = [self.act, None, None, None, None]
         levels = ("articles", "paragraphs", "points", "subpoints")
@@ -133,15 +133,15 @@ class ReferenceCollector:
                         start = start_override
                         start_override = None
                     ref_args[arg_pos] = level_val
-                    yield InTextReference(start, end, Reference(*ref_args))
+                    yield OutgoingReference(start, end, Reference(*ref_args))
                 ref_args[arg_pos] = level_vals[-1][0]
             if start_override is None:
                 start_override = level_vals[-1][1]
         assert start_override is not None
-        yield InTextReference(start_override, end_override, Reference(*ref_args))
+        yield OutgoingReference(start_override, end_override, Reference(*ref_args))
 
 
-ConversionResultType = Union[InTextReference, ActIdAbbreviation, SemanticData]
+ConversionResultType = Union[OutgoingReference, ActIdAbbreviation, SemanticData]
 
 
 class ModelConverter(ABC):
@@ -156,7 +156,7 @@ class ModelConverter(ABC):
 
 
 class ReferenceConversionHelper:
-    """ Method namespace to convert model.Reference to structure.InTextReference
+    """ Method namespace to convert model.Reference to structure.OutgoingReference
 
     Not an actual ModelConverter, just a helper class, because most references will
     have an Act Id as context, so we only want to be called from the appropriate
@@ -179,7 +179,7 @@ class ReferenceConversionHelper:
                 reference_collector.add_item(ref_type_name, (start_id_as_string, end_id_as_string), start_pos, end_pos)
 
     @classmethod
-    def convert_single_in_text_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[InTextReference]:
+    def convert_single_in_text_reference(cls, act_id: Optional[str], parsed_ref: model.Reference) -> Iterable[OutgoingReference]:
         reference_collector = ReferenceCollector()
         if act_id is not None:
             reference_collector.act = act_id
@@ -189,7 +189,7 @@ class ReferenceConversionHelper:
         yield from reference_collector.iter(full_start_pos, full_end_pos)
 
     @classmethod
-    def convert_multiple_in_text_references(cls, act_id: Optional[str], references: Iterable[model.Reference]) -> Iterable[InTextReference]:
+    def convert_multiple_in_text_references(cls, act_id: Optional[str], references: Iterable[model.Reference]) -> Iterable[OutgoingReference]:
         # Some references will be relative to the previous ones.
         # This may be considered a mistake in parsing the reference lists, but
         # this 'relativization' can only be done in the context of the whole sentence.
@@ -207,7 +207,7 @@ class ReferenceConversionHelper:
                 last_reference = fixed_reference
 
     @classmethod
-    def convert_potential_in_text_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[InTextReference]:
+    def convert_potential_in_text_reference(cls, act_id: str, reference: Optional[model.Reference]) -> Optional[OutgoingReference]:
         if not reference:
             return None
         converted_references = tuple(
@@ -285,16 +285,16 @@ class ActReferenceConversionHelper:
         raise ValueError('Neither abbreviation, nor act_id in act_ref')
 
 
-class CompoundReferenceToInTextReference(ModelConverter):
+class CompoundReferenceToOutgoingReference(ModelConverter):
     CONVERTED_TYPE = model.CompoundReference
 
     @classmethod
-    def convert(cls, tree_element: model.CompoundReference) -> Iterable[InTextReference]:
+    def convert(cls, tree_element: model.CompoundReference) -> Iterable[OutgoingReference]:
         act_id = None
         if tree_element.act_reference is not None:
             act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
             start_pos, end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
-            yield InTextReference(start_pos, end_pos, Reference(act=act_id))
+            yield OutgoingReference(start_pos, end_pos, Reference(act=act_id))
 
         if tree_element.references:
             for reference in tree_element.references:
@@ -318,15 +318,15 @@ class ActReferenceToActIdAbbreviation(ModelConverter):
         )
 
 
-class BlockAmendmentToInTextReference(ModelConverter):
+class BlockAmendmentToOutgoingReference(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendment
 
     @classmethod
-    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[InTextReference]:
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[OutgoingReference]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
         act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
-        yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
+        yield OutgoingReference(act_start_pos, act_end_pos, Reference(act=act_id))
 
         amended_reference = ReferenceConversionHelper.convert_potential_in_text_reference(act_id, tree_element.amended_reference)
         inserted_reference = ReferenceConversionHelper.convert_potential_in_text_reference(act_id, tree_element.inserted_reference)
@@ -542,7 +542,7 @@ class EnforcementDateToReference(ModelConverter):
     CONVERTED_TYPE = model.EnforcementDate
 
     @classmethod
-    def convert(cls, tree_element: model.EnforcementDate) -> Iterable[InTextReference]:
+    def convert(cls, tree_element: model.EnforcementDate) -> Iterable[OutgoingReference]:
         if tree_element.references:
             return ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.references)
         return ()
@@ -573,12 +573,12 @@ class TextAmendmentToReference(ModelConverter):
     CONVERTED_TYPE = model.TextAmendment
 
     @classmethod
-    def convert(cls, tree_element: model.TextAmendment) -> Iterable[InTextReference]:
+    def convert(cls, tree_element: model.TextAmendment) -> Iterable[OutgoingReference]:
         assert tree_element.references is not None
         assert tree_element.parts is not None
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
         act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
-        yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
+        yield OutgoingReference(act_start_pos, act_end_pos, Reference(act=act_id))
         yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
 
 
@@ -602,23 +602,23 @@ class RepealToReference(ModelConverter):
     CONVERTED_TYPE = model.Repeal
 
     @classmethod
-    def convert(cls, tree_element: model.Repeal) -> Iterable[InTextReference]:
+    def convert(cls, tree_element: model.Repeal) -> Iterable[OutgoingReference]:
         assert tree_element.references is not None
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
         act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
-        yield InTextReference(act_start_pos, act_end_pos, Reference(act=act_id))
+        yield OutgoingReference(act_start_pos, act_end_pos, Reference(act=act_id))
         yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
 
 
 @attr.s(slots=True, frozen=True)
 class GrammarResultContainer:
     CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
-        CompoundReferenceToInTextReference,
+        CompoundReferenceToOutgoingReference,
         ActReferenceToActIdAbbreviation,
         BlockAmendmentToBlockAmendmentMetadata,
         BlockAmendmentWithSubtitleToBlockAmendmentMetadata,
         BlockAmendmentStructuralToBlockAmendmentMetadata,
-        BlockAmendmentToInTextReference,
+        BlockAmendmentToOutgoingReference,
         EnforcementDateToEnforcementDate,
         EnforcementDateToReference,
         TextAmendmentToTextAmendment,
@@ -657,15 +657,15 @@ class GrammarResultContainer:
         return tuple(self.convert_depth_first(self.tree))
 
     @property
-    def all_references(self) -> Tuple[InTextReference, ...]:
-        return tuple(r for r in self.results if isinstance(r, InTextReference))
+    def all_references(self) -> Tuple[OutgoingReference, ...]:
+        return tuple(r for r in self.results if isinstance(r, OutgoingReference))
 
     @property
-    def act_references(self) -> Tuple[InTextReference, ...]:
+    def act_references(self) -> Tuple[OutgoingReference, ...]:
         return tuple(r for r in self.all_references if r.reference.last_component_with_type()[1] is Act)
 
     @property
-    def element_references(self) -> Tuple[InTextReference, ...]:
+    def element_references(self) -> Tuple[OutgoingReference, ...]:
         return tuple(r for r in self.all_references if r.reference.last_component_with_type()[1] is not Act)
 
     @property

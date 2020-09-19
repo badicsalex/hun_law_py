@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Iterable, Any
+from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any
 import gc
 import inspect
 import sys
@@ -169,20 +169,17 @@ STRUCTURE_ELEMENT_TYPES = (
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
-class InTextReference:
-    # Start and end pos are python range, i.e. end_pos is after the last character
-    start_pos: int
-    end_pos: int
-    reference: "Reference"
+class SemanticData:
+    def resolve_abbreviations(self, _abbreviations_map: Mapping[str, str]) -> 'SemanticData':
+        return self
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class OutgoingReference:
-    from_reference: "Reference"
     # Start and end pos are python range, i.e. end_pos is after the last character
     start_pos: int
     end_pos: int
-    to_reference: "Reference"
+    reference: "Reference"
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
@@ -204,6 +201,9 @@ class SubArticleElement(ABC):
     intro: Optional[str] = None
     children: Optional[Tuple[SubArticleChildType, ...]] = attr.ib(default=None)
     wrap_up: Optional[str] = None
+
+    outgoing_references: Optional[Tuple[OutgoingReference, ...]] = None
+    semantic_data: Optional[Tuple[SemanticData, ...]] = None
 
     children_type: Optional[Type[SubArticleChildType]] = attr.ib(init=False)
     children_map: Optional[Mapping[Optional[str], SubArticleChildType]] = attr.ib(init=False)
@@ -544,8 +544,6 @@ class Act:
     children: Tuple[ActChildType, ...]
 
     act_id_abbreviations: Optional[Tuple['ActIdAbbreviation', ...]] = None
-    outgoing_references: Optional[Tuple['OutgoingReference', ...]] = attr.ib(default=None)
-    semantic_data: Optional[Tuple[Tuple['Reference', 'SemanticData'], ...]] = None
 
     articles: Tuple[Article, ...] = attr.ib(init=False)
     articles_map: Mapping[str, Article] = attr.ib(init=False)
@@ -572,10 +570,6 @@ class Act:
                 subpoint=reference.subpoint
             )
         )
-    def outgoing_references_from(self, reference: 'Reference') -> Iterable['OutgoingReference']:
-        if self.outgoing_references is None:
-            return ()
-        return (r for r in self.outgoing_references if r.from_reference == reference)
 
 
 ReferencePartType = Union[None, str, Tuple[str, str]]
@@ -703,12 +697,6 @@ class StructuralReference:
 class ActIdAbbreviation:
     abbreviation: str
     act: str
-
-
-@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
-class SemanticData:
-    def resolve_abbreviations(self, _abbreviations_map: Mapping[str, str]) -> 'SemanticData':
-        return self
 
 
 BlockAmendmentExpectedType = Type[Union[SubArticleElement, Article, StructuralElement]]
