@@ -392,7 +392,7 @@ class AlphabeticPoint(SubArticleElement):
 
 
 @attr.s(slots=True, frozen=True)
-class BlockAmendment(SubArticleElement):
+class BlockAmendmentContainer(SubArticleElement):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()  # Will be defined later in this file, since it uses classes defined later.
     ALLOW_DIFFERENTLY_TYPED_CHILDREN = True
     CAN_BE_SEMANTIC_PARSED = False
@@ -415,7 +415,7 @@ class BlockAmendment(SubArticleElement):
 
 @attr.s(slots=True, frozen=True)
 class Paragraph(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock, BlockAmendment)
+    ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock, BlockAmendmentContainer)
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:
@@ -439,12 +439,12 @@ class Paragraph(SubArticleElement):
             raise KeyError("Selected child is not a QuotedBlock")
         return result
 
-    def block_amendment(self) -> BlockAmendment:
+    def block_amendment(self) -> BlockAmendmentContainer:
         if self.children is None or len(self.children) == 0:
             raise KeyError("There are no children")
         result = self.children[0]
-        if not isinstance(result, BlockAmendment):
-            raise KeyError("Selected child is not a BlockAmendment")
+        if not isinstance(result, BlockAmendmentContainer):
+            raise KeyError("Selected child is not a BlockAmendmentContainer")
         assert len(self.children) == 1, "There should be exactly one block amendment per paragraph"
         return result
 
@@ -547,7 +547,7 @@ class Article:
         )
 
 
-BlockAmendment.ALLOWED_CHILDREN_TYPE = (
+BlockAmendmentContainer.ALLOWED_CHILDREN_TYPE = (
     Article,
     Paragraph,
     AlphabeticPoint,
@@ -730,13 +730,13 @@ BlockAmendmentExpectedType = Type[Union[SubArticleElement, Article, StructuralEl
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
-class BlockAmendmentMetadata(SemanticData):
+class BlockAmendment(SemanticData):
     position: Union[Reference, StructuralReference]
     expected_type: BlockAmendmentExpectedType
     expected_id_range: Optional[Tuple[str, str]] = None
     replaces: Tuple[Union[Reference, StructuralReference], ...] = tuple()
 
-    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'BlockAmendmentMetadata':
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'BlockAmendment':
         position = self.position.resolve_abbreviations(abbreviations_map)
         replaces = tuple(r.resolve_abbreviations(abbreviations_map) for r in self.replaces)
         return attr.evolve(self, position=position, replaces=replaces)

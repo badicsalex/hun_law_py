@@ -24,7 +24,7 @@ from hun_law.extractors.all import do_extraction
 from hun_law.cache import init_cache
 from hun_law.structure import \
     Act, Book, Part, Title, Chapter, Subtitle, \
-    Article, QuotedBlock, AlphabeticPoint, BlockAmendment, Paragraph
+    Article, QuotedBlock, AlphabeticPoint, BlockAmendmentContainer, Paragraph
 
 
 def parse_single_kozlony(year: int, issue: int) -> Iterable[Act]:
@@ -171,12 +171,12 @@ def test_end_to_end_2013_185() -> None:
     assert acts["2013. évi CLXXVII. törvény"].article("58").title == "A Ptk. 7:10–7:24. §-ához"
     assert acts["2013. évi CLXXVII. törvény"].article("59").title == "A Ptk. 7:28. § (3) és (4) bekezdéséhez"
 
-    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("1").children_type == BlockAmendment
+    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("1").children_type == BlockAmendmentContainer
     block_amendment = acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("1").block_amendment()
     assert block_amendment.children is not None
     assert len(block_amendment.children) == 2
 
-    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("2").children_type == BlockAmendment
+    assert acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("2").children_type == BlockAmendmentContainer
     block_amendment = acts["2013. évi CLXXVIII. törvény"].article("1").paragraph("2").block_amendment()
     assert block_amendment.children is not None
     assert len(block_amendment.children) == 2
@@ -196,12 +196,12 @@ def test_end_to_end_2013_222() -> None:
     assert act.subject == "egyes törvényeknek az új Polgári Törvénykönyv hatálybalépésével összefüggő módosításáról"
 
     assert act.article("181").paragraph("2").intro == "A Szövtv. 20−24. §-a helyébe a következő rendelkezések lépnek:"
-    assert act.article("181").paragraph("2").children_type == BlockAmendment
+    assert act.article("181").paragraph("2").children_type == BlockAmendmentContainer
     assert act.article("181").paragraph("2").block_amendment().children_type == Article
 
     # This is a fixupped Paragraph the original text has wrong quote marks to begin the amendment text.
     assert act.article("185").paragraph("4").intro == "A Ptk. 3:85. § (1) bekezdése a következő szöveggel lép hatályba:"
-    assert act.article("185").paragraph("4").children_type == BlockAmendment
+    assert act.article("185").paragraph("4").children_type == BlockAmendmentContainer
     children = act.article("185").paragraph("4").children
     assert children is not None and len(children) == 1
     assert act.article("185").paragraph("4").block_amendment().children_type == Paragraph
@@ -225,7 +225,7 @@ def test_end_to_end_2016_210() -> None:
 
     assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().intro == \
         "A Hjt. 215. § (1) bekezdés a) és b) pontja helyébe a következő rendelkezések lépnek:"
-    assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children_type == BlockAmendment
+    assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().children_type == BlockAmendmentContainer
 
     assert acts["2016. évi CLXXXIV. törvény"].article("54").paragraph().block_amendment().children_type == AlphabeticPoint
 

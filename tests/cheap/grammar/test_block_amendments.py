@@ -21,7 +21,7 @@ import pytest
 
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
 from hun_law.structure import \
-    BlockAmendmentMetadata, \
+    BlockAmendment, \
     Article, Paragraph, NumericPoint, AlphabeticPoint, AlphabeticSubpoint, \
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
     Subtitle, Part, Title, Chapter
@@ -29,10 +29,10 @@ from hun_law.structure import \
 from tests.cheap.utils import ref
 
 
-BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
+BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
     (
         "A hegyközségekről szóló 2012. évi CCXIX. törvény (a továbbiakban: Hktv.) 28. §-a helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Article,
             expected_id_range=("28", "28"),
             position=ref("2012. évi CCXIX. törvény", '28'),
@@ -41,7 +41,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A szabálysértésekről és egyebekről szóló 2012. évi I. törvény (a továbbiakban: Szabs. tv.) 29. § (2) bekezdés e) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("e", "e"),
             position=ref("2012. évi I. törvény", "29", "2", "e"),
@@ -50,7 +50,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Tv. 1. § 3. pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=NumericPoint,
             expected_id_range=("3", "3"),
             position=ref('Tv.', "1", None, "3"),
@@ -59,7 +59,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az alpontok rendjéről szóló 2111. évi LXXV. törvény (a továbbiakban: Tv.) 1. § (1) bekezdés 1. pont c) alpontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticSubpoint,
             expected_id_range=("c", "c"),
             position=ref("2111. évi LXXV. törvény", "1", "1", "1", "c"),
@@ -68,7 +68,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Batv. 1. § (2) bekezdés b)–f) pontja helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("b", "f"),
             position=ref("Batv.", "1", "2", "b"),
@@ -78,7 +78,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=NumericPoint,
             expected_id_range=("31/a", "31/a"),
             position=ref("Eht.", "188", None, "31/a"),
@@ -86,7 +86,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=NumericPoint,
             expected_id_range=("3a", "3a"),
             position=ref("1995. évi XCVII. törvény", "71", None, "3a"),
@@ -94,7 +94,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("5", "7"),
             position=ref("Víziközmű tv.", "63", "5"),
@@ -102,7 +102,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 6:417. § (4) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("4", "4"),
             position=ref("Ptk.", "6:417", "4"),
@@ -111,7 +111,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 6:130. §-a a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Article,
             expected_id_range=("6:130", "6:130"),
             position=ref("Ptk.", "6:130"),
@@ -120,7 +120,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("3", "3"),
             position=ref("Ptk.", "3:391", "3"),
@@ -128,7 +128,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 3:278. § (1) bekezdés e) pontja a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("e", "e"),
             position=ref("Ptk.", "3:278", "1", "e"),
@@ -137,7 +137,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A polgári törvénykönyvről szóló 2013. évi V. tv. 3:319. § (5) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("5", "5"),
             position=ref("2013. évi V. törvény", "3:319", "5"),
@@ -146,7 +146,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("1a", "1b"),
             position=ref("Gyvt.", "69/D", "1a"),
@@ -154,7 +154,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 3:261. § (4) és (5) bekezdése a következő szöveggel lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("4", "5"),
             position=ref("Ptk.", "3:261", "4"),
@@ -163,7 +163,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Kkt. 49. § (2) bekezdés i) pontja helyébe a következő rendelkezés lép, és a bekezdés a következő j) ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("i", "j"),
             position=ref("Kkt.", "49", "2", "i"),
@@ -172,7 +172,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az Elszámolási tv. 35. § (4) bekezdése helyébe a következő rendelkezés lép, és a § a következő (5) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("4", "5"),
             position=ref("Elszámolási tv.", "35", "4"),
@@ -181,7 +181,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 3:268. § (2) és (3) bekezdése helyébe a következő rendelkezések lépnek, és a § a következő (4) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("2", "4"),
             position=ref("Ptk.", "3:268", "2"),
@@ -190,7 +190,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. 8:6. § r) pontja helyébe a következő rendelkezés lép, és a § a következő s) ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("r", "s"),
             position=ref("Ptk.", "8:6", None, "r"),
@@ -199,7 +199,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Tv. 16. § (1) bekezdés f) pontja helyébe a következő rendelkezés lép, és a § a következő g) és h) pontokkal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("f", "h"),
             position=ref("Tv.", "16", "1", "f"),
@@ -208,7 +208,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az Tv. 5/A. § (2a) bekezdése helyébe a következő rendelkezés lép, és a § a következő (2b)–(2f) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("2a", "2f"),
             position=ref("Tv.", "5/A", "2a"),
@@ -217,7 +217,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az Evt. 108. § (4) bekezdése helyébe a következő rendelkezés lép, valamint a következő (5)–(10) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("4", "10"),
             position=ref("Evt.", "108", "4"),
@@ -226,7 +226,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. 459. § (1) bekezdés 24. pontja helyébe a következő rendelkezés lép, valamint a 459. § (1) bekezdése a következő 24a. ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=NumericPoint,
             expected_id_range=("24", "24a"),
             position=ref("Btk.", "459", "1", "24"),
@@ -235,7 +235,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az egyszerűsített foglalkoztatásról szóló 2010. évi LXXV. törvény (a továbbiakban: Efotv.) a következő 1. § (1a) bekezdéssel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("1a", "1a"),
             position=ref("2010. évi LXXV. törvény", "1", "1a"),
@@ -243,7 +243,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A társadalombiztosítási nyugellátásról szóló 1997. évi LXXXI. törvény 96. § (2) bekezdés h) pontja helyébe a következő rendelkezés lép, egyidejűleg a bekezdés a következő i) ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=AlphabeticPoint,
             expected_id_range=("h", "i"),
             position=ref("1997. évi LXXXI. törvény", "96", "2", "h"),
@@ -252,7 +252,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. 279. § (1) és (2) bekezdése helyébe a következő rendelkezések lépnek:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("1", "2"),
             position=ref("Btk.", "279", "1"),
@@ -261,7 +261,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. 283. § (2) és (2a) bekezdése helyébe a következő rendelkezések lépnek:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Paragraph,
             expected_id_range=("2", "2a"),
             position=ref("Btk.", "283", "2"),
@@ -270,7 +270,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. XX. Fejezete a következő alcímmel és 212/A. §-sal kiegészülve lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("212/A", "212/A"),
             position=StructuralReference("Btk.", chapter="XX"),
@@ -278,7 +278,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. 349. §-a és a megelőző alcím helyébe a következő rendelkezés és alcím lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("349", "349"),
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "349")),
@@ -290,14 +290,14 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. a 300. §-t megelőzően a következő alcímmel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "300")),
         )
     ),
     (
         "A Btk. XXVII. Fejezete a következő alcímmel és 300/A. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("300/A", "300/A"),
             position=StructuralReference("Btk.", chapter="XXVII"),
@@ -305,7 +305,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. Terrorcselekmény alcíme a következő 316/A. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Article,
             expected_id_range=("316/A", "316/A"),
             position=ref("Btk.", "316/A"),
@@ -313,7 +313,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. Terrorizmus finanszírozása alcíme a következő 318/A. és 318/B. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Article,
             expected_id_range=("318/A", "318/B"),
             position=ref("Btk.", "318/A"),
@@ -321,7 +321,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. a 404. §-t követően a következő alcímmel és 404/A. §-sal kiegészülve lép hatályba:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("404/A", "404/A"),
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "404")),
@@ -329,7 +329,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. a következő 226/A. §-sal és az azt megelőző alcímmel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("226/A", "226/A"),
             position=StructuralReference("Btk."),
@@ -337,7 +337,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. „Új pszichoaktív anyaggal visszaélés” alcíme a következő 184/A–184/D. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Article,
             expected_id_range=("184/A", "184/D"),
             position=ref("Btk.", "184/A"),
@@ -345,7 +345,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. XXIV. Fejezete a következő alcímmel és 261/A. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("261/A", "261/A"),
             position=StructuralReference("Btk.", chapter="XXIV"),
@@ -353,7 +353,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. 388/A. §-a és az azt megelőző alcím helyébe a következő alcím és rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("388/A", "388/A"),
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "388/A")),
@@ -365,7 +365,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. a következő 352/A–352/C. §-sal és az azokat megelőző alcímekkel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("352/A", "352/C"),
             position=StructuralReference("Btk."),
@@ -373,7 +373,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. a következő alcímmel és 410/A. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("410/A", "410/A"),
             position=StructuralReference("Btk."),
@@ -381,7 +381,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. 411. §-át megelőző alcím címe és 411. §-a helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("411", "411"),
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "411")),
@@ -393,14 +393,14 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. IX. Fejezete a 92/A. §-t követően a következő alcímmel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "92/A")),
         ),
     ),
     (
         "A Btk. 83. §-t megelőző alcím helyébe a következő alcím lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "83")),
             replaces=(
@@ -410,7 +410,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Btk. a 124. §-t követően a következő alcímmel és 124/A. §-sal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("124/A", "124/A"),
             position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "124")),
@@ -418,7 +418,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az elektronikus információszabadságról szóló 2005. évi XC. törvény (a továbbiakban: Einfotv.) 12. §-át megelőző alcíme helyébe a következő alcím lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             position=StructuralReference("2005. évi XC. törvény", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "12")),
             replaces=(
@@ -428,7 +428,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Büntető Törvénykönyvről szóló 2012. évi C. törvény 350. §-a és az azt megelőző alcím-megjelölése helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=("350", "350"),
             position=StructuralReference("2012. évi C. törvény", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "350")),
@@ -440,7 +440,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A számvitelről szóló 2000. évi C. törvény (a továbbiakban: Szt.) 3. § (2) bekezdés 4. és 5. pontja helyébe a következő rendelkezések lépnek és a bekezdés a következő 5a. ponttal egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=NumericPoint,
             expected_id_range=("4", "5a"),
             position=ref("2000. évi C. törvény", "3", "2", "4"),
@@ -449,7 +449,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. Hatodik Könyv Ötödik Része helyébe a következő rész lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Part,
             position=StructuralReference("Ptk.", book="6", part="5"),
             replaces=(StructuralReference("Ptk.", book="6", part="5"),),
@@ -457,7 +457,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Title,
             position=StructuralReference("Ptk.", book="3", title="VIII"),
             replaces=(StructuralReference("Ptk.", book="3", title="VIII"),),
@@ -465,21 +465,21 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "A Ptk. Harmadik Könyve a következő VIII. Címmel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Title,
             position=StructuralReference("Ptk.", book="3", title="VIII"),
         ),
     ),
     (
         "Az Szt. a következő VI/A. Fejezettel egészül ki:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Chapter,
             position=StructuralReference("Szt.", chapter="VI/A"),
         ),
     ),
     (
         "A Btk. XXIV. Fejezete helyébe a következő fejezet lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Chapter,
             position=StructuralReference("Btk.", chapter="XXIV"),
             replaces=(StructuralReference("Btk.", chapter="XXIV"),)
@@ -487,7 +487,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
     ),
     (
         "Az Nkt. 11/A. alcíme helyébe a következő rendelkezés lép:",
-        BlockAmendmentMetadata(
+        BlockAmendment(
             expected_type=Subtitle,
             position=StructuralReference("Nkt.", subtitle="11/A"),
             replaces=(StructuralReference("Nkt.", subtitle="11/A"),)
@@ -506,7 +506,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendmentMetadata], ...] = (
 
 
 @pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)  # type: ignore
-def test_block_amendment_parsing(s: str, correct_metadata: BlockAmendmentMetadata) -> None:
+def test_block_amendment_parsing(s: str, correct_metadata: BlockAmendment) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.semantic_data
     assert (correct_metadata, ) == parsed_metadata

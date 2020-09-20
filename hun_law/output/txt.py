@@ -17,7 +17,7 @@
 from typing import TextIO, Any, Callable, Type
 
 from hun_law.extractors.magyar_kozlony import MagyarKozlonyLawRawText
-from hun_law.structure import StructuralElement, SubArticleElement, BlockAmendment, QuotedBlock, Article, Act, Subtitle
+from hun_law.structure import StructuralElement, SubArticleElement, BlockAmendmentContainer, QuotedBlock, Article, Act, Subtitle
 from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
 
 TxtWriterFn = Callable[[TextIO, Any, str], None]
@@ -51,8 +51,8 @@ def write_structural_element_as_txt(output_file: TextIO, element: StructuralElem
         indented_line_wrapped_print(element.title, indent, file=output_file)
 
 
-@txt_writer(BlockAmendment)
-def write_block_amendment_as_txt(output_file: TextIO, element: BlockAmendment, indent: str) -> None:
+@txt_writer(BlockAmendmentContainer)
+def write_block_amendment_as_txt(output_file: TextIO, element: BlockAmendmentContainer, indent: str) -> None:
     if element.intro:
         indented_line_wrapped_print('(' + element.intro + ')', indent, file=output_file)
     print(indent + '„', file=output_file)

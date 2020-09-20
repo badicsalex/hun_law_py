@@ -18,7 +18,7 @@ import json
 
 
 from hun_law.structure import \
-    BlockAmendmentMetadata, SubtitleReferenceArticleRelative, RelativePosition, \
+    BlockAmendment, SubtitleReferenceArticleRelative, RelativePosition, \
     Reference, StructuralReference, \
     Subtitle
 
@@ -26,7 +26,7 @@ from hun_law import dict2object
 
 
 def test_obj_to_dict_can_handle_specials() -> None:
-    test_data = BlockAmendmentMetadata(
+    test_data = BlockAmendment(
         expected_type=Subtitle,
         expected_id_range=("123", "123"),
         position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "123")),
@@ -36,12 +36,12 @@ def test_obj_to_dict_can_handle_specials() -> None:
         )
     )
 
-    the_dict = dict2object.to_dict(test_data, BlockAmendmentMetadata)
+    the_dict = dict2object.to_dict(test_data, BlockAmendment)
 
     # This should not throw
     the_json = json.dumps(the_dict)
     reconstructed_dict = json.loads(the_json)
 
-    reconstructed_data = dict2object.to_object(reconstructed_dict, BlockAmendmentMetadata)
+    reconstructed_data = dict2object.to_object(reconstructed_dict, BlockAmendment)
 
     assert reconstructed_data == test_data

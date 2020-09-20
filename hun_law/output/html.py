@@ -18,7 +18,7 @@ from typing import Iterable, Any, TextIO
 import xml.etree.ElementTree as ET
 
 from hun_law.structure import \
-    SubArticleElement, QuotedBlock, BlockAmendment, \
+    SubArticleElement, QuotedBlock, BlockAmendmentContainer, \
     StructuralElement, Subtitle, \
     Article, Reference, OutgoingReference, Act
 from hun_law.utils import EMPTY_LINE
@@ -94,7 +94,7 @@ def generate_html_nodes_for_children(act: Act, element: Any, parent_ref: Referen
     for child in element.children:
         if isinstance(child, Article):
             yield from generate_html_node_for_article(act, child, parent_ref)
-        elif isinstance(child, BlockAmendment):
+        elif isinstance(child, BlockAmendmentContainer):
             yield from generate_html_nodes_for_block_amendment(act, child)
         elif isinstance(child, SubArticleElement):
             yield from generate_html_nodes_for_sub_article_element(act, child, parent_ref)
@@ -106,7 +106,7 @@ def generate_html_nodes_for_children(act: Act, element: Any, parent_ref: Referen
             raise TypeError("Unknown child type {}".format(child.__class__))
 
 
-def generate_html_nodes_for_block_amendment(act: Act, e: BlockAmendment) -> Iterable[ET.Element]:
+def generate_html_nodes_for_block_amendment(act: Act, e: BlockAmendmentContainer) -> Iterable[ET.Element]:
     # Quick hack to signify that IDs are not needed further on
     current_ref = Reference("EXTERNAL")
     if e.intro:

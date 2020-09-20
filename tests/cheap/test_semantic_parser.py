@@ -21,9 +21,9 @@ import pytest
 import attr
 
 from hun_law.structure import Act, OutgoingReference, Reference, \
-    SemanticData, BlockAmendmentMetadata, Repeal, TextAmendment, \
+    SemanticData, BlockAmendment, Repeal, TextAmendment, \
     ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, BlockAmendment
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, BlockAmendmentContainer
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 from .utils import ref, quick_parse_structure
@@ -89,7 +89,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                 (
                     ref("2012. évi CXLVII. törvény"),
                     ref("2012. évi CXLVII. törvény", "2", None, ("19", "20")),
-                    BlockAmendmentMetadata(
+                    BlockAmendment(
                         position=ref('2012. évi CXLVII. törvény', '2', None, '19'),
                         expected_type=NumericPoint,
                         expected_id_range=('19', '20'),
@@ -218,7 +218,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                 (
                     ref("2011. évi LXXV. törvény"),
                     ref("2011. évi LXXV. törvény", "1", "1", "1", "c"),
-                    BlockAmendmentMetadata(
+                    BlockAmendment(
                         position=ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
                         expected_type=AlphabeticSubpoint,
                         expected_id_range=('c', 'c'),
@@ -233,7 +233,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                 (
                     ref("2011. évi LXXV. törvény"),
                     ref("2011. évi LXXV. törvény", "1", "1", "4"),
-                    BlockAmendmentMetadata(
+                    BlockAmendment(
                         position=ref("2011. évi LXXV. törvény", "1", "1", "4"),
                         expected_type=NumericPoint,
                         expected_id_range=('4', '4'),
@@ -323,7 +323,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                 (
                     ref("2020. évi III. törvény"),
                     ref("2020. évi III. törvény", "12", "8"),
-                    BlockAmendmentMetadata(
+                    BlockAmendment(
                         position=ref("2020. évi III. törvény", "12", "8"),
                         expected_type=Paragraph,
                         expected_id_range=('8', '8'),
@@ -482,7 +482,7 @@ def test_semantic_reparse_simple() -> None:
                     Paragraph(
                         intro="A Ztv. 12. § (8) bekezdése helyébe a következő rendelkezés lép:",
                         children=(
-                            BlockAmendment(
+                            BlockAmendmentContainer(
                                 children=(
                                     Paragraph(
                                         identifier='8',
@@ -523,7 +523,7 @@ def test_semantic_reparse_simple() -> None:
         EnforcementDate(position=None, date=DaysAfterPublication(days=1)),
     )
     assert with_semantics_1.article('4').paragraph().semantic_data == (
-        BlockAmendmentMetadata(
+        BlockAmendment(
             position=Reference(act='2041. évi XXX. törvény', article='12', paragraph='8'),
             expected_type=Paragraph,
             expected_id_range=('8', '8'),
@@ -536,7 +536,7 @@ def test_semantic_reparse_simple() -> None:
     a4_children = with_semantics_1.article('4').paragraph().children
     assert a4_children is not None
     the_block_amendment = a4_children[0]
-    assert isinstance(the_block_amendment, BlockAmendment)
+    assert isinstance(the_block_amendment, BlockAmendmentContainer)
 
     assert the_block_amendment.semantic_data is None
     assert the_block_amendment.outgoing_references is None
@@ -638,7 +638,7 @@ def test_semantic_reparse_abbrevs() -> None:
                     Paragraph(
                         intro="Az Ytv. 12. § (8) bekezdése helyébe a következő rendelkezés lép:",
                         children=(
-                            BlockAmendment(
+                            BlockAmendmentContainer(
                                 children=(
                                     Paragraph(
                                         identifier='8',
@@ -709,7 +709,7 @@ def test_semantic_reparse_abbrevs() -> None:
         OutgoingReference(start_pos=74, end_pos=83, reference=Reference(act='2041. évi XXX. törvény', article='1337')),
     )
     assert modified_with_semantics.article('4').paragraph().semantic_data == (
-        BlockAmendmentMetadata(
+        BlockAmendment(
             position=Reference(act='2057. évi X. törvény', article='12', paragraph='8'),
             expected_type=Paragraph,
             expected_id_range=('8', '8'),

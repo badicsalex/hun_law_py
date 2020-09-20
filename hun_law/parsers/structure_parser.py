@@ -24,10 +24,10 @@ from hun_law.utils import \
     IndentedLine, EMPTY_LINE, text_to_int_hun, text_to_int_roman, \
     is_uppercase_hun, iterate_with_quote_level, quote_level_diff
 from hun_law.structure import \
-    Act, Article, QuotedBlock, BlockAmendment,\
+    Act, Article, QuotedBlock, BlockAmendmentContainer,\
     StructuralElement, Subtitle, Chapter, Title, Part, Book,\
     SubArticleElement, Paragraph, AlphabeticSubpoint, NumericSubpoint, NumericPoint, AlphabeticPoint, \
-    BlockAmendmentMetadata, \
+    BlockAmendment, \
     SubArticleChildType, ActChildType
 
 # Main act on which all the code was based:
@@ -241,7 +241,7 @@ class SubtitleParser(StructuralElementParser):
 
 class ArticleStructuralParser:
     # This class is mostly a fake StructuralParser, so that Act and
-    # BlockAmendment parsers can use it as structural parser.
+    # BlockAmendmentContainer parsers can use it as structural parser.
     PARSED_TYPE = None
 
     def __init__(self, strict: bool = True) -> None:
@@ -687,7 +687,7 @@ ActBodyParsersType = Iterable[ActBodyParserType]
 
 
 class ActBodyParser:
-    """ Parse Act and BlockAmendment body """
+    """ Parse Act and BlockAmendmentContainer body """
     @classmethod
     def get_parser_for_header_line(cls, line: IndentedLine, previous_line: IndentedLine, parsers: ActBodyParsersType) \
             -> Optional[ActBodyParserType]:
@@ -778,11 +778,11 @@ class BlockAmendmentStructureParser:
     @classmethod
     def parse(
             cls,
-            metadata: BlockAmendmentMetadata,
+            metadata: BlockAmendment,
             context_intro: Optional[str],
             context_wrap_up: Optional[str],
             lines: Sequence[IndentedLine]
-    ) -> BlockAmendment:
+    ) -> BlockAmendmentContainer:
 
         try:
             children: Tuple[SubArticleChildType, ...]
@@ -793,7 +793,7 @@ class BlockAmendmentStructureParser:
                 parser, expected_id = cls.get_parser_and_id(metadata)
                 children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
 
-            return BlockAmendment(
+            return BlockAmendmentContainer(
                 identifier=None,
                 text=None,
                 intro=context_intro,
@@ -828,7 +828,7 @@ class BlockAmendmentStructureParser:
         yield parser.parse(current_lines)
 
     @classmethod
-    def get_parser_and_id(cls, metadata: BlockAmendmentMetadata) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
+    def get_parser_and_id(cls, metadata: BlockAmendment) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
         structural_type = metadata.expected_type
         assert metadata.expected_id_range is not None
         expected_id = metadata.expected_id_range[0]

@@ -23,7 +23,7 @@ import attr
 from hun_law.structure import \
     Act, Article, Paragraph, QuotedBlock, SemanticData, \
     OutgoingReference, \
-    BlockAmendmentMetadata, \
+    BlockAmendment, \
     ActIdAbbreviation, SubArticleElement
 from .structure_parser import BlockAmendmentStructureParser, SubArticleParsingError
 from .grammatical_analyzer import GrammaticalAnalyzer
@@ -261,10 +261,10 @@ class ActBlockAmendmentParser:
         # TODO: Maybe cache?
         semantic_data = GrammaticalAnalyzer().analyze(actual_intro).semantic_data
         for semantic_data_element in semantic_data:
-            if isinstance(semantic_data_element, BlockAmendmentMetadata):
+            if isinstance(semantic_data_element, BlockAmendment):
                 block_amendment_metadata = semantic_data_element
                 break
-        else:  # no break: no BlockAmendmentMetadata found
+        else:  # no break: no BlockAmendment found
             return paragraph
 
         assert len(paragraph.children) == 1

@@ -27,7 +27,7 @@ from hun_law.structure import Reference, \
     ReferencePartType, BlockAmendmentExpectedType,\
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
     Subtitle, Part, Title, Chapter,\
-    ActIdAbbreviation, OutgoingReference, BlockAmendmentMetadata, SemanticData, \
+    ActIdAbbreviation, OutgoingReference, BlockAmendment, SemanticData, \
     EnforcementDate, DaysAfterPublication, TextAmendment, Repeal
 
 from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
@@ -342,7 +342,7 @@ class BlockAmendmentToOutgoingReference(ModelConverter):
             yield inserted_reference
 
 
-class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
+class BlockAmendmentToBlockAmendment(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendment
 
     @classmethod
@@ -358,9 +358,9 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         return expected_id_range, expected_type
 
     @classmethod
-    def convert_amendment_only(cls, amended_reference: Reference) -> BlockAmendmentMetadata:
+    def convert_amendment_only(cls, amended_reference: Reference) -> BlockAmendment:
         expected_id_range, expected_type = cls.get_reference_range_and_type(amended_reference)
-        return BlockAmendmentMetadata(
+        return BlockAmendment(
             expected_type=expected_type,
             expected_id_range=expected_id_range,
             position=amended_reference.first_in_range(),
@@ -368,22 +368,22 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         )
 
     @classmethod
-    def convert_insertion_only(cls, inserted_reference: Reference) -> BlockAmendmentMetadata:
+    def convert_insertion_only(cls, inserted_reference: Reference) -> BlockAmendment:
         expected_id_range, expected_type = cls.get_reference_range_and_type(inserted_reference)
-        return BlockAmendmentMetadata(
+        return BlockAmendment(
             expected_type=expected_type,
             expected_id_range=expected_id_range,
             position=inserted_reference.first_in_range(),
         )
 
     @classmethod
-    def convert_amendment_and_insertion(cls, amended_reference: Reference, inserted_reference: Reference) -> BlockAmendmentMetadata:
+    def convert_amendment_and_insertion(cls, amended_reference: Reference, inserted_reference: Reference) -> BlockAmendment:
         amended_range, amended_type = cls.get_reference_range_and_type(amended_reference)
         inserted_range, inserted_type = cls.get_reference_range_and_type(inserted_reference)
         assert amended_type == inserted_type
         assert amended_type.is_next_identifier(amended_range[1], inserted_range[0])
         expected_id_range = (amended_range[0], inserted_range[1])
-        return BlockAmendmentMetadata(
+        return BlockAmendment(
             expected_type=amended_type,
             expected_id_range=expected_id_range,
             position=amended_reference.first_in_range(),
@@ -391,7 +391,7 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
         )
 
     @classmethod
-    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendment]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
 
@@ -412,7 +412,7 @@ class BlockAmendmentToBlockAmendmentMetadata(ModelConverter):
             pass
 
 
-class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
+class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendmentWithSubtitle
 
     @classmethod
@@ -424,7 +424,7 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
         return reference.article
 
     @classmethod
-    def convert_amendment_only(cls, structural_reference: StructuralReference, amended_reference: Reference) -> BlockAmendmentMetadata:
+    def convert_amendment_only(cls, structural_reference: StructuralReference, amended_reference: Reference) -> BlockAmendment:
         expected_id_range = cls.convert_id_range(amended_reference)
         if structural_reference.subtitle is None:
             assert isinstance(amended_reference.article, str)
@@ -436,7 +436,7 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
         replaces: Tuple[Union[Reference, StructuralReference], ...] = (structural_reference, )
         if amended_reference.article is not None:
             replaces = replaces + (amended_reference, )
-        return BlockAmendmentMetadata(
+        return BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=expected_id_range,
             position=structural_reference,
@@ -444,16 +444,16 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
         )
 
     @classmethod
-    def convert_insertion_only(cls, structural_reference: StructuralReference, inserted_reference: Optional[Reference]) -> BlockAmendmentMetadata:
+    def convert_insertion_only(cls, structural_reference: StructuralReference, inserted_reference: Optional[Reference]) -> BlockAmendment:
         expected_id_range = cls.convert_id_range(inserted_reference)
-        return BlockAmendmentMetadata(
+        return BlockAmendment(
             expected_type=Subtitle,
             expected_id_range=expected_id_range,
             position=structural_reference,
         )
 
     @classmethod
-    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendment]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
 
@@ -472,11 +472,11 @@ class BlockAmendmentWithSubtitleToBlockAmendmentMetadata(ModelConverter):
             yield cls.convert_insertion_only(structural_reference, inserted_reference)
 
 
-class BlockAmendmentStructuralToBlockAmendmentMetadata(ModelConverter):
+class BlockAmendmentStructuralToBlockAmendment(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendmentStructural
 
     @classmethod
-    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendmentMetadata]:
+    def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendment]:
         assert isinstance(tree_element.act_reference, model.ActReference)
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
 
@@ -486,7 +486,7 @@ class BlockAmendmentStructuralToBlockAmendmentMetadata(ModelConverter):
                 raise ValueError("Simultaneous insertion and amendments with Structural References not yet supported")
 
             expected_type, amended_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.amended_reference)
-            yield BlockAmendmentMetadata(
+            yield BlockAmendment(
                 expected_type=expected_type,
                 position=amended_reference,
                 replaces=(amended_reference, ),
@@ -494,7 +494,7 @@ class BlockAmendmentStructuralToBlockAmendmentMetadata(ModelConverter):
         else:
             assert tree_element.inserted_reference is not None
             expected_type, inserted_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.inserted_reference)
-            yield BlockAmendmentMetadata(
+            yield BlockAmendment(
                 expected_type=expected_type,
                 position=inserted_reference,
             )
@@ -615,9 +615,9 @@ class GrammarResultContainer:
     CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
         CompoundReferenceToOutgoingReference,
         ActReferenceToActIdAbbreviation,
-        BlockAmendmentToBlockAmendmentMetadata,
-        BlockAmendmentWithSubtitleToBlockAmendmentMetadata,
-        BlockAmendmentStructuralToBlockAmendmentMetadata,
+        BlockAmendmentToBlockAmendment,
+        BlockAmendmentWithSubtitleToBlockAmendment,
+        BlockAmendmentStructuralToBlockAmendment,
         BlockAmendmentToOutgoingReference,
         EnforcementDateToEnforcementDate,
         EnforcementDateToReference,
