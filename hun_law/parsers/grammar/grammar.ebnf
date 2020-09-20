@@ -77,7 +77,7 @@ paragraph_suffix = /bekezdés[a-zéáőúöüóíű]+/ | "bekezdés" ;
 
 alphabetic_point_reference::AlphabeticPointReferencePart::ReferencePart
     = {(ranges+:alphabetic_point_range | singles+:alphabetic_point_single) [list_separator [az]]}+ alphabetic_point_suffix ;
-alphabetic_point_range = start:alphabetic_point_id ")" dash end:alphabetic_point_id ")" ;
+alphabetic_point_range = start:alphabetic_point_id [")"] dash end:alphabetic_point_id ")" ;
 alphabetic_point_single = id:alphabetic_point_id ")";
 alphabetic_point_id = id:("ny" | "sz" | /[a-z]/);
 alphabetic_point_suffix = /pont[a-zéáőúöüóíű]+/ | "pont" ;
