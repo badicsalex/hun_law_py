@@ -60,6 +60,8 @@ class ActSemanticsParser:
     @classmethod
     def add_existing_abbreviations_to_state(cls, element: Union[Article, SubArticleElement], state: SemanticParseState) -> None:
         if isinstance(element, SubArticleElement):
+            if not element.CAN_BE_SEMANTIC_PARSED:
+                return
             assert element.act_id_abbreviations is not None
             state.act_id_abbreviations.extend(element.act_id_abbreviations)
         if element.children is not None:
@@ -88,6 +90,9 @@ class ActSemanticsParser:
     ) -> SubArticleElement:
         if not state.abbreviations_changed and element.is_semantic_parsed:
             cls.add_existing_abbreviations_to_state(element, state)
+            return element
+
+        if not element.CAN_BE_SEMANTIC_PARSED:
             return element
 
         if element.text is not None:

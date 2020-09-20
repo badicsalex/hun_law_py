@@ -195,7 +195,7 @@ SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock', 'Stru
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()
     ALLOW_DIFFERENTLY_TYPED_CHILDREN: ClassVar[bool] = False
-    CHILDREN_NEED_SEMANTIC_PARSING: ClassVar[bool] = False
+    CAN_BE_SEMANTIC_PARSED: ClassVar[bool] = True
 
     identifier: Optional[str] = None
     text: Optional[str] = attr.ib(default=None)
@@ -239,11 +239,11 @@ class SubArticleElement(ABC):
     def _is_semantic_parsed_default(self) -> bool:
         if self.semantic_data is None:
             return False
-        if self.children is not None and self.CHILDREN_NEED_SEMANTIC_PARSING:
+        if self.children is not None:
             for c in self.children:
                 if not isinstance(c, SubArticleElement):
                     break
-                if not c.is_semantic_parsed:
+                if c.CAN_BE_SEMANTIC_PARSED and not c.is_semantic_parsed:
                     return False
         return True
 
@@ -395,7 +395,7 @@ class AlphabeticPoint(SubArticleElement):
 class BlockAmendment(SubArticleElement):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()  # Will be defined later in this file, since it uses classes defined later.
     ALLOW_DIFFERENTLY_TYPED_CHILDREN = True
-    CHILDREN_NEED_SEMANTIC_PARSING = True
+    CAN_BE_SEMANTIC_PARSED = False
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:

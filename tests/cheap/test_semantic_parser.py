@@ -533,6 +533,15 @@ def test_semantic_reparse_simple() -> None:
         ),
     )
 
+    a4_children = with_semantics_1.article('4').paragraph().children
+    assert a4_children is not None
+    the_block_amendment = a4_children[0]
+    assert isinstance(the_block_amendment, BlockAmendment)
+
+    assert the_block_amendment.semantic_data is None
+    assert the_block_amendment.outgoing_references is None
+    assert the_block_amendment.act_id_abbreviations is None
+
     with_semantics_2 = ActSemanticsParser.add_semantics_to_act(with_semantics_1)
 
     assert with_semantics_2 is with_semantics_1
@@ -713,3 +722,10 @@ def test_semantic_reparse_abbrevs() -> None:
     assert with_semantics_1.article('1') is modified_with_semantics.article('1')
     # Note that because of the abbreviation change, everything else may be reparsed,
     # so no asserts for e.g. article('3')
+
+    # No need to reparse BlockAmendments though
+    a4_children = with_semantics_1.article('4').paragraph().children
+    modified_a4_children = modified_with_semantics.article('4').paragraph().children
+    assert a4_children is not None
+    assert modified_a4_children is not None
+    assert a4_children[0] is modified_a4_children[0]
