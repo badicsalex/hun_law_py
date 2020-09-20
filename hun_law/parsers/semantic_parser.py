@@ -50,7 +50,8 @@ class ActSemanticsParser:
             new_children.append(child)
         return attr.evolve(
             act,
-            children=tuple(new_children)
+            children=tuple(new_children),
+            act_id_abbreviations=tuple(state.act_id_abbreviations)
         )
 
     @classmethod
