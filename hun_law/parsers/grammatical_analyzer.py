@@ -544,8 +544,9 @@ class EnforcementDateToReference(ModelConverter):
     @classmethod
     def convert(cls, tree_element: model.EnforcementDate) -> Iterable[OutgoingReference]:
         if tree_element.references:
-            return ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.references)
-        return ()
+            yield from ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.references)
+        if tree_element.exception_references:
+            yield from ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.exception_references)
 
 
 class TextAmendmentToTextAmendment(ModelConverter):

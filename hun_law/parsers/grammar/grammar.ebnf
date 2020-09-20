@@ -232,6 +232,7 @@ enforcement_date::EnforcementDate =
         (("E" | "Ez a") "törvény") |
         /[A]z?/
     )
+    [ dash "a" exception_references+:reference "foglalt" ("kivétellel"|"kivételekkel") dash ]
     { references+:reference [list_separator [az]] }*
     (
         exact_date:date |
