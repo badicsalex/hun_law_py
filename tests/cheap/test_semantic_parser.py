@@ -478,8 +478,10 @@ def test_semantic_reparse_simple() -> None:
     )
 
     with_semantics_1 = ActSemanticsParser.add_semantics_to_act(TEST_ACT)
-    assert with_semantics_1.act_id_abbreviations == (
+    assert with_semantics_1.article('1').paragraph().act_id_abbreviations == (
         ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+    )
+    assert with_semantics_1.article('2').paragraph('2').act_id_abbreviations == (
         ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
     )
     assert with_semantics_1.article('1').paragraph().outgoing_references == (
@@ -517,10 +519,6 @@ def test_semantic_reparse_simple() -> None:
     )
 
     modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
-    assert modified_with_semantics.act_id_abbreviations == (
-        ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
-        ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
-    )
     assert modified_with_semantics.article('2').paragraph('1').outgoing_references == (
         OutgoingReference(start_pos=3, end_pos=7, reference=Reference(act=None, article='1')),
         OutgoingReference(start_pos=11, end_pos=15, reference=Reference(act=None, article='3')),
@@ -583,9 +581,13 @@ def test_semantic_reparse_abbrevs() -> None:
     )
 
     with_semantics_1 = ActSemanticsParser.add_semantics_to_act(TEST_ACT)
-    assert with_semantics_1.act_id_abbreviations == (
+    assert with_semantics_1.article('1').paragraph().act_id_abbreviations == (
         ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+    )
+    assert with_semantics_1.article('2').paragraph('1').act_id_abbreviations == (
         ActIdAbbreviation('Ytv.', '2041. évi X. törvény'),
+    )
+    assert with_semantics_1.article('2').paragraph('2').act_id_abbreviations == (
         ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
     )
     assert with_semantics_1.article('3').paragraph().outgoing_references == (
@@ -615,10 +617,8 @@ def test_semantic_reparse_abbrevs() -> None:
     )
 
     modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
-    assert modified_with_semantics.act_id_abbreviations == (
-        ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+    assert modified_with_semantics.article('2').paragraph('1').act_id_abbreviations == (
         ActIdAbbreviation('Ytv.', '2057. évi X. törvény'),
-        ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
     )
     assert modified_with_semantics.article('3').paragraph().outgoing_references == (
         OutgoingReference(start_pos=40, end_pos=44, reference=Reference(act='2040. évi DX. törvény')),

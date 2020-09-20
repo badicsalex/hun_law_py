@@ -51,7 +51,6 @@ class ActSemanticsParser:
         return attr.evolve(
             act,
             children=tuple(new_children),
-            act_id_abbreviations=tuple(state.act_id_abbreviations)
         )
 
     @classmethod
@@ -70,11 +69,12 @@ class ActSemanticsParser:
             state: SemanticParseState
     ) -> SubArticleElement:
         if element.text is not None:
-            outgoing_references, semantic_data = cls.parse_text(element.text, prefix, postfix, state)
+            outgoing_references, semantic_data, act_id_abbreviations = cls.parse_text(element.text, prefix, postfix, state)
             return attr.evolve(
                 element,
                 outgoing_references=outgoing_references,
-                semantic_data=semantic_data
+                semantic_data=semantic_data,
+                act_id_abbreviations=act_id_abbreviations,
             )
 
         # First parse the intro of this element, because although we will
@@ -91,9 +91,9 @@ class ActSemanticsParser:
         # In this case, we hope that the string "From now on" can be parsed without
         # the second part of the sentence.
         if element.intro is not None:
-            outgoing_references, semantic_data = cls.parse_text(element.intro, prefix, '', state)
+            outgoing_references, semantic_data, act_id_abbreviations = cls.parse_text(element.intro, prefix, '', state)
         else:
-            outgoing_references, semantic_data = (), ()
+            outgoing_references, semantic_data, act_id_abbreviations = (), (), ()
 
         # TODO: Parse the wrap up of "this element"
 
@@ -114,7 +114,8 @@ class ActSemanticsParser:
             element,
             children=tuple(new_children),
             outgoing_references=outgoing_references,
-            semantic_data=semantic_data
+            semantic_data=semantic_data,
+            act_id_abbreviations=act_id_abbreviations,
         )
 
     @classmethod
@@ -129,14 +130,14 @@ class ActSemanticsParser:
 
     @classmethod
     def parse_text(cls, middle: str, prefix: str, postfix: str, state: SemanticParseState) \
-            -> Tuple[Tuple[OutgoingReference, ...], Tuple[SemanticData, ...]]:
+            -> Tuple[Tuple[OutgoingReference, ...], Tuple[SemanticData, ...], Tuple[ActIdAbbreviation, ...]]:
 
         middle = cls.fix_list_element_end(middle, not postfix)
         text = prefix + middle + postfix
         if len(text) > 10000:
-            return (), ()
+            return (), (), ()
         if not any(s in text for s in cls.INTERESTING_SUBSTRINGS):
-            return (), ()
+            return (), (), ()
 
         analysis_result = state.analyzer.analyze(text)
 
@@ -151,7 +152,7 @@ class ActSemanticsParser:
         )
 
         semantic_data = tuple(s.resolve_abbreviations(abbreviations_map) for s in analysis_result.semantic_data)
-        return outgoing_references, semantic_data
+        return outgoing_references, semantic_data, analysis_result.act_id_abbreviations
 
     @classmethod
     def convert_parsed_references(

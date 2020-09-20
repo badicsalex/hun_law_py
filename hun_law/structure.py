@@ -202,6 +202,7 @@ class SubArticleElement(ABC):
     children: Optional[Tuple[SubArticleChildType, ...]] = attr.ib(default=None)
     wrap_up: Optional[str] = None
 
+    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation', ...]] = None
     outgoing_references: Optional[Tuple[OutgoingReference, ...]] = None
     semantic_data: Optional[Tuple[SemanticData, ...]] = None
 
@@ -542,8 +543,6 @@ class Act:
     subject: str
     preamble: str
     children: Tuple[ActChildType, ...]
-
-    act_id_abbreviations: Optional[Tuple['ActIdAbbreviation', ...]] = None
 
     articles: Tuple[Article, ...] = attr.ib(init=False)
     articles_map: Mapping[str, Article] = attr.ib(init=False)
