@@ -18,10 +18,12 @@
 from typing import List, Tuple, Union
 
 import pytest
+import attr
 
 from hun_law.structure import Act, OutgoingReference, Reference, \
     SemanticData, BlockAmendmentMetadata, Repeal, TextAmendment, \
-    Paragraph, NumericPoint, AlphabeticSubpoint
+    ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 from .utils import ref, quick_parse_structure
@@ -420,3 +422,211 @@ def test_outgoing_ref_positions_are_okay(act_text: str, act_data: Tuple[Tuple[Re
     for reference, outgoing_reference in act_data:
         element = act.at_reference(reference)
         assert element.outgoing_references == (outgoing_reference,)
+
+
+def test_semantic_reparse_simple() -> None:
+    TEST_ACT = Act(
+        identifier="2050. évi XD. törvény",
+        subject="A nyelvtani tesztelésről",
+        preamble='',
+        children=(
+            Article(
+                identifier="1",
+                children=(
+                    Paragraph(
+                        text="Fontos lesz később a tesztelés X tulajdonságiról szóló 2040. évi DX. törvény (a továbbiakban Xtv.) rövidítésének feloldása.",
+                    ),
+                )
+            ),
+            Article(
+                identifier="2",
+                children=(
+                    Paragraph(
+                        identifier="1",
+                        text="Bekeverünk a tesztelés Y tulajdonságiról szóló 2041. évi X. törvény dolgaival.",
+                    ),
+                    Paragraph(
+                        identifier="2",
+                        text="Itt megemlítendő a 1. § és a tesztelés Z tulajdonságiról szóló 2041. évi XXX. törvény (a továbbiakban Ztv.)  1. §-a közötti különbség",
+                    ),
+                    Paragraph(
+                        identifier="3",
+                        intro="Az Xtv.",
+                        wrap_up="szöveg lép.",
+                        children=(
+                            AlphabeticPoint(
+                                identifier="a",
+                                text="12. § (7) bekezdésében a „fontatlan” szövegrész helyébe a „nem fontos”,",
+                            ),
+                            AlphabeticPoint(
+                                identifier="b",
+                                text="11. §-ben a „nemigazán” szövegrész helyébe a „nem”",
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            Article(
+                identifier="3",
+                children=(
+                    Paragraph(
+                        text="Ez a törvény a kihirdetését követő napon lép hatályba."
+                    ),
+                )
+            ),
+        ),
+    )
+
+    with_semantics_1 = ActSemanticsParser.add_semantics_to_act(TEST_ACT)
+    assert with_semantics_1.act_id_abbreviations == (
+        ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+        ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
+    )
+    assert with_semantics_1.article('1').paragraph().outgoing_references == (
+        OutgoingReference(start_pos=55, end_pos=76, reference=Reference(act='2040. évi DX. törvény')),
+    )
+    assert with_semantics_1.article('2').paragraph('1').outgoing_references == (
+        OutgoingReference(start_pos=47, end_pos=67, reference=Reference(act='2041. évi X. törvény')),
+    )
+    assert with_semantics_1.article('2').paragraph('3').point('a').semantic_data == (
+        TextAmendment(
+            position=Reference(act='2040. évi DX. törvény', article='12', paragraph='7'),
+            original_text='fontatlan',
+            replacement_text='nem fontos'
+        ),
+    )
+    assert with_semantics_1.article('3').paragraph().semantic_data == (
+        EnforcementDate(position=None, date=DaysAfterPublication(days=1)),
+    )
+
+    with_semantics_2 = ActSemanticsParser.add_semantics_to_act(with_semantics_1)
+    # TODO: with_semantics_2 is with_semantics_1
+    assert with_semantics_2 == with_semantics_1
+
+    modified_paragraph = attr.evolve(
+        with_semantics_1.article("2").paragraph("1"),
+        text="Az 1. § és 3. § egészen fontos.",
+    )
+    modified_article = attr.evolve(
+        with_semantics_1.article("2"),
+        children=(modified_paragraph,) + with_semantics_1.article("2").children[1:],
+    )
+    modified_act = attr.evolve(
+        with_semantics_1,
+        children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2]),
+    )
+
+    modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
+    assert modified_with_semantics.act_id_abbreviations == (
+        ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+        ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
+    )
+    assert modified_with_semantics.article('2').paragraph('1').outgoing_references == (
+        OutgoingReference(start_pos=3, end_pos=7, reference=Reference(act=None, article='1')),
+        OutgoingReference(start_pos=11, end_pos=15, reference=Reference(act=None, article='3')),
+    )
+
+    # TODO: assert with_semantics_1.article('1') is modified_with_semantics.article('1')
+    # TODO: assert with_semantics_1.article('3') is modified_with_semantics.article('3')
+
+
+def test_semantic_reparse_abbrevs() -> None:
+    TEST_ACT = Act(
+        identifier="2050. évi XD. törvény",
+        subject="A nyelvtani tesztelésről",
+        preamble='',
+        children=(
+            Article(
+                identifier="1",
+                children=(
+                    Paragraph(
+                        text="Fontos lesz később a tesztelés X tulajdonságiról szóló 2040. évi DX. törvény (a továbbiakban Xtv.) rövidítésének feloldása.",
+                    ),
+                )
+            ),
+            Article(
+                identifier="2",
+                children=(
+                    Paragraph(
+                        identifier="1",
+                        text="Bekeverünk a tesztelés Y tulajdonságiról szóló 2041. évi X. törvény (a továbbiakban Ytv.) dolgaival",
+                    ),
+                    Paragraph(
+                        identifier="2",
+                        text="Itt megemlítendő az Ytv. 10. §-a és a tesztelés Z tulajdonságiról szóló 2041. évi XXX. törvény (a továbbiakban Ztv.) 1. §-a közötti különbség",
+                    ),
+                    Paragraph(
+                        identifier="3",
+                        intro="Mert később használatban van",
+                        children=(
+                            AlphabeticPoint(
+                                identifier="a",
+                                text="az Xtv. 1. § c) pontja, és"
+                            ),
+                            AlphabeticPoint(
+                                identifier="b",
+                                text="az Ytv. 2. §-a."
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            Article(
+                identifier="3",
+                children=(
+                    Paragraph(
+                        text="Mégegyszer megemlítendő, hogy fontos az Xtv. 1. §-a, Ytv. 1. §-a, és Ztv. 1337. §-a.",
+                    ),
+                )
+            ),
+        ),
+    )
+
+    with_semantics_1 = ActSemanticsParser.add_semantics_to_act(TEST_ACT)
+    assert with_semantics_1.act_id_abbreviations == (
+        ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+        ActIdAbbreviation('Ytv.', '2041. évi X. törvény'),
+        ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
+    )
+    assert with_semantics_1.article('3').paragraph().outgoing_references == (
+        OutgoingReference(start_pos=40, end_pos=44, reference=Reference(act='2040. évi DX. törvény')),
+        OutgoingReference(start_pos=45, end_pos=51, reference=Reference(act='2040. évi DX. törvény', article='1')),
+        OutgoingReference(start_pos=53, end_pos=57, reference=Reference(act='2041. évi X. törvény')),
+        OutgoingReference(start_pos=58, end_pos=64, reference=Reference(act='2041. évi X. törvény', article='1')),
+        OutgoingReference(start_pos=69, end_pos=73, reference=Reference(act='2041. évi XXX. törvény')),
+        OutgoingReference(start_pos=74, end_pos=83, reference=Reference(act='2041. évi XXX. törvény', article='1337')),
+    )
+
+    with_semantics_2 = ActSemanticsParser.add_semantics_to_act(with_semantics_1)
+    # TODO: with_semantics_2 is with_semantics_1
+    assert with_semantics_2 == with_semantics_1
+
+    modified_paragraph = attr.evolve(
+        with_semantics_1.article("2").paragraph("1"),
+        text="Bekeverünk a tesztelés Y új tulajdonságiról szóló 2057. évi X. törvény (a továbbiakban Ytv.) dolgaival",
+    )
+    modified_article = attr.evolve(
+        with_semantics_1.article("2"),
+        children=(modified_paragraph,) + with_semantics_1.article("2").children[1:],
+    )
+    modified_act = attr.evolve(
+        with_semantics_1,
+        children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2]),
+    )
+
+    modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
+    assert modified_with_semantics.act_id_abbreviations == (
+        ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
+        ActIdAbbreviation('Ytv.', '2057. évi X. törvény'),
+        ActIdAbbreviation('Ztv.', '2041. évi XXX. törvény'),
+    )
+    assert modified_with_semantics.article('3').paragraph().outgoing_references == (
+        OutgoingReference(start_pos=40, end_pos=44, reference=Reference(act='2040. évi DX. törvény')),
+        OutgoingReference(start_pos=45, end_pos=51, reference=Reference(act='2040. évi DX. törvény', article='1')),
+        OutgoingReference(start_pos=53, end_pos=57, reference=Reference(act='2057. évi X. törvény')),
+        OutgoingReference(start_pos=58, end_pos=64, reference=Reference(act='2057. évi X. törvény', article='1')),
+        OutgoingReference(start_pos=69, end_pos=73, reference=Reference(act='2041. évi XXX. törvény')),
+        OutgoingReference(start_pos=74, end_pos=83, reference=Reference(act='2041. évi XXX. törvény', article='1337')),
+    )
+
+    # TODO: assert with_semantics_1.article('1') is modified_with_semantics.article('1')
