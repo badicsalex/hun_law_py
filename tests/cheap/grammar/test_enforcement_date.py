@@ -160,6 +160,15 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
             EnforcementDate(position=ref(None, ('315', '317')), date=Date(2013, 7, 1)),
         ),
     ),
+    (
+        "Az 55–66. §, a 70. § és a 72. § a) pontja, a 73. § a) és b) pontja 2019. szeptember 1-jén lép hatályba.",
+        (
+            EnforcementDate(position=ref(None, ('55', '66')), date=Date(year=2019, month=9, day=1)),
+            EnforcementDate(position=ref(None, '70'), date=Date(year=2019, month=9, day=1)),
+            EnforcementDate(position=ref(None, '72', None, 'a'), date=Date(year=2019, month=9, day=1)),
+            EnforcementDate(position=ref(None, '73', None, ('a', 'b')), date=Date(year=2019, month=9, day=1)),
+        )
+    ),
 )
 
 # TODO: Special

@@ -283,7 +283,7 @@ date::Date =
     ;
 
 month = "január" | "február" | "március" | "április" | "május" | "június" |
-    "július" | "augusztus" | "október" | "november" | "december";
+    "július" | "augusztus" | "szeptember" | "október" | "november" | "december";
 
 hungarian_ordinal = "első" | "második" | "harmadik" | "negyedik" | "ötödik" |
     "hatodik" | "hetedik"| "nyolcadik" | "kilencedik" | "tizedik" |
