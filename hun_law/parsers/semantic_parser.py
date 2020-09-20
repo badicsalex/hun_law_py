@@ -152,7 +152,7 @@ class ActSemanticsParser:
         semantic_data = tuple(s.resolve_abbreviations(abbreviations_map) for s in analysis_result.semantic_data)
         return outgoing_references, semantic_data
 
-    @ classmethod
+    @classmethod
     def convert_parsed_references(
             cls,
             parsed_references: Iterable[OutgoingReference],
