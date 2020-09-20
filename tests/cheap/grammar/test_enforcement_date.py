@@ -234,6 +234,9 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
 #        ),
 #    ),
 #
+#    "Az 52–54 §, a 67–69. §, a 71. §, a 72. § b) és c) pontja, a 73. § c) pontja, a 88–89. §, a 111–113. §, a 116–119. §, "
+#    "a 133–134. §, a 137–138. § és az 1. melléklet 2020. január 17-én lép hatályba."
+#
 # TODO: Simples
 #    Ez a törvény – a (2)–(7) bekezdésben foglalt kivételekkel – 2013. január 1-jén lép hatályba.
 #    44. §     (1)  Ez a törvény – a (2)–(3) bekezdésben foglalt kivétellel – a kihirdetését követő harmadik napon lép
