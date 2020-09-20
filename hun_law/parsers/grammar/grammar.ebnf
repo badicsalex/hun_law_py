@@ -222,7 +222,7 @@ block_amendment_structural::BlockAmendmentStructural
 
 after_publication::AfterPublication =
     ("a" | "e törvény")
-    "kihirdetését követő"
+    ("kihirdetését"| "kihirdetést") "követő"
     [as_text:hungarian_ordinal | as_number:number_with_dot]
     "napon"
     ;

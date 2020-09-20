@@ -161,6 +161,25 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
         ),
     ),
     (
+        "A 35. §, a 41–46. §, a 48. §, az 50. § a–i) pontja, az 50. § l–m) pontja, az 51. §, a 74. § (1) bekezdése, a 75–77. §, a 78. § a) és b) pontja, a 79–86. §, a 87. §, a 99–109. §, a 110. § a) pontja és a 146–148. § a kihirdetést követő 16. napon lép hatályba.",
+        (
+            EnforcementDate(position=ref(None, '35'), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, ('41', '46')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '48'), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '50', None, ('a', 'i')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '50', None, ('l', 'm')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '51'), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '74', '1'), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, ('75', '77')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '78', None, ('a', 'b')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, ('79', '86')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '87'), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, ('99', '109')), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, '110', None, 'a'), date=DaysAfterPublication(days=16)),
+            EnforcementDate(position=ref(None, ('146', '148')), date=DaysAfterPublication(days=16)),
+        )
+    ),
+    (
         "Az 55–66. §, a 70. § és a 72. § a) pontja, a 73. § a) és b) pontja 2019. szeptember 1-jén lép hatályba.",
         (
             EnforcementDate(position=ref(None, ('55', '66')), date=Date(year=2019, month=9, day=1)),
