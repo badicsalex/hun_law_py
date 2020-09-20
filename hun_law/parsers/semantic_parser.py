@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from typing import List, Iterable, Tuple, Mapping
+from typing import List, Iterable, Tuple, Mapping, Union
 
 import attr
 
@@ -33,6 +33,7 @@ from .grammatical_analyzer import GrammaticalAnalyzer
 class SemanticParseState:
     analyzer: GrammaticalAnalyzer = attr.ib(factory=GrammaticalAnalyzer)
     act_id_abbreviations: List[ActIdAbbreviation] = attr.ib(factory=list)
+    abbreviations_changed: bool = attr.ib(default=False)
 
 
 class ActSemanticsParser:
@@ -42,6 +43,9 @@ class ActSemanticsParser:
     def add_semantics_to_act(cls, act: Act) -> Act:
         # TODO: Rewrite this to be more functional instead of passing
         # a mutable state
+        if act.is_semantic_parsed:
+            return act
+
         state = SemanticParseState()
         new_children = []
         for child in act.children:
@@ -54,7 +58,21 @@ class ActSemanticsParser:
         )
 
     @classmethod
+    def add_existing_abbreviations_to_state(cls, element: Union[Article, SubArticleElement], state: SemanticParseState) -> None:
+        if isinstance(element, SubArticleElement):
+            assert element.act_id_abbreviations is not None
+            state.act_id_abbreviations.extend(element.act_id_abbreviations)
+        if element.children is not None:
+            for c in element.children:
+                if isinstance(c, SubArticleElement):
+                    cls.add_existing_abbreviations_to_state(c, state)
+
+    @classmethod
     def add_semantics_to_article(cls, article: Article, state: SemanticParseState) -> Article:
+        if not state.abbreviations_changed and article.is_semantic_parsed:
+            cls.add_existing_abbreviations_to_state(article, state)
+            return article
+
         new_children = tuple(cls.add_semantics_to_sae(child, '', '', state) for child in article.children)
         return attr.evolve(
             article,
@@ -68,6 +86,10 @@ class ActSemanticsParser:
             prefix: str, postfix: str,
             state: SemanticParseState
     ) -> SubArticleElement:
+        if not state.abbreviations_changed and element.is_semantic_parsed:
+            cls.add_existing_abbreviations_to_state(element, state)
+            return element
+
         if element.text is not None:
             outgoing_references, semantic_data, act_id_abbreviations = cls.parse_text(element.text, prefix, postfix, state)
             return attr.evolve(
@@ -131,6 +153,7 @@ class ActSemanticsParser:
     @classmethod
     def parse_text(cls, middle: str, prefix: str, postfix: str, state: SemanticParseState) \
             -> Tuple[Tuple[OutgoingReference, ...], Tuple[SemanticData, ...], Tuple[ActIdAbbreviation, ...]]:
+        # pylint: disable=too-many-arguments
 
         middle = cls.fix_list_element_end(middle, not postfix)
         text = prefix + middle + postfix
@@ -141,7 +164,9 @@ class ActSemanticsParser:
 
         analysis_result = state.analyzer.analyze(text)
 
-        state.act_id_abbreviations.extend(analysis_result.act_id_abbreviations)
+        if analysis_result.act_id_abbreviations:
+            state.act_id_abbreviations.extend(analysis_result.act_id_abbreviations)
+            state.abbreviations_changed = True
 
         abbreviations_map = {a.abbreviation: a.act for a in state.act_id_abbreviations}
 

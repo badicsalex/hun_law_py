@@ -534,8 +534,8 @@ def test_semantic_reparse_simple() -> None:
     )
 
     with_semantics_2 = ActSemanticsParser.add_semantics_to_act(with_semantics_1)
-    # TODO: with_semantics_2 is with_semantics_1
-    assert with_semantics_2 == with_semantics_1
+
+    assert with_semantics_2 is with_semantics_1
 
     modified_paragraph = attr.evolve(
         with_semantics_1.article("2").paragraph("1"),
@@ -566,8 +566,12 @@ def test_semantic_reparse_simple() -> None:
         OutgoingReference(start_pos=11, end_pos=15, reference=Reference(act=None, article='3')),
     )
 
-    # TODO: assert with_semantics_1.article('1') is modified_with_semantics.article('1')
-    # TODO: assert with_semantics_1.article('3') is modified_with_semantics.article('3')
+    # Check if nothing else was touched but the modified part.
+    assert with_semantics_1.article('1') is modified_with_semantics.article('1')
+    assert with_semantics_1.article('2').paragraph('2') is modified_with_semantics.article('2').paragraph('2')
+    assert with_semantics_1.article('2').paragraph('3') is modified_with_semantics.article('2').paragraph('3')
+    assert with_semantics_1.article('3') is modified_with_semantics.article('3')
+    assert with_semantics_1.article('4') is modified_with_semantics.article('4')
 
 
 def test_semantic_reparse_abbrevs() -> None:
@@ -681,6 +685,8 @@ def test_semantic_reparse_abbrevs() -> None:
         children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2], with_semantics_1.children[3]),
     )
 
+    assert not modified_act.is_semantic_parsed
+
     modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
     assert modified_with_semantics.article('2').paragraph('1').act_id_abbreviations == (
         ActIdAbbreviation('Ytv.', '2057. évi X. törvény'),
@@ -704,4 +710,6 @@ def test_semantic_reparse_abbrevs() -> None:
         ),
     )
 
-    # TODO: assert with_semantics_1.article('1') is modified_with_semantics.article('1')
+    assert with_semantics_1.article('1') is modified_with_semantics.article('1')
+    # Note that because of the abbreviation change, everything else may be reparsed,
+    # so no asserts for e.g. article('3')
