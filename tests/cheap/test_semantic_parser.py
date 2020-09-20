@@ -23,7 +23,7 @@ import attr
 from hun_law.structure import Act, OutgoingReference, Reference, \
     SemanticData, BlockAmendmentMetadata, Repeal, TextAmendment, \
     ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint
+    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, BlockAmendment
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 from .utils import ref, quick_parse_structure
@@ -406,6 +406,7 @@ def quick_parse_with_semantics(act_text: str) -> Act:
 @ pytest.mark.parametrize("act_text,act_data", CASES_WITHOUT_POSITIONS)  # type: ignore
 def test_outgoing_references_without_position(act_text: str, act_data: Tuple[Tuple[Reference, Tuple[Union[Reference, SemanticData], ...]], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
+    assert act.is_semantic_parsed
     for reference, data in act_data:
         expected_outgoing_references = tuple(d for d in data if isinstance(d, Reference))
         expected_semantic_data = tuple(d for d in data if isinstance(d, SemanticData))
@@ -419,6 +420,7 @@ def test_outgoing_references_without_position(act_text: str, act_data: Tuple[Tup
 @ pytest.mark.parametrize("act_text,act_data", CASES_WITH_POSITIONS)  # type: ignore
 def test_outgoing_ref_positions_are_okay(act_text: str, act_data: Tuple[Tuple[Reference, OutgoingReference], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
+    assert act.is_semantic_parsed
     for reference, outgoing_reference in act_data:
         element = act.at_reference(reference)
         assert element.outgoing_references == (outgoing_reference,)
@@ -474,10 +476,30 @@ def test_semantic_reparse_simple() -> None:
                     ),
                 )
             ),
+            Article(
+                identifier="4",
+                children=(
+                    Paragraph(
+                        intro="A Ztv. 12. § (8) bekezdése helyébe a következő rendelkezés lép:",
+                        children=(
+                            BlockAmendment(
+                                children=(
+                                    Paragraph(
+                                        identifier='8',
+                                        text="Beillesztett referencia: 11. §, vajon lesz baj?"
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
         ),
     )
 
     with_semantics_1 = ActSemanticsParser.add_semantics_to_act(TEST_ACT)
+    assert with_semantics_1.is_semantic_parsed
+
     assert with_semantics_1.article('1').paragraph().act_id_abbreviations == (
         ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
     )
@@ -500,6 +522,16 @@ def test_semantic_reparse_simple() -> None:
     assert with_semantics_1.article('3').paragraph().semantic_data == (
         EnforcementDate(position=None, date=DaysAfterPublication(days=1)),
     )
+    assert with_semantics_1.article('4').paragraph().semantic_data == (
+        BlockAmendmentMetadata(
+            position=Reference(act='2041. évi XXX. törvény', article='12', paragraph='8'),
+            expected_type=Paragraph,
+            expected_id_range=('8', '8'),
+            replaces=(
+                Reference(act='2041. évi XXX. törvény', article='12', paragraph='8'),
+            )
+        ),
+    )
 
     with_semantics_2 = ActSemanticsParser.add_semantics_to_act(with_semantics_1)
     # TODO: with_semantics_2 is with_semantics_1
@@ -508,6 +540,9 @@ def test_semantic_reparse_simple() -> None:
     modified_paragraph = attr.evolve(
         with_semantics_1.article("2").paragraph("1"),
         text="Az 1. § és 3. § egészen fontos.",
+        semantic_data=None,
+        outgoing_references=None,
+        act_id_abbreviations=None,
     )
     modified_article = attr.evolve(
         with_semantics_1.article("2"),
@@ -515,10 +550,17 @@ def test_semantic_reparse_simple() -> None:
     )
     modified_act = attr.evolve(
         with_semantics_1,
-        children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2]),
+        children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2], with_semantics_1.children[3]),
     )
 
+    assert modified_act.article('1').is_semantic_parsed
+    assert not modified_act.article('2').is_semantic_parsed
+    assert modified_act.article('3').is_semantic_parsed
+    assert modified_act.article('4').is_semantic_parsed
+    assert not modified_act.is_semantic_parsed
+
     modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
+    assert modified_with_semantics.is_semantic_parsed
     assert modified_with_semantics.article('2').paragraph('1').outgoing_references == (
         OutgoingReference(start_pos=3, end_pos=7, reference=Reference(act=None, article='1')),
         OutgoingReference(start_pos=11, end_pos=15, reference=Reference(act=None, article='3')),
@@ -577,10 +619,30 @@ def test_semantic_reparse_abbrevs() -> None:
                     ),
                 )
             ),
+            Article(
+                identifier="4",
+                children=(
+                    Paragraph(
+                        intro="Az Ytv. 12. § (8) bekezdése helyébe a következő rendelkezés lép:",
+                        children=(
+                            BlockAmendment(
+                                children=(
+                                    Paragraph(
+                                        identifier='8',
+                                        text="Beillesztett referencia: 12. §, vajon lesz baj?"
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
         ),
     )
 
     with_semantics_1 = ActSemanticsParser.add_semantics_to_act(TEST_ACT)
+    assert with_semantics_1.is_semantic_parsed
+
     assert with_semantics_1.article('1').paragraph().act_id_abbreviations == (
         ActIdAbbreviation('Xtv.', '2040. évi DX. törvény'),
     )
@@ -606,6 +668,9 @@ def test_semantic_reparse_abbrevs() -> None:
     modified_paragraph = attr.evolve(
         with_semantics_1.article("2").paragraph("1"),
         text="Bekeverünk a tesztelés Y új tulajdonságiról szóló 2057. évi X. törvény (a továbbiakban Ytv.) dolgaival",
+        semantic_data=None,
+        outgoing_references=None,
+        act_id_abbreviations=None,
     )
     modified_article = attr.evolve(
         with_semantics_1.article("2"),
@@ -613,7 +678,7 @@ def test_semantic_reparse_abbrevs() -> None:
     )
     modified_act = attr.evolve(
         with_semantics_1,
-        children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2]),
+        children=(with_semantics_1.children[0], modified_article, with_semantics_1.children[2], with_semantics_1.children[3]),
     )
 
     modified_with_semantics = ActSemanticsParser.add_semantics_to_act(modified_act)
@@ -627,6 +692,16 @@ def test_semantic_reparse_abbrevs() -> None:
         OutgoingReference(start_pos=58, end_pos=64, reference=Reference(act='2057. évi X. törvény', article='1')),
         OutgoingReference(start_pos=69, end_pos=73, reference=Reference(act='2041. évi XXX. törvény')),
         OutgoingReference(start_pos=74, end_pos=83, reference=Reference(act='2041. évi XXX. törvény', article='1337')),
+    )
+    assert modified_with_semantics.article('4').paragraph().semantic_data == (
+        BlockAmendmentMetadata(
+            position=Reference(act='2057. évi X. törvény', article='12', paragraph='8'),
+            expected_type=Paragraph,
+            expected_id_range=('8', '8'),
+            replaces=(
+                Reference(act='2057. évi X. törvény', article='12', paragraph='8'),
+            )
+        ),
     )
 
     # TODO: assert with_semantics_1.article('1') is modified_with_semantics.article('1')

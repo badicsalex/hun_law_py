@@ -195,6 +195,7 @@ SubArticleChildType = Union['Article', 'SubArticleElement', 'QuotedBlock', 'Stru
 class SubArticleElement(ABC):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()
     ALLOW_DIFFERENTLY_TYPED_CHILDREN: ClassVar[bool] = False
+    CHILDREN_NEED_SEMANTIC_PARSING: ClassVar[bool] = False
 
     identifier: Optional[str] = None
     text: Optional[str] = attr.ib(default=None)
@@ -208,6 +209,8 @@ class SubArticleElement(ABC):
 
     children_type: Optional[Type[SubArticleChildType]] = attr.ib(init=False)
     children_map: Optional[Mapping[Optional[str], SubArticleChildType]] = attr.ib(init=False)
+
+    is_semantic_parsed: bool = attr.ib(init=False)
 
     @children_type.default
     def _children_type_default(self) -> Optional[Type[SubArticleChildType]]:
@@ -231,6 +234,18 @@ class SubArticleElement(ABC):
         if self.children is None:
             return None
         return {c.identifier: c for c in self.children}
+
+    @is_semantic_parsed.default
+    def _is_semantic_parsed_default(self) -> bool:
+        if self.semantic_data is None:
+            return False
+        if self.children is not None and self.CHILDREN_NEED_SEMANTIC_PARSING:
+            for c in self.children:
+                if not isinstance(c, SubArticleElement):
+                    break
+                if not c.is_semantic_parsed:
+                    return False
+        return True
 
     @text.validator
     def _content_validator_if_text(self, _attribute: Any, text: Optional[str]) -> None:
@@ -380,6 +395,7 @@ class AlphabeticPoint(SubArticleElement):
 class BlockAmendment(SubArticleElement):
     ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = ()  # Will be defined later in this file, since it uses classes defined later.
     ALLOW_DIFFERENTLY_TYPED_CHILDREN = True
+    CHILDREN_NEED_SEMANTIC_PARSING = True
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:
@@ -456,6 +472,8 @@ class Article:
 
     paragraph_map: Mapping[Optional[str], Paragraph] = attr.ib(init=False)
 
+    is_semantic_parsed: bool = attr.ib(init=False)
+
     @children.validator
     def _children_validator(self, _attribute: Any, children: Tuple[Paragraph, ...]) -> None:
         # Attrs validators as decorators are what they are, it cannot be a function.
@@ -468,6 +486,10 @@ class Article:
     @paragraph_map.default
     def _paragraph_map_default(self) -> Mapping[Optional[str], Paragraph]:
         return {c.identifier: c for c in self.children}
+
+    @is_semantic_parsed.default
+    def _is_semantic_parsed_default(self) -> bool:
+        return all(p.is_semantic_parsed for p in self.paragraphs)
 
     @property
     def paragraphs(self) -> Tuple[Paragraph, ...]:
@@ -547,6 +569,8 @@ class Act:
     articles: Tuple[Article, ...] = attr.ib(init=False)
     articles_map: Mapping[str, Article] = attr.ib(init=False)
 
+    is_semantic_parsed: bool = attr.ib(init=False)
+
     @articles.default
     def _articles_default(self) -> Tuple[Article, ...]:
         return tuple(c for c in self.children if isinstance(c, Article))
@@ -554,6 +578,10 @@ class Act:
     @articles_map.default
     def _articles_map_default(self) -> Mapping[str, Article]:
         return {c.identifier: c for c in self.articles}
+
+    @is_semantic_parsed.default
+    def _is_semantic_parsed_default(self) -> bool:
+        return all(p.is_semantic_parsed for p in self.articles)
 
     def article(self, article_id: str) -> Article:
         assert self.articles_map[str(article_id)].identifier == str(article_id)
