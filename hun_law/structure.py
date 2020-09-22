@@ -562,6 +562,7 @@ ActChildType = Union['StructuralElement', 'Article']
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class Act:
     identifier: str
+    publication_date: Date
     subject: str
     preamble: str
     children: Tuple[ActChildType, ...]

@@ -25,6 +25,7 @@ from hun_law.cache import init_cache
 from hun_law.structure import \
     Act, Book, Part, Title, Chapter, Subtitle, \
     Article, QuotedBlock, AlphabeticPoint, BlockAmendmentContainer, Paragraph
+from hun_law.utils import Date
 
 
 def parse_single_kozlony(year: int, issue: int) -> Iterable[Act]:
@@ -50,6 +51,7 @@ def test_end_to_end_2010_181() -> None:
     assert acts["2010. évi CXXX. törvény"].article("25").paragraph("1").text == \
         "A Magyar Köztársaság hivatalos lapja a Magyar Közlöny. A Magyar Közlönyt a kormányzati portálon történő " \
         "elektronikus dokumentumként való közzététellel kell kiadni, melynek szövegét hitelesnek kell tekinteni."
+    assert acts["2010. évi CXXX. törvény"].publication_date == Date(2010, 11, 29)
 
 
 def test_end_to_end_2012_92() -> None:
@@ -285,3 +287,5 @@ def test_end_to_end_2018_123() -> None:
     assert last_line_of_hungarian_version.endswith("Szlovák Köztársaság nevében"), \
         "Quote blocks are separated correctly"
     assert acts["2018. évi LI. törvény"].article("3").paragraph().wrap_up is None, "No junk is parsed after Quote blocks"
+
+    assert acts["2018. évi LI. törvény"].publication_date == Date(2018, 7, 31)

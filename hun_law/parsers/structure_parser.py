@@ -21,7 +21,7 @@ from enum import Enum
 from typing import Type, Pattern, ClassVar, Sequence, Optional, Tuple, Iterable, Iterator, Union, List, Mapping
 
 from hun_law.utils import \
-    IndentedLine, EMPTY_LINE, text_to_int_hun, text_to_int_roman, \
+    IndentedLine, EMPTY_LINE, Date, text_to_int_hun, text_to_int_roman, \
     is_uppercase_hun, iterate_with_quote_level, quote_level_diff
 from hun_law.structure import \
     Act, Article, QuotedBlock, BlockAmendmentContainer,\
@@ -729,7 +729,7 @@ class ActStructureParser:
     PARSED_TYPE = Act
 
     @classmethod
-    def parse(cls, identifier: str, subject: str, lines: Sequence[IndentedLine]) -> Act:
+    def parse(cls, identifier: str, publication_date: Date, subject: str, lines: Sequence[IndentedLine]) -> Act:
         try:
             parsers = cls.create_parsers()
             preamble, lines = cls.parse_preamble(parsers, lines)
@@ -737,7 +737,7 @@ class ActStructureParser:
         except Exception as e:
             raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
 
-        return Act(identifier, subject, preamble, tuple(elements))
+        return Act(identifier, publication_date, subject, preamble, tuple(elements))
 
     @classmethod
     def create_parsers(cls) -> ActBodyParsersType:

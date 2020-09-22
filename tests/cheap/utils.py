@@ -18,7 +18,7 @@
 import json
 from typing import Optional
 
-from hun_law.utils import IndentedLine, IndentedLinePart
+from hun_law.utils import IndentedLine, IndentedLinePart, Date
 from hun_law.structure import Act, Reference, ReferencePartType
 from hun_law.parsers.structure_parser import ActStructureParser
 from hun_law.parsers.semantic_parser import ActBlockAmendmentParser
@@ -52,7 +52,7 @@ def quick_parse_structure(act_text: str, *, parse_block_amendments: bool = False
                 parts.append(IndentedLinePart(5 + spaces_num * 5, char, bold=bold))
                 spaces_num = 0
         lines.append(IndentedLine(tuple(parts)))
-    act = ActStructureParser.parse("2345 évi I. törvény", "A tesztelésről", lines)
+    act = ActStructureParser.parse("2345 évi I. törvény", Date(2345, 6, 7), "A tesztelésről", lines)
     if parse_block_amendments:
         act = ActBlockAmendmentParser.parse(act)
     print(json.dumps(dict2object.to_dict(act, Act), indent='  ', ensure_ascii=False))

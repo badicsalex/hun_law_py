@@ -84,6 +84,11 @@
         }
     ],
     "identifier": "2345 évi I. törvény",
+    "publication_date": {
+        "day": 7,
+        "month": 6,
+        "year": 2345
+    },
     "preamble": "Preamble preamble.",
     "subject": "A tesztelésről"
 }

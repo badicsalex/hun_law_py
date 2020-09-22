@@ -19,7 +19,7 @@ import re
 from typing import List, Dict, Optional, Type, Tuple, Iterable, Union, Callable
 import attr
 
-from hun_law.utils import EMPTY_LINE, IndentedLine
+from hun_law.utils import EMPTY_LINE, IndentedLine, Date
 from . import Extractor
 from .pdf import PdfOfLines
 
@@ -40,6 +40,7 @@ class PageWithHeader:
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class KozlonyPagesWithHeaderAndFooter:
+    publication_date: Date
     pages: Tuple[PageWithHeader, ...]
 
 
@@ -57,17 +58,19 @@ def MagyarKozlonyHeaderExtractor(pdf_file: PdfOfLines) -> Iterable[KozlonyPagesW
     # 2011. június 28., kedd
     #
 
+    publication_date = Date.from_hungarian_text(pdf_file.pages[0].lines[3].content)
     result_pages = [PageWithHeader(tuple(pdf_file.pages[0].lines[:5]), tuple(pdf_file.pages[0].lines[5:]))]
     for page in pdf_file.pages:
         # Others are
         # 15202 M A G Y A R   K Ö Z L Ö N Y  •  2011. évi 71 . szám
         #
         result_pages.append(PageWithHeader(tuple(page.lines[:2]), tuple(page.lines[2:])))
-    yield KozlonyPagesWithHeaderAndFooter(tuple(result_pages))
+    yield KozlonyPagesWithHeaderAndFooter(publication_date, tuple(result_pages))
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class MagyarKozlonyLawsSection:
+    publication_date: Date
     lines: Tuple[IndentedLine, ...]
 
 
@@ -106,7 +109,7 @@ def MagyarKozlonySectionExtractor(kozlony: KozlonyPagesWithHeaderAndFooter) -> I
                 break
             if current_section_type is not None:
                 if SECTION_TYPES[current_section_type] is not None:
-                    yield SECTION_TYPES[current_section_type](tuple(content_of_current_section))
+                    yield SECTION_TYPES[current_section_type](kozlony.publication_date, tuple(content_of_current_section))
             current_section_type = section_type
             content_of_current_section = list(page.lines[1:])
             break
@@ -120,12 +123,13 @@ def MagyarKozlonySectionExtractor(kozlony: KozlonyPagesWithHeaderAndFooter) -> I
     assert current_section_type is not None
     the_type = SECTION_TYPES[current_section_type]
     if the_type is not None:
-        yield the_type(tuple(content_of_current_section))
+        yield the_type(kozlony.publication_date, tuple(content_of_current_section))
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class MagyarKozlonyLawRawText:
     identifier: str
+    publication_date: Date
     subject: str
     body: Tuple[IndentedLine, ...]
 
@@ -137,12 +141,13 @@ class LawExtractorStateMachine:
     HEADER_STARTING_RE = re.compile('^[12][09][0-9][0-9]. évi [IVXLC]+. törvény')
     ACT_FOOTER_RE = re.compile('köztársasági elnök az Országgyűlés (al)?elnöke')
 
-    def __init__(self) -> None:
+    def __init__(self, publication_date: Date) -> None:
         self.identifier = ''
         self.subject = ''
         self.body: List[IndentedLine] = []
         self.state: LawExtractorStateFn = self.WAITING_FOR_HEADER_NEWLINE
         self.pending_result: Optional[MagyarKozlonyLawRawText] = None
+        self.publication_date = publication_date
 
     def feed_line(self, line: IndentedLine) -> Optional[MagyarKozlonyLawRawText]:
         self.pending_result = None
@@ -208,6 +213,7 @@ class LawExtractorStateMachine:
             # TODO: Extract footer
             self.pending_result = MagyarKozlonyLawRawText(
                 self.identifier,
+                self.publication_date,
                 self.subject,
                 tuple(self.body[:-3])
             )
@@ -219,7 +225,7 @@ class LawExtractorStateMachine:
 
 @Extractor(MagyarKozlonyLawsSection)
 def MagyarKozlonyLawExtractor(laws_section: MagyarKozlonyLawsSection) -> Iterable[MagyarKozlonyLawRawText]:
-    state_machine = LawExtractorStateMachine()
+    state_machine = LawExtractorStateMachine(laws_section.publication_date)
     for line in laws_section.lines:
         result = state_machine.feed_line(line)
         if result is not None:

@@ -24,6 +24,8 @@ from hun_law.structure import Act, OutgoingReference, Reference, \
     SemanticData, BlockAmendment, Repeal, TextAmendment, \
     ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, BlockAmendmentContainer
+
+from hun_law.utils import Date
 from hun_law.parsers.semantic_parser import ActSemanticsParser
 
 from .utils import ref, quick_parse_structure
@@ -429,6 +431,7 @@ def test_outgoing_ref_positions_are_okay(act_text: str, act_data: Tuple[Tuple[Re
 def test_semantic_reparse_simple() -> None:
     TEST_ACT = Act(
         identifier="2050. évi XD. törvény",
+        publication_date=Date(2050, 3, 4),
         subject="A nyelvtani tesztelésről",
         preamble='',
         children=(
@@ -586,6 +589,7 @@ def test_semantic_reparse_simple() -> None:
 def test_semantic_reparse_abbrevs() -> None:
     TEST_ACT = Act(
         identifier="2050. évi XD. törvény",
+        publication_date=Date(2050, 3, 4),
         subject="A nyelvtani tesztelésről",
         preamble='',
         children=(

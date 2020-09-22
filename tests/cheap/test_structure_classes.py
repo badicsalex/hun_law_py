@@ -22,8 +22,11 @@ from hun_law.structure import \
     Article, Paragraph, AlphabeticPoint, NumericPoint, NumericSubpoint, AlphabeticSubpoint, \
     Reference
 
+from hun_law.utils import Date
+
 TEST_STRUCTURE = Act(
     identifier="2345. évi XD. törvény",
+    publication_date=Date(2345, 6, 7),
     subject="A tesztelésről",
     preamble="A tesztelés nagyon fontos, és egyben kötelező",
     children=(

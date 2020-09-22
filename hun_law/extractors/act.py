@@ -45,7 +45,7 @@ class BlockAmendmentOnlyAct:
 def MagyarKozlonyToStructureOnlyAct(raw: MagyarKozlonyLawRawText) -> Iterable[StructureOnlyAct]:
     # TODO: assert for 10. § (2)(c) c): 'a cím utolsó szavához a „-ról”, „-ről” rag kapcsolódjon.'
     fixupped_body = do_all_fixups(raw.identifier, raw.body)
-    act = ActStructureParser.parse(raw.identifier, raw.subject, tuple(fixupped_body))
+    act = ActStructureParser.parse(raw.identifier, raw.publication_date, raw.subject, tuple(fixupped_body))
     yield StructureOnlyAct(act)
 
 

@@ -141,7 +141,7 @@ def detect_errors_and_try_fix(raw: MagyarKozlonyLawRawText) -> None:
         print("Using {} fixups".format(len(hun_law.fixups.common.all_fixups.get(raw.identifier, []))))
         fixupped_body = hun_law.fixups.common.do_all_fixups(raw.identifier, raw.body)
         try:
-            act = ActStructureParser.parse(raw.identifier, raw.subject, tuple(fixupped_body))
+            act = ActStructureParser.parse(raw.identifier, raw.publication_date, raw.subject, tuple(fixupped_body))
             act = ActBlockAmendmentParser.parse(act)
             act = ActSemanticsParser.add_semantics_to_act(act)
             print("Parsing successful")
