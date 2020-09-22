@@ -22,7 +22,8 @@ import pytest
 from hun_law.utils import \
     IndentedLine, IndentedLinePart, EMPTY_LINE, \
     text_to_int_hun, int_to_text_hun, \
-    text_to_int_roman, int_to_text_roman
+    text_to_int_roman, int_to_text_roman, \
+    Date
 
 from hun_law import dict2object
 
@@ -262,3 +263,9 @@ def test_text_to_int_roman() -> None:
         text_to_int_roman("Invalid")
     with pytest.raises(ValueError):
         text_to_int_roman("XIX/A")
+
+
+def test_date_from_hungarian_text() -> None:
+    assert Date.from_hungarian_text('2010. november 29., hétfő') == Date(2010, 11, 29)
+    assert Date.from_hungarian_text('2014. február 11., kedd') == Date(2014, 2, 11)
+    assert Date.from_hungarian_text('2019. július 9., kedd') == Date(2019, 7, 9)

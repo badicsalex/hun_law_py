@@ -142,6 +142,13 @@ class Date:
     month: int
     day: int
 
+    @classmethod
+    def from_hungarian_text(cls, s: str) -> 'Date':
+        # e.g. 2011. június 28., kedd
+        s = s.split(',', 1)[0]
+        year, month, day = s.split(' ')
+        return cls(int(year[:-1]), text_to_month_hun(month), int(day[:-1]))
+
 
 T = TypeVar('T')
 
