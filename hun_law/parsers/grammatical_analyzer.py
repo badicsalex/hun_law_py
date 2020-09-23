@@ -678,6 +678,10 @@ class GrammarResultContainer:
         return tuple(r for r in self.results if isinstance(r, SemanticData))
 
 
+class GrammaticalParsingError(Exception):
+    pass
+
+
 class GrammaticalAnalyzer:
     def __init__(self) -> None:
         self.parser = ActGrammarParser(
@@ -686,14 +690,17 @@ class GrammaticalAnalyzer:
         )
 
     def analyze(self, s: str, *, debug: bool = False, print_result: bool = False) -> GrammarResultContainer:
-        parse_result = self.parser.parse(
-            s,
-            rule_name='start_default',
-            trace=debug, colorize=debug,
-        )
-        if print_result:
-            self._indented_print(parse_result)
-        return GrammarResultContainer(parse_result)
+        try:
+            parse_result = self.parser.parse(
+                s,
+                rule_name='start_default',
+                trace=debug, colorize=debug,
+            )
+            if print_result:
+                self._indented_print(parse_result)
+            return GrammarResultContainer(parse_result)
+        except Exception as e:
+            raise GrammaticalParsingError("Error parsing '{}'".format(s)) from e
 
     @classmethod
     def _indented_print(cls, node: Any = None, indent: str = '') -> None:
