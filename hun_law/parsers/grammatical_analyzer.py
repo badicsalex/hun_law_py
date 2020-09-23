@@ -381,8 +381,11 @@ class BlockAmendmentToBlockAmendment(ModelConverter):
         amended_range, amended_type = cls.get_reference_range_and_type(amended_reference)
         inserted_range, inserted_type = cls.get_reference_range_and_type(inserted_reference)
         assert amended_type == inserted_type
-        assert amended_type.is_next_identifier(amended_range[1], inserted_range[0])
-        expected_id_range = (amended_range[0], inserted_range[1])
+        if amended_type.is_next_identifier(amended_range[1], inserted_range[0]):
+            expected_id_range = (amended_range[0], inserted_range[1])
+        else:
+            # Best effor for the weird case which amends 1-2, and inserts 1a in between
+            expected_id_range = amended_range
         return BlockAmendment(
             expected_type=amended_type,
             expected_id_range=expected_id_range,

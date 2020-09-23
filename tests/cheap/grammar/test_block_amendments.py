@@ -493,7 +493,15 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
             replaces=(StructuralReference("Nkt.", subtitle="11/A"),)
         ),
     ),
-
+    (
+        "A Ht. 42. § (1) és (2) bekezdése helyébe a következő rendelkezések lépnek, és a § a következő (1a) bekezdéssel egészül ki:",
+        BlockAmendment(
+            expected_type=Paragraph,
+            expected_id_range=("1", "2"),
+            position=ref("Ht.", "42", "1"),
+            replaces=(ref("Ht.", "42", ("1", "2")),),
+        ),
+    ),
 )
 
 # TODO:
