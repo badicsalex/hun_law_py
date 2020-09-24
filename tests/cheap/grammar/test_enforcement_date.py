@@ -265,6 +265,7 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
 #    A 2. § és a 3. § a Megállapodás 6. Cikk (1) bekezdésében meghatározott időpontban lép hatályba.
 #
 #    Ez a törvény a kihirdetését követő hónap első napján lép hatályba.
+#    Ez a törvény a kihirdetését követő második hónap első napján lép hatályba.
 #
 #    A 39–41. § a kihirdetést követő második hónap első napján lép hatályba.
 #
