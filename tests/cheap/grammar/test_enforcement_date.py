@@ -76,6 +76,12 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
         )
     ),
     (
+        "Ez a törvény – a (2) bekezdésben foglaltak kivételével − a kihirdetését követő 30. napon lép hatályba.",
+        (
+            EnforcementDate(position=None, date=DaysAfterPublication(days=30)),
+        )
+    ),
+    (
         "Az 50–51. § és az 53. § (1)–(5) bekezdése e törvény kihirdetését követő 31. napon lép hatályba.",
         (
             EnforcementDate(position=ref(None, ('50', '51')), date=DaysAfterPublication(31)),
