@@ -269,3 +269,13 @@ def test_date_from_hungarian_text() -> None:
     assert Date.from_hungarian_text('2010. november 29., hétfő') == Date(2010, 11, 29)
     assert Date.from_hungarian_text('2014. február 11., kedd') == Date(2014, 2, 11)
     assert Date.from_hungarian_text('2019. július 9., kedd') == Date(2019, 7, 9)
+
+
+def test_date_add() -> None:
+    assert Date(2000, 12, 31).add_days(1) == Date(2001, 1, 1)
+    assert Date(2020, 2, 28).add_days(1) == Date(2020, 2, 29)
+    assert Date(2021, 2, 28).add_days(1) == Date(2021, 3, 1)
+
+    assert Date(2021, 8, 28).add_days(10) == Date(2021, 9, 7)
+    assert Date(2011, 3, 28).add_days(45) == Date(2011, 5, 12)
+    assert Date(2011, 7, 28).add_days(20) == Date(2011, 8, 17)

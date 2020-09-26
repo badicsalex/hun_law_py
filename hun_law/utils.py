@@ -17,6 +17,7 @@
 
 import collections
 import textwrap
+import datetime
 from string import ascii_uppercase
 from typing import Tuple, List, Iterable, TypeVar, Optional, Dict, Any, TextIO
 
@@ -148,6 +149,10 @@ class Date:
         s = s.split(',', 1)[0]
         year, month, day = s.split(' ')
         return cls(int(year[:-1]), text_to_month_hun(month), int(day[:-1]))
+
+    def add_days(self, days: int) -> 'Date':
+        native_date = datetime.date(self.year, self.month, self.day) + datetime.timedelta(days=days)
+        return Date(native_date.year, native_date.month, native_date.day)
 
 
 T = TypeVar('T')
