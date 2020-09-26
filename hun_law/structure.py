@@ -744,8 +744,9 @@ class BlockAmendment(SemanticData):
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
-class DayNextMonthAfterPublication:
+class DayInMonthAfterPublication:
     day: int
+    months: int = 1
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
@@ -761,7 +762,7 @@ class SpecialEnforcementDate:
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class EnforcementDate(SemanticData):
     position: Optional[Reference]
-    date: Union[Date, DaysAfterPublication, DayNextMonthAfterPublication, SpecialEnforcementDate]
+    date: Union[Date, DaysAfterPublication, DayInMonthAfterPublication, SpecialEnforcementDate]
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)

@@ -227,6 +227,15 @@ after_publication::AfterPublication =
     "napon"
     ;
 
+day_in_month::DayInMonth =
+    ("a" | "e törvény")
+    ("kihirdetését"| "kihirdetést") "követő"
+    [month:hungarian_ordinal]
+    "hónap"
+    (day_as_text:hungarian_ordinal | day_as_number:number_with_dot)
+    "napján"
+    ;
+
 enforcement_date::EnforcementDate =
     (
         (("E" | "Ez a") "törvény") |
@@ -236,10 +245,11 @@ enforcement_date::EnforcementDate =
     { references+:reference [list_separator [az]] }*
     (
         exact_date:date |
-        after_publication:after_publication
+        after_publication:after_publication |
+        day_in_month:day_in_month
     )
     "lép hatályba."
-        ;
+    ;
 
 # ============ TEXT AMENDMENT PARSING ==============
 

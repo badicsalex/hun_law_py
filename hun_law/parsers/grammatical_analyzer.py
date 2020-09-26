@@ -28,7 +28,8 @@ from hun_law.structure import Reference, \
     StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
     Subtitle, Part, Title, Chapter,\
     ActIdAbbreviation, OutgoingReference, BlockAmendment, SemanticData, \
-    EnforcementDate, DaysAfterPublication, TextAmendment, Repeal
+    EnforcementDate, DaysAfterPublication, DayInMonthAfterPublication, \
+    TextAmendment, Repeal
 
 from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
 
@@ -526,11 +527,29 @@ class EnforcementDateToEnforcementDate(ModelConverter):
         )
 
     @classmethod
+    def convert_day_in_month(cls, day_in_month: model.DayInMonth) -> DayInMonthAfterPublication:
+        if day_in_month.month:
+            months = text_to_int_hun(day_in_month.month)
+        else:
+            months = 1
+
+        if day_in_month.day_as_number:
+            day = int(day_in_month.day_as_number[0])
+        elif day_in_month.day_as_text:
+            day = text_to_int_hun(day_in_month.day_as_text)
+        else:
+            raise ValueError("No actual day in 'DayInMonth'. Grammar is probably wrong")
+
+        return DayInMonthAfterPublication(day=day, months=months)
+
+    @classmethod
     def convert(cls, tree_element: model.EnforcementDate) -> Iterable[EnforcementDate]:
         if tree_element.exact_date:
             date = cls.convert_exact_date(tree_element.exact_date)
         elif tree_element.after_publication:
             date = cls.convert_after_publication_date(tree_element.after_publication)
+        elif tree_element.day_in_month:
+            date = cls.convert_day_in_month(tree_element.day_in_month)
         else:
             raise ValueError("No actual date in 'EnforcementDate'. Grammar is probably wrong")
 

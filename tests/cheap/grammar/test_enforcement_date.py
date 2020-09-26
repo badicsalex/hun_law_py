@@ -20,7 +20,7 @@ from typing import Tuple
 import pytest
 
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
-from hun_law.structure import EnforcementDate, DaysAfterPublication
+from hun_law.structure import EnforcementDate, DaysAfterPublication, DayInMonthAfterPublication
 from hun_law.utils import Date
 
 from tests.cheap.utils import ref
@@ -220,6 +220,30 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
             EnforcementDate(position=ref(None, '110', None, 'b'), date=Date(year=2020, month=1, day=1)),
         )
     ),
+    (
+        "Ez a törvény a kihirdetését követő hónap első napján lép hatályba.",
+        (
+            EnforcementDate(position=None, date=DayInMonthAfterPublication(day=1)),
+        )
+    ),
+    (
+        "Ez a törvény a kihirdetését követő hónap 15. napján lép hatályba.",
+        (
+            EnforcementDate(position=None, date=DayInMonthAfterPublication(day=15)),
+        )
+    ),
+    (
+        "Ez a törvény a kihirdetését követő második hónap első napján lép hatályba.",
+        (
+            EnforcementDate(position=None, date=DayInMonthAfterPublication(day=1, months=2)),
+        )
+    ),
+    (
+        "A 39–41. § a kihirdetést követő második hónap ötödik napján lép hatályba.",
+        (
+            EnforcementDate(position=ref(None, ('39', '41')), date=DayInMonthAfterPublication(day=5, months=2)),
+        )
+    ),
 )
 
 # TODO: Special
@@ -270,10 +294,6 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
 #
 #    A 2. § és a 3. § a Megállapodás 6. Cikk (1) bekezdésében meghatározott időpontban lép hatályba.
 #
-#    Ez a törvény a kihirdetését követő hónap első napján lép hatályba.
-#    Ez a törvény a kihirdetését követő második hónap első napján lép hatályba.
-#
-#    A 39–41. § a kihirdetést követő második hónap első napján lép hatályba.
 #
 #    TODO: appendix reference:
 #    Az 1. § (1) bekezdése, a 2. §, az 5. §, a 9. §, a 14. §, a 15. §, a 17. §, a 114. §
