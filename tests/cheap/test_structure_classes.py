@@ -16,10 +16,11 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Type
 import pytest
+import attr
 
 from hun_law.structure import \
     Act, Book, \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, NumericSubpoint, AlphabeticSubpoint, \
+    Article, Paragraph, AlphabeticPoint, NumericPoint, NumericSubpoint, AlphabeticSubpoint, SubArticleElement,\
     Reference
 
 from hun_law.utils import Date
@@ -300,3 +301,43 @@ def test_at_reference() -> None:
         paragraph="1",
         point="1a",
     )) is TEST_STRUCTURE.article("2:2").paragraph("1").point("1a")
+
+
+def test_map_articles() -> None:
+    times_called = 0
+
+    def article_modifier(a: Article) -> Article:
+        if a.identifier != '2:1/A':
+            return a
+        nonlocal times_called
+        times_called = times_called + 1
+        return attr.evolve(a, title="Modified")
+
+    modified_act = TEST_STRUCTURE.map_articles(article_modifier)
+    assert times_called == 1
+    assert modified_act.article("2:1") is TEST_STRUCTURE.article("2:1")
+    assert modified_act.article("2:2") is TEST_STRUCTURE.article("2:2")
+    assert modified_act.article("2:1/A").title == "Modified"
+
+
+def test_map_saes() -> None:
+    times_called = 0
+    times_matched = 0
+
+    def text_modifier(r: Reference, sae: SubArticleElement) -> SubArticleElement:
+        print(r, sae.identifier, sae.__class__.__name__)
+        nonlocal times_matched, times_called
+        times_called = times_called + 1
+        if r != Reference('2345. évi XD. törvény', '1:2', '2', 'b', 'ba'):
+            return sae
+        times_matched = times_matched + 1
+        return attr.evolve(sae, text="Modified")
+
+    modified_act = TEST_STRUCTURE.map_saes(text_modifier)
+    assert times_matched == 1
+    assert times_called == 13
+    assert modified_act.article("2:1") is TEST_STRUCTURE.article("2:1")
+    assert modified_act.article("2:2") is TEST_STRUCTURE.article("2:2")
+    assert modified_act.article("1:2").paragraph("2").point("b").subpoint("bb") is \
+        TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb")
+    assert modified_act.article("1:2").paragraph("2").point("b").subpoint("ba").text == "Modified"

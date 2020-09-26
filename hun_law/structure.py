@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any
+from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any, Callable
 import gc
 import inspect
 import sys
@@ -287,6 +287,27 @@ class SubArticleElement(ABC):
     def at_reference(self, reference: 'Reference') -> 'SubArticleElement':
         pass
 
+    def map_recursive(self, parent_reference: 'Reference', modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement']) -> 'SubArticleElement':
+        try:
+            reference = self.relative_reference.relative_to(parent_reference)
+        except TypeError:
+            # We are in an unreferrable SAE, stop processing
+            return self
+        result = modifier(reference, self)
+        if result.children:
+            new_children = []
+            children_changed = False
+            for child in result.children:
+                if isinstance(child, SubArticleElement):
+                    new_child = child.map_recursive(reference, modifier)
+                    if new_child is not child:
+                        child = new_child
+                        children_changed = True
+                new_children.append(child)
+            if children_changed:
+                result = attr.evolve(result, children=tuple(new_children))
+        return result
+
 
 @attr.s(slots=True, frozen=True)
 class AlphabeticSubpoint(SubArticleElement):
@@ -546,6 +567,21 @@ class Article:
             )
         )
 
+    def map_recursive(self, parent_reference: 'Reference', modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement']) -> 'Article':
+        reference = self.relative_reference.relative_to(parent_reference)
+        new_children = []
+        children_changed = False
+        for child in self.children:
+            new_child = child.map_recursive(reference, modifier)
+            assert isinstance(new_child, Paragraph)
+            if new_child is not child:
+                child = new_child
+                children_changed = True
+            new_children.append(child)
+        if not children_changed:
+            return self
+        return attr.evolve(self, children=tuple(new_children))
+
 
 BlockAmendmentContainer.ALLOWED_CHILDREN_TYPE = (
     Article,
@@ -598,6 +634,25 @@ class Act:
                 subpoint=reference.subpoint
             )
         )
+
+    def map_articles(self, modifier: Callable[['Article'], 'Article']) -> 'Act':
+        new_children = []
+        children_changed = False
+        for child in self.children:
+            if isinstance(child, Article):
+                new_child = modifier(child)
+                if new_child is not child:
+                    child = new_child
+                    children_changed = True
+            new_children.append(child)
+        if not children_changed:
+            return self
+        return attr.evolve(self, children=tuple(new_children))
+
+    def map_saes(self, modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement']) -> 'Act':
+        def article_modifier(article: Article) -> Article:
+            return article.map_recursive(Reference(self.identifier, article.identifier), modifier)
+        return self.map_articles(article_modifier)
 
 
 ReferencePartType = Union[None, str, Tuple[str, str]]
