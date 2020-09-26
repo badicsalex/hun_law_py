@@ -244,6 +244,30 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
             EnforcementDate(position=ref(None, ('39', '41')), date=DayInMonthAfterPublication(day=5, months=2)),
         )
     ),
+    (
+        "Ez a törvény – a (2) bekezdésben meghatározott kivétellel – a kihirdetését követő napon lép hatályba, és 2019. december 31-én hatályát veszti.",
+        (
+            EnforcementDate(position=None, date=DaysAfterPublication(), repeal_date=Date(2019, 12, 31)),
+        )
+    ),
+    (
+        "Ez a törvény – a (2)–(5) bekezdésben foglalt kivétellel – a kihirdetését követő napon lép hatályba, és ez a törvény 2019. február 10-én a hatályát veszti.",
+        (
+            EnforcementDate(position=None, date=DaysAfterPublication(), repeal_date=Date(2019, 2, 10)),
+        )
+    ),
+    (
+        "Ez a törvény – a (2)–(9) bekezdésben meghatározott kivétellel – 2014. január 1-jén lép hatályba, és 2015. december 31-én hatályát veszti.",
+        (
+            EnforcementDate(position=None, date=Date(2014, 1, 1), repeal_date=Date(2015, 12, 31)),
+        )
+    ),
+    (
+        "Ez a törvény – a (2) bekezdésben meghatározott kivétellel – 2018. november 1-jén lép hatályba, és 2022. december 31-én hatályát veszti.",
+        (
+            EnforcementDate(position=None, date=Date(2018, 11, 1), repeal_date=Date(2022, 12, 31)),
+        )
+    ),
 )
 
 # TODO: Special
@@ -308,10 +332,6 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
 #
 #    TODO: multiple dates:
 #    А 16. § (2) bekezdésének c), e), h)–j) pontja 2013. április 1-jén, d) pontja 2014. január 1-jén lép hatályba.
-#
-#    191. §    (1)  Ez a törvény – a (2)–(9) bekezdésben meghatározott kivétellel – 2014. január 1-jén lép hatályba, és 2015.
-#               december 31-én hatályát veszti.
-#
 #
 
 

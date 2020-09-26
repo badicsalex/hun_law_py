@@ -763,6 +763,7 @@ class SpecialEnforcementDate:
 class EnforcementDate(SemanticData):
     position: Optional[Reference]
     date: Union[Date, DaysAfterPublication, DayInMonthAfterPublication, SpecialEnforcementDate]
+    repeal_date: Optional[Date] = None
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)

@@ -236,6 +236,13 @@ day_in_month::DayInMonth =
     "napján"
     ;
 
+inline_repeal::InlineRepeal =
+    ", és"
+    [("e" | "ez a") "törvény"]
+    date:date
+    ["a"] "hatályát veszti"
+    ;
+
 enforcement_date::EnforcementDate =
     (
         (("E" | "Ez a") "törvény") |
@@ -248,7 +255,9 @@ enforcement_date::EnforcementDate =
         after_publication:after_publication |
         day_in_month:day_in_month
     )
-    "lép hatályba."
+    "lép hatályba"
+    [inline_repeal:inline_repeal]
+    "."
     ;
 
 # ============ TEXT AMENDMENT PARSING ==============

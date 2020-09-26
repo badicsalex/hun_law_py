@@ -553,11 +553,15 @@ class EnforcementDateToEnforcementDate(ModelConverter):
         else:
             raise ValueError("No actual date in 'EnforcementDate'. Grammar is probably wrong")
 
+        if tree_element.inline_repeal:
+            repeal_date = cls.convert_exact_date(tree_element.inline_repeal.date)
+        else:
+            repeal_date = None
         if not tree_element.references:
-            yield EnforcementDate(position=None, date=date)
+            yield EnforcementDate(position=None, date=date, repeal_date=repeal_date)
         else:
             for reference in ReferenceConversionHelper.convert_multiple_in_text_references(None, tree_element.references):
-                yield EnforcementDate(position=reference.reference, date=date)
+                yield EnforcementDate(position=reference.reference, date=date, repeal_date=repeal_date)
 
 
 class EnforcementDateToReference(ModelConverter):
