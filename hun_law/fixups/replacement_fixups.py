@@ -1546,6 +1546,12 @@ replacement_fixups: ReplacementsType = {
             "replacement": "Aláírásra került Brüsszelben, 2016.  ’-án.”"
         }
     ],
+    "2016. évi LXXIII. törvény": [
+        {
+            "needle": "58. § (1) E törvény – a (2) bekezdésben foglal kivétellel – 2016. augusztus 1-jén lép hatályba.",
+            "replacement": "58. § (1) E törvény – a (2) bekezdésben foglalt kivétellel – 2016. augusztus 1-jén lép hatályba."
+        }
+    ],
     "2016. évi LXXVI. törvény": [
         {
             "needle": "Szakképzési Hídprogramot” szöveg,”",
@@ -1784,6 +1790,12 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "az engedély kiadásához vagy a nyilvántartásba vételhez szükséges feltételek már nem állnak fenn.”",
             "replacement": "az engedély kiadásához vagy a nyilvántartásba vételhez szükséges feltételek már nem állnak fenn."
+        }
+    ],
+    "2017. évi LXIV. törvény": [
+        {
+            "needle": "45. § (1) Ez a törvény a – a (2)–(4) bekezdésben foglalt kivétellel – a kihirdetését követő nyolcadik napon lép hatályba.",
+            "replacement": "45. § (1) Ez a törvény – a (2)–(4) bekezdésben foglalt kivétellel – a kihirdetését követő nyolcadik napon lép hatályba."
         }
     ],
     "2017. évi LXVIII. törvény": [
