@@ -23,7 +23,8 @@ from hun_law.utils import \
     IndentedLine, IndentedLinePart, EMPTY_LINE, \
     text_to_int_hun, int_to_text_hun, \
     text_to_int_roman, int_to_text_roman, \
-    Date
+    Date, \
+    split_identifier_to_parts, identifier_less
 
 from hun_law import dict2object
 
@@ -279,3 +280,27 @@ def test_date_add() -> None:
     assert Date(2021, 8, 28).add_days(10) == Date(2021, 9, 7)
     assert Date(2011, 3, 28).add_days(45) == Date(2011, 5, 12)
     assert Date(2011, 7, 28).add_days(20) == Date(2011, 8, 17)
+
+
+def test_identifier_less() -> None:
+    assert split_identifier_to_parts('1') == ('', 1)
+    assert split_identifier_to_parts('a') == ('a',)
+    assert split_identifier_to_parts('ab') == ('ab',)
+    assert split_identifier_to_parts('1A') == ('', 1, 'A')
+    assert split_identifier_to_parts('1/A') == ('', 1, '/A')
+    assert split_identifier_to_parts('2:1/A') == ('', 2, ':', 1, '/A')
+
+    assert identifier_less('1', '1/A')
+    assert identifier_less('1', '2')
+    assert identifier_less('1', '2/A')
+    assert identifier_less('1/A', '2')
+    assert identifier_less('1/A', '2/A')
+
+    assert not identifier_less('1/A', '1')
+    assert not identifier_less('2', '1')
+    assert not identifier_less('2/A', '1')
+    assert not identifier_less('2', '1/A')
+    assert not identifier_less('2/A', '1/A')
+
+    assert identifier_less('5', '20')
+    assert identifier_less('1:20/A', '1:101')

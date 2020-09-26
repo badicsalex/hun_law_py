@@ -23,7 +23,7 @@ import sys
 
 import attr
 
-from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_next_letter_hun, Date
+from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_next_letter_hun, Date, identifier_less
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -744,6 +744,20 @@ class Reference:
         # TODO: We have no way of determining whether the Act ID is an
         # abbreviation or not right now.
         return attr.evolve(self, act=abbreviations_map[self.act])
+
+    def is_in_range(self, other: 'Reference') -> bool:
+        assert self.is_range()
+        assert not other.is_range()
+        for component_name in 'article', 'paragraph', 'point', 'subpoint':
+            self_component = getattr(self, component_name)
+            other_component = getattr(other, component_name)
+            if isinstance(self_component, tuple) and other_component is not None:
+                return not identifier_less(other_component, self_component[0]) and \
+                    not identifier_less(self_component[1], other_component)
+            if self_component != other_component:
+                return False
+
+        return True
 
 
 class RelativePosition(Enum):

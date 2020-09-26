@@ -19,7 +19,7 @@ import collections
 import textwrap
 import datetime
 from string import ascii_uppercase
-from typing import Tuple, List, Iterable, TypeVar, Optional, Dict, Any, TextIO
+from typing import Tuple, List, Iterable, TypeVar, Optional, Union, Dict, Any, TextIO
 
 import attr
 
@@ -384,3 +384,31 @@ def flatten(l: Iterable[Any]) -> Iterable[Any]:
             l.extendleft(reversed(element))
         else:
             yield element
+
+
+def split_identifier_to_parts(s: str) -> Tuple[Union[str, int], ...]:
+    result: List[Union[str, int]] = []
+    current_str = ''
+    last_was_digit = False
+    for c in s:
+        if c.isdigit() != last_was_digit:
+            if last_was_digit:
+                result.append(int(current_str))
+            else:
+                result.append(current_str)
+            current_str = ''
+            last_was_digit = c.isdigit()
+        current_str = current_str + c
+    if current_str:
+        if last_was_digit:
+            result.append(int(current_str))
+        else:
+            result.append(current_str)
+    return tuple(result)
+
+
+def identifier_less(a: str, b: str) -> bool:
+    """ Returns a<b, but smartly."""
+    a_parts = split_identifier_to_parts(a)
+    b_parts = split_identifier_to_parts(b)
+    return a_parts < b_parts

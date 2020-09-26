@@ -268,6 +268,31 @@ def test_next_identifiers_alphabetic() -> None:
     assert not AlphabeticSubpoint.is_next_identifier("ac", "bd")
 
 
+def test_reference_in_range() -> None:
+    assert Reference(None, ('1', '2')).is_in_range(Reference(None, '1'))
+    assert Reference(None, ('1', '2')).is_in_range(Reference(None, '2'))
+    assert Reference(None, ('1', '2')).is_in_range(Reference(None, '1/A'))
+    assert not Reference(None, ('1', '2')).is_in_range(Reference(None, '3'))
+    assert not Reference(None, ('1', '2')).is_in_range(Reference(None, '2/A'))
+    assert not Reference(None, ('2', '10')).is_in_range(Reference(None, '1'))
+
+    assert Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '3'))
+    assert Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '4'))
+    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '1'))
+    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '5'))
+    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2'))
+    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2'))
+    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '3', '3'))
+    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', None, '3'))
+
+    assert Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '3'))
+    assert Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '4'))
+    assert not Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '2'))
+    assert not Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '5'))
+
+    assert not Reference(None, ('3', '8')).is_in_range(Reference(None, '30'))
+
+
 def test_at_reference() -> None:
     assert TEST_STRUCTURE.at_reference(Reference(
         article="1:1"
