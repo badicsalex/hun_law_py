@@ -221,14 +221,14 @@ block_amendment_structural::BlockAmendmentStructural
 # ============ ENFORCEMENT DATE PARSING ============
 
 after_publication::AfterPublication =
-    ("a" | "e törvény")
+    ["a" | "e törvény"]
     ("kihirdetését"| "kihirdetést") "követő"
     [as_text:hungarian_ordinal | as_number:number_with_dot]
     "napon"
     ;
 
 day_in_month::DayInMonth =
-    ("a" | "e törvény")
+    ["a" | "e törvény"]
     ("kihirdetését"| "kihirdetést") "követő"
     [month:hungarian_ordinal]
     "hónap"
