@@ -292,6 +292,25 @@ def test_reference_in_range() -> None:
 
     assert not Reference(None, ('3', '8')).is_in_range(Reference(None, '30'))
 
+    assert Reference(None, '3').is_in_range(Reference(None, '3'))
+    assert Reference(None, '3').is_in_range(Reference(None, '3', '2'))
+
+    assert not Reference(None, '3', '8').is_in_range(Reference(None, '3'))
+    assert not Reference(None, '3', '8').is_in_range(Reference(None, '3', '9'))
+
+    assert Reference(None, '3').is_in_range(Reference(None, '3'))
+    assert Reference(None, '3').is_in_range(Reference(None, '3', None, '2'))
+    assert not Reference(None, '3', None, '8').is_in_range(Reference(None, '3'))
+    assert not Reference(None, '3', None, '8').is_in_range(Reference(None, '3', None, '9'))
+
+    assert Reference(None, '3', None, 'a').is_in_range(Reference(None, '3', None, 'a'))
+    assert Reference(None, '3', None, 'a').is_in_range(Reference(None, '3', None, 'a', 'ab'))
+    assert not Reference(None, '3', None, 'a', 'ab').is_in_range(Reference(None, '3', None, 'a'))
+    assert not Reference(None, '3', None, 'a', 'ab').is_in_range(Reference(None, '3', None, 'a', 'ac'))
+
+    assert not Reference(None, '3', None, '8').is_in_range(Reference(None, '3', '1', '8'))
+    assert not Reference(None, '3', None, ('8', '9')).is_in_range(Reference(None, '3', '1', '8'))
+
 
 def test_at_reference() -> None:
     assert TEST_STRUCTURE.at_reference(Reference(
