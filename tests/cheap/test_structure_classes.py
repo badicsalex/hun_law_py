@@ -268,6 +268,20 @@ def test_next_identifiers_alphabetic() -> None:
     assert not AlphabeticSubpoint.is_next_identifier("ac", "bd")
 
 
+def test_reference_parent() -> None:
+    r = Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb")
+    r = r.parent()
+    assert r == Reference("2345. évi XD. törvény", "1:2", "2", "b")
+    r = r.parent()
+    assert r == Reference("2345. évi XD. törvény", "1:2", "2")
+    r = r.parent()
+    assert r == Reference("2345. évi XD. törvény", "1:2")
+    r = r.parent()
+    assert r == Reference("2345. évi XD. törvény")
+    r = r.parent()
+    assert r == Reference()
+
+
 def test_reference_contains() -> None:
     assert Reference(None, ('1', '2')).contains(Reference(None, '1'))
     assert Reference(None, ('1', '2')).contains(Reference(None, '2'))

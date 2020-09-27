@@ -745,6 +745,17 @@ class Reference:
             result = attr.evolve(result, subpoint=result.subpoint[0])
         return result
 
+    def parent(self) -> 'Reference':
+        if self.subpoint is not None:
+            return attr.evolve(self, subpoint=None)
+        if self.point is not None:
+            return attr.evolve(self, point=None)
+        if self.paragraph is not None:
+            return attr.evolve(self, paragraph=None)
+        if self.article is not None:
+            return attr.evolve(self, article=None)
+        return Reference()
+
     def last_component_with_type(self) -> Tuple[ReferencePartType, Optional[Type[Union[SubArticleElement, Article, Act]]]]:
         # Thanks pylint, but this is the simplest form of this function.
         # pylint: disable=too-many-return-statements
