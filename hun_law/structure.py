@@ -287,19 +287,36 @@ class SubArticleElement(ABC):
     def at_reference(self, reference: 'Reference') -> 'SubArticleElement':
         pass
 
-    def map_recursive(self, parent_reference: 'Reference', modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement']) -> 'SubArticleElement':
+    def map_recursive(
+        self,
+        parent_reference: 'Reference',
+        modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
+        filter_for_reference: Optional['Reference'] = None
+    ) -> 'SubArticleElement':
         try:
             reference = self.relative_reference.relative_to(parent_reference)
         except TypeError:
             # We are in an unreferrable SAE, stop processing
             return self
-        result = modifier(reference, self)
+
+        if filter_for_reference is not None \
+                and not reference.contains(filter_for_reference) \
+                and not filter_for_reference.contains(reference):
+            # No need to run, no intersection between the filtered reference and any children
+            return self
+
+        result = self
+        if filter_for_reference is None or filter_for_reference.contains(reference):
+            # Only call the callback if we are actually in the filter, and not just
+            # here for the children
+            result = modifier(reference, self)
+
         if result.children:
             new_children = []
             children_changed = False
             for child in result.children:
                 if isinstance(child, SubArticleElement):
-                    new_child = child.map_recursive(reference, modifier)
+                    new_child = child.map_recursive(reference, modifier, filter_for_reference)
                     if new_child is not child:
                         child = new_child
                         children_changed = True
@@ -567,12 +584,23 @@ class Article:
             )
         )
 
-    def map_recursive(self, parent_reference: 'Reference', modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement']) -> 'Article':
+    def map_recursive(
+        self,
+        parent_reference: 'Reference',
+        modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
+        filter_for_reference: Optional['Reference'] = None
+    ) -> 'Article':
         reference = self.relative_reference.relative_to(parent_reference)
+
+        if filter_for_reference is not None \
+                and not reference.contains(filter_for_reference) \
+                and not filter_for_reference.contains(reference):
+            # No need to run, no intersection between the filtered reference and any children
+            return self
         new_children = []
         children_changed = False
         for child in self.children:
-            new_child = child.map_recursive(reference, modifier)
+            new_child = child.map_recursive(reference, modifier, filter_for_reference)
             assert isinstance(new_child, Paragraph)
             if new_child is not child:
                 child = new_child
@@ -649,9 +677,13 @@ class Act:
             return self
         return attr.evolve(self, children=tuple(new_children))
 
-    def map_saes(self, modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement']) -> 'Act':
+    def map_saes(
+        self,
+        modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
+        filter_for_reference: Optional['Reference'] = None
+    ) -> 'Act':
         def article_modifier(article: Article) -> Article:
-            return article.map_recursive(Reference(self.identifier, article.identifier), modifier)
+            return article.map_recursive(Reference(self.identifier, article.identifier), modifier, filter_for_reference)
         return self.map_articles(article_modifier)
 
 

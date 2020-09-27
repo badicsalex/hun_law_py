@@ -389,3 +389,26 @@ def test_map_saes() -> None:
     assert modified_act.article("1:2").paragraph("2").point("b").subpoint("bb") is \
         TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb")
     assert modified_act.article("1:2").paragraph("2").point("b").subpoint("ba").text == "Modified"
+
+
+def test_map_saes_with_filter() -> None:
+    times_called = 0
+    times_matched = 0
+
+    def text_modifier(r: Reference, sae: SubArticleElement) -> SubArticleElement:
+        print(r, sae.identifier, sae.__class__.__name__)
+        nonlocal times_matched, times_called
+        times_called = times_called + 1
+        if r != Reference('2345. évi XD. törvény', '1:2', '2', 'b', 'ba'):
+            return sae
+        times_matched = times_matched + 1
+        return attr.evolve(sae, text="Modified")
+
+    modified_act = TEST_STRUCTURE.map_saes(text_modifier, Reference('2345. évi XD. törvény', '1:2', '2', 'b'))
+    assert times_called == 3
+    assert times_matched == 1
+    assert modified_act.article("2:1") is TEST_STRUCTURE.article("2:1")
+    assert modified_act.article("2:2") is TEST_STRUCTURE.article("2:2")
+    assert modified_act.article("1:2").paragraph("2").point("b").subpoint("bb") is \
+        TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb")
+    assert modified_act.article("1:2").paragraph("2").point("b").subpoint("ba").text == "Modified"
