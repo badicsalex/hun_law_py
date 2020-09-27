@@ -746,16 +746,18 @@ class Reference:
         return attr.evolve(self, act=abbreviations_map[self.act])
 
     def contains(self, other: 'Reference') -> bool:
-        assert not other.is_range()
         self_should_be_none = False
         for component_name in 'article', 'paragraph', 'point', 'subpoint':
             self_component = getattr(self, component_name)
             other_component = getattr(other, component_name)
             if self_should_be_none and self_component is not None:
                 return False
-            if isinstance(self_component, tuple) and other_component is not None:
-                return not identifier_less(other_component, self_component[0]) and \
-                    not identifier_less(self_component[1], other_component)
+            if isinstance(self_component, tuple):
+                if isinstance(other_component, tuple):
+                    raise ValueError("Contains does not work with two ranges")
+                if other_component is not None:
+                    return not identifier_less(other_component, self_component[0]) and \
+                        not identifier_less(self_component[1], other_component)
             if self_component != other_component:
                 if self_component is not None:
                     return False

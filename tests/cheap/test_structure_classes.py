@@ -311,6 +311,10 @@ def test_reference_contains() -> None:
     assert not Reference(None, '3', None, '8').contains(Reference(None, '3', '1', '8'))
     assert not Reference(None, '3', None, ('8', '9')).contains(Reference(None, '3', '1', '8'))
 
+    assert Reference(None, ('3', '4')).contains(Reference(None, '3', '11'))
+    assert Reference(None, '3', '8').contains(Reference(None, '3', '8', ('9', '10')))
+    assert not Reference(None, '3', '8').contains(Reference(None, '3', ('8', '9')))
+
 
 def test_at_reference() -> None:
     assert TEST_STRUCTURE.at_reference(Reference(
