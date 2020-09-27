@@ -22,7 +22,7 @@ from typing import Type, Pattern, ClassVar, Sequence, Optional, Tuple, Iterable,
 
 from hun_law.utils import \
     IndentedLine, EMPTY_LINE, Date, text_to_int_hun, text_to_int_roman, \
-    is_uppercase_hun, iterate_with_quote_level, quote_level_diff
+    is_uppercase_hun, iterate_with_quote_level, quote_level_diff, join_line_strs
 from hun_law.structure import \
     Act, Article, QuotedBlock, BlockAmendmentContainer,\
     StructuralElement, Subtitle, Chapter, Title, Part, Book,\
@@ -108,7 +108,7 @@ class StructuralElementParser(ABC):
 
     def parse(self, lines: Sequence[IndentedLine]) -> StructuralElement:
         number = self.extract_number(lines[0])
-        title = " ".join(l.content for l in lines[1:] if l != EMPTY_LINE)
+        title = join_line_strs(l.content for l in lines[1:] if l != EMPTY_LINE)
         return self.PARSED_TYPE(str(number), title)
 
 
@@ -231,7 +231,7 @@ class SubtitleParser(StructuralElementParser):
         return number in (1, self.expected_number)
 
     def parse(self, lines: Sequence[IndentedLine]) -> Subtitle:
-        title = " ".join(l.content for l in lines if l != EMPTY_LINE)
+        title = join_line_strs(l.content for l in lines if l != EMPTY_LINE)
         number = self.extract_number(lines[0])
         if number is None:
             return Subtitle("", title)
@@ -307,7 +307,7 @@ class SubArticleElementParser(ABC):
         try:
             intro, children, wrap_up = cls.parse_children_and_wrapup(lines, identifier)
         except NoSubelementsError:
-            text = " ".join([l.content for l in lines if l != EMPTY_LINE])
+            text = join_line_strs([l.content for l in lines if l != EMPTY_LINE])
         except Exception as e:
             raise SubArticleParsingError("Error during parsing subpoints: {}".format(e), cls.PARSED_TYPE) from e
         return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
@@ -329,7 +329,7 @@ class SubArticleElementParser(ABC):
                 if first_header == 0:
                     intro = None
                 else:
-                    intro = " ".join([l.content for l in lines[:first_header] if l != EMPTY_LINE])
+                    intro = join_line_strs([l.content for l in lines[:first_header] if l != EMPTY_LINE])
                 children, wrapup = parser.extract_multiple_from_text(lines[first_header:])
                 return intro, children, wrapup
             except SubArticleElementNotFoundError:
@@ -403,7 +403,7 @@ class SubArticleElementParser(ABC):
                 if wrap_up is None:
                     wrap_up = line.content
                 else:
-                    wrap_up = line.content + " " + wrap_up
+                    wrap_up = join_line_strs([line.content, wrap_up])
         return tuple(lines), wrap_up
 
     @classmethod
@@ -599,7 +599,7 @@ class QuotedBlockParser:
             elif state == cls.ParseStates.WRAP_UP:
                 if line != EMPTY_LINE:
                     assert wrap_up is not None
-                    wrap_up = wrap_up + ' ' + line.content
+                    wrap_up = join_line_strs([wrap_up, line.content])
 
             else:
                 raise RuntimeError('Unknown state')
@@ -655,10 +655,10 @@ class ArticleParser:
                 title = lines[0].content[1:-1]
                 lines = lines[1:]
             elif lines[1].content[-1] == ']':
-                title = lines[0].content[1:] + " " + lines[1].content[:-1]
+                title = join_line_strs([lines[0].content[1:], lines[1].content[:-1]])
                 lines = lines[2:]
             elif lines[2].content[-1] == ']':
-                title = lines[0].content[1:] + " " + lines[1].content + " " + lines[1].content[:-1]
+                title = join_line_strs([lines[0].content[1:], lines[1].content, lines[1].content[:-1]])
                 lines = lines[3:]
             else:
                 # Seriously, we are at 3 at this point.
@@ -756,7 +756,7 @@ class ActStructureParser:
                 split_point = line_number
                 break
             previous_line = line
-        preamble = " ".join(l.content for l in lines[:split_point] if l != EMPTY_LINE)
+        preamble = join_line_strs(l.content for l in lines[:split_point] if l != EMPTY_LINE)
         rest_of_lines = lines[split_point:]
         return preamble, rest_of_lines
 

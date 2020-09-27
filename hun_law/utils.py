@@ -412,3 +412,12 @@ def identifier_less(a: str, b: str) -> bool:
     a_parts = split_identifier_to_parts(a)
     b_parts = split_identifier_to_parts(b)
     return a_parts < b_parts
+
+
+def join_line_strs(lines: Iterable[str]) -> str:
+    result = ''
+    for s in lines:
+        if result and result[-1] != '-':
+            result = result + ' '
+        result = result + s
+    return result
