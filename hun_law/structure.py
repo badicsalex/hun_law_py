@@ -745,7 +745,7 @@ class Reference:
         # abbreviation or not right now.
         return attr.evolve(self, act=abbreviations_map[self.act])
 
-    def is_in_range(self, other: 'Reference') -> bool:
+    def contains(self, other: 'Reference') -> bool:
         assert not other.is_range()
         self_should_be_none = False
         for component_name in 'article', 'paragraph', 'point', 'subpoint':

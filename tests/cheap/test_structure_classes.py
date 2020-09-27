@@ -268,48 +268,48 @@ def test_next_identifiers_alphabetic() -> None:
     assert not AlphabeticSubpoint.is_next_identifier("ac", "bd")
 
 
-def test_reference_in_range() -> None:
-    assert Reference(None, ('1', '2')).is_in_range(Reference(None, '1'))
-    assert Reference(None, ('1', '2')).is_in_range(Reference(None, '2'))
-    assert Reference(None, ('1', '2')).is_in_range(Reference(None, '1/A'))
-    assert not Reference(None, ('1', '2')).is_in_range(Reference(None, '3'))
-    assert not Reference(None, ('1', '2')).is_in_range(Reference(None, '2/A'))
-    assert not Reference(None, ('2', '10')).is_in_range(Reference(None, '1'))
+def test_reference_contains() -> None:
+    assert Reference(None, ('1', '2')).contains(Reference(None, '1'))
+    assert Reference(None, ('1', '2')).contains(Reference(None, '2'))
+    assert Reference(None, ('1', '2')).contains(Reference(None, '1/A'))
+    assert not Reference(None, ('1', '2')).contains(Reference(None, '3'))
+    assert not Reference(None, ('1', '2')).contains(Reference(None, '2/A'))
+    assert not Reference(None, ('2', '10')).contains(Reference(None, '1'))
 
-    assert Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '3'))
-    assert Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '4'))
-    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '1'))
-    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '5'))
-    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2'))
-    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2'))
-    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '3', '3'))
-    assert not Reference(None, "2", "2", ('3', '4')).is_in_range(Reference(None, '2', None, '3'))
+    assert Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '3'))
+    assert Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '4'))
+    assert not Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '1'))
+    assert not Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '5'))
+    assert not Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2'))
+    assert not Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', '2'))
+    assert not Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', '3', '3'))
+    assert not Reference(None, "2", "2", ('3', '4')).contains(Reference(None, '2', None, '3'))
 
-    assert Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '3'))
-    assert Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '4'))
-    assert not Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '2'))
-    assert not Reference(None, "2", "2", "2", ('3', '4')).is_in_range(Reference(None, '2', '2', '2', '5'))
+    assert Reference(None, "2", "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '2', '3'))
+    assert Reference(None, "2", "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '2', '4'))
+    assert not Reference(None, "2", "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '2', '2'))
+    assert not Reference(None, "2", "2", "2", ('3', '4')).contains(Reference(None, '2', '2', '2', '5'))
 
-    assert not Reference(None, ('3', '8')).is_in_range(Reference(None, '30'))
+    assert not Reference(None, ('3', '8')).contains(Reference(None, '30'))
 
-    assert Reference(None, '3').is_in_range(Reference(None, '3'))
-    assert Reference(None, '3').is_in_range(Reference(None, '3', '2'))
+    assert Reference(None, '3').contains(Reference(None, '3'))
+    assert Reference(None, '3').contains(Reference(None, '3', '2'))
 
-    assert not Reference(None, '3', '8').is_in_range(Reference(None, '3'))
-    assert not Reference(None, '3', '8').is_in_range(Reference(None, '3', '9'))
+    assert not Reference(None, '3', '8').contains(Reference(None, '3'))
+    assert not Reference(None, '3', '8').contains(Reference(None, '3', '9'))
 
-    assert Reference(None, '3').is_in_range(Reference(None, '3'))
-    assert Reference(None, '3').is_in_range(Reference(None, '3', None, '2'))
-    assert not Reference(None, '3', None, '8').is_in_range(Reference(None, '3'))
-    assert not Reference(None, '3', None, '8').is_in_range(Reference(None, '3', None, '9'))
+    assert Reference(None, '3').contains(Reference(None, '3'))
+    assert Reference(None, '3').contains(Reference(None, '3', None, '2'))
+    assert not Reference(None, '3', None, '8').contains(Reference(None, '3'))
+    assert not Reference(None, '3', None, '8').contains(Reference(None, '3', None, '9'))
 
-    assert Reference(None, '3', None, 'a').is_in_range(Reference(None, '3', None, 'a'))
-    assert Reference(None, '3', None, 'a').is_in_range(Reference(None, '3', None, 'a', 'ab'))
-    assert not Reference(None, '3', None, 'a', 'ab').is_in_range(Reference(None, '3', None, 'a'))
-    assert not Reference(None, '3', None, 'a', 'ab').is_in_range(Reference(None, '3', None, 'a', 'ac'))
+    assert Reference(None, '3', None, 'a').contains(Reference(None, '3', None, 'a'))
+    assert Reference(None, '3', None, 'a').contains(Reference(None, '3', None, 'a', 'ab'))
+    assert not Reference(None, '3', None, 'a', 'ab').contains(Reference(None, '3', None, 'a'))
+    assert not Reference(None, '3', None, 'a', 'ab').contains(Reference(None, '3', None, 'a', 'ac'))
 
-    assert not Reference(None, '3', None, '8').is_in_range(Reference(None, '3', '1', '8'))
-    assert not Reference(None, '3', None, ('8', '9')).is_in_range(Reference(None, '3', '1', '8'))
+    assert not Reference(None, '3', None, '8').contains(Reference(None, '3', '1', '8'))
+    assert not Reference(None, '3', None, ('8', '9')).contains(Reference(None, '3', '1', '8'))
 
 
 def test_at_reference() -> None:
