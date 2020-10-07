@@ -921,6 +921,12 @@ replacement_fixups: ReplacementsType = {
             "replacement": "ajánlatot vagy nyújthatnak be részvételi jelentkezést.”"
         }
     ],
+    "2013. évi CXXXV. törvény": [
+        {
+            "needle": "42. § A polgári törvénykönyvről szóló 2013. évi V. tv. 3:303. § (1)–(3) bekezdése a következő szöveggel lép hatályba:",
+            "replacement": "42. § A polgári törvénykönyvről szóló 2013. évi V. törvény 3:303. §-a és az azt megelőző alcím a következő szöveggel lép hatályba:"
+        }
+    ],
     "2013. évi LII. törvény": [
         {
             "needle": "(3) E törvény 2013. július 2-án hatályát veszti.”",
