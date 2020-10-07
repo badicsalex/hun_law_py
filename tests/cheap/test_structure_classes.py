@@ -246,6 +246,17 @@ def test_next_identifiers_simple_numeric(numeric_cls: Type) -> None:
     assert not numeric_cls.is_next_identifier("2b", "2d")
     assert not numeric_cls.is_next_identifier("3", "2a")
 
+    assert numeric_cls.is_next_identifier("2", "2/a")
+    assert numeric_cls.is_next_identifier("2/b", "2/c")
+    assert numeric_cls.is_next_identifier("2/b", "3")
+
+    assert not numeric_cls.is_next_identifier("2/c", "2/c")
+    assert not numeric_cls.is_next_identifier("2/c", "2/b")
+    assert not numeric_cls.is_next_identifier("2/b", "2")
+    assert not numeric_cls.is_next_identifier("2/b", "1")
+    assert not numeric_cls.is_next_identifier("2/b", "2/d")
+    assert not numeric_cls.is_next_identifier("3", "2/a")
+
 
 def test_next_identifiers_alphabetic() -> None:
     assert AlphabeticPoint.is_next_identifier("c", "d")

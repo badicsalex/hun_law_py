@@ -381,6 +381,8 @@ class NumericPoint(SubArticleElement):
 
     @classmethod
     def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
+        identifier = identifier.replace('/', '')
+        next_identifier = next_identifier.replace('/', '')
         if identifier.isdigit():
             if next_identifier.isdigit():
                 # "1" and "2"

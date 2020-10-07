@@ -535,3 +535,19 @@ def test_amendment_with_multiple_subtitles() -> None:
     article = amended_structure.children[5]
     assert isinstance(article, Article)
     assert article.identifier == '352/C'
+
+
+def test_subpoint_with_slash() -> None:
+    act_text = """
+           19. § (1) A társasági adóról és az osztalékadóról szóló 1996. évi LXXXI. törvény 4. § 44/a. pontja helyébe a következő
+                rendelkezés lép:
+                (E törvény alkalmazásában)
+                „44/a. képzés: a 22/C. § alkalmazásában olyan oktatást tartalmazó képzés, amely nem fontos.”
+    """
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("19").paragraph('1').block_amendment()
+
+    assert amended_structure.children_type is NumericPoint
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 1
+    assert amended_structure.children[0].identifier == '44/a'
