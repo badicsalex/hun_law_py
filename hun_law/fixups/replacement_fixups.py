@@ -1907,5 +1907,23 @@ replacement_fixups: ReplacementsType = {
             "needle": "3. a szociális igazgatásról és szociális ellátásokról szóló 1993. évi III. törvény 4. § (1c) pontjában az „egészségügyi",
             "replacement": "3. a szociális igazgatásról és szociális ellátásokról szóló 1993. évi III. törvény 4. § (1c) bekezdésében az „egészségügyi"
         }
+    ],
+    "2019. évi CIX. törvény": [
+        {
+            "needle": "„77. §/A. § (1) Az MKK folyamatos működésének biztosítása érdekében a központi költségvetésről szóló törvényben",
+            "replacement": "„77/A. § (1) Az MKK folyamatos működésének biztosítása érdekében a központi költségvetésről szóló törvényben"
+        }
+    ],
+    "2019. évi CX. törvény": [
+        {
+            "needle": "kormányhivatal” szöveg lép.”",
+            "replacement": "kormányhivatal” szöveg lép."
+        }
+    ],
+    "2019. évi CXII. törvény": [
+        {
+            "needle": "„44a. képzés: a 22/C. § alkalmazásában olyan oktatást tartalmazó képzés, amely nem kizárólag vagy nem",
+            "replacement": "„44/a. képzés: a 22/C. § alkalmazásában olyan oktatást tartalmazó képzés, amely nem kizárólag vagy nem"
+        }
     ]
 }
