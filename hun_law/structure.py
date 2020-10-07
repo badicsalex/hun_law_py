@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any, Callable
+from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any, Callable, Dict
 import gc
 import inspect
 import sys
@@ -753,6 +753,37 @@ class Reference:
             result = attr.evolve(result, subpoint=result.subpoint[0])
         return result
 
+    def last_in_range(self) -> 'Reference':
+        result = self
+        if isinstance(result.article, tuple):
+            result = attr.evolve(result, article=result.article[1])
+        if isinstance(result.paragraph, tuple):
+            result = attr.evolve(result, paragraph=result.paragraph[1])
+        if isinstance(result.point, tuple):
+            result = attr.evolve(result, point=result.point[1])
+        if isinstance(result.subpoint, tuple):
+            result = attr.evolve(result, subpoint=result.subpoint[1])
+        return result
+
+    @classmethod
+    def make_range(cls, first: 'Reference', last: 'Reference') -> 'Reference':
+        args: Dict[str, ReferencePartType] = {}
+        for k in ('article', 'paragraph', 'point', 'subpoint'):
+            field_first = getattr(first, k)
+            field_last = getattr(last, k)
+            if field_first is None:
+                assert field_last is None
+                args[k] = None
+            else:
+                assert field_last is not None
+                if field_first != field_last:
+                    assert identifier_less(field_first, field_last)
+                    args[k] = (field_first, field_last)
+                else:
+                    args[k] = field_first
+        act = first.act or last.act  # This is not a bool!
+        return cls(act=act, **args)
+
     def parent(self) -> 'Reference':
         if self.subpoint is not None:
             return attr.evolve(self, subpoint=None)
@@ -817,14 +848,15 @@ class Reference:
         return True
 
 
-class RelativePosition(Enum):
-    BEFORE = 1
-    AFTER = 2
+class SubtitleArticleComboType(Enum):
+    BEFORE_WITH_ARTICLE = 1
+    BEFORE_WITHOUT_ARTICLE = 2
+    AFTER_WITHOUT_ARTICLE = 3
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
-class SubtitleReferenceArticleRelative:
-    position: RelativePosition
+class SubtitleArticleCombo:
+    position: SubtitleArticleComboType
     article_id: str
 
 
@@ -835,7 +867,7 @@ class StructuralReference:
     part: Optional[str] = None
     title: Optional[str] = None
     chapter: Optional[str] = None
-    subtitle: Union[str, SubtitleReferenceArticleRelative, None] = None
+    subtitle: Union[str, SubtitleArticleCombo, None] = None
 
     def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'StructuralReference':
         if self.act is None:
@@ -853,20 +885,13 @@ class ActIdAbbreviation:
     act: str
 
 
-BlockAmendmentExpectedType = Type[Union[SubArticleElement, Article, StructuralElement]]
-
-
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class BlockAmendment(SemanticData):
     position: Union[Reference, StructuralReference]
-    expected_type: BlockAmendmentExpectedType
-    expected_id_range: Optional[Tuple[str, str]] = None
-    replaces: Tuple[Union[Reference, StructuralReference], ...] = tuple()
 
     def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'BlockAmendment':
         position = self.position.resolve_abbreviations(abbreviations_map)
-        replaces = tuple(r.resolve_abbreviations(abbreviations_map) for r in self.replaces)
-        return attr.evolve(self, position=position, replaces=replaces)
+        return attr.evolve(self, position=position)
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)

@@ -24,9 +24,8 @@ import tatsu.model
 from hun_law.structure import Reference, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
     Act, SubArticleElement, \
-    ReferencePartType, BlockAmendmentExpectedType,\
-    StructuralReference, SubtitleReferenceArticleRelative, RelativePosition, \
-    Subtitle, Part, Title, Chapter,\
+    ReferencePartType, \
+    StructuralReference, SubtitleArticleCombo, SubtitleArticleComboType,\
     ActIdAbbreviation, OutgoingReference, BlockAmendment, SemanticData, \
     EnforcementDate, DaysAfterPublication, DayInMonthAfterPublication, \
     TextAmendment, Repeal
@@ -235,29 +234,29 @@ class ReferenceConversionHelper:
         return str(text_to_int_hun(book_id))
 
     @classmethod
-    def convert_structural_reference(cls, act_id: str, reference: model.StructuralReference) -> Tuple[BlockAmendmentExpectedType, StructuralReference]:
+    def convert_structural_reference(cls, act_id: str, reference: model.StructuralReference) -> StructuralReference:
         assert reference.id is not None
         if isinstance(reference, model.BeforeArticle):
-            return Subtitle, StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "".join(reference.id)))
+            return StructuralReference(act_id, subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "".join(reference.id)))
 
         if isinstance(reference, model.AfterArticle):
-            return Subtitle, StructuralReference(act_id, subtitle=SubtitleReferenceArticleRelative(RelativePosition.AFTER, "".join(reference.id)))
+            return StructuralReference(act_id, subtitle=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "".join(reference.id)))
 
         if isinstance(reference, model.SubtitleNumber):
-            return Subtitle, StructuralReference(act_id, subtitle="".join(reference.id))
+            return StructuralReference(act_id, subtitle="".join(reference.id))
 
         if isinstance(reference, model.ChapterNumber):
-            return Chapter, StructuralReference(act_id, chapter="".join(reference.id))
+            return StructuralReference(act_id, chapter="".join(reference.id))
 
         if isinstance(reference, model.TitleNumber):
-            return Title, StructuralReference(
+            return StructuralReference(
                 act_id,
                 book=cls.convert_book_id(reference.book_id),
                 title="".join(reference.id),
             )
 
         if isinstance(reference, model.PartNumber):
-            return Part, StructuralReference(
+            return StructuralReference(
                 act_id,
                 book=cls.convert_book_id(reference.book_id),
                 part=str(text_to_int_hun(reference.id)),
@@ -347,51 +346,19 @@ class BlockAmendmentToBlockAmendment(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendment
 
     @classmethod
-    def get_reference_range_and_type(cls, reference: Reference) -> Tuple[Tuple[str, str], Type[Union[SubArticleElement, Article]]]:
-        expected_id_range, expected_type = reference.last_component_with_type()
-
-        assert expected_type is not None
-        assert not issubclass(expected_type, Act)
-
-        assert expected_id_range is not None
-        if isinstance(expected_id_range, str):
-            expected_id_range = (expected_id_range, expected_id_range)
-        return expected_id_range, expected_type
-
-    @classmethod
-    def convert_amendment_only(cls, amended_reference: Reference) -> BlockAmendment:
-        expected_id_range, expected_type = cls.get_reference_range_and_type(amended_reference)
-        return BlockAmendment(
-            expected_type=expected_type,
-            expected_id_range=expected_id_range,
-            position=amended_reference.first_in_range(),
-            replaces=(amended_reference,),
-        )
-
-    @classmethod
-    def convert_insertion_only(cls, inserted_reference: Reference) -> BlockAmendment:
-        expected_id_range, expected_type = cls.get_reference_range_and_type(inserted_reference)
-        return BlockAmendment(
-            expected_type=expected_type,
-            expected_id_range=expected_id_range,
-            position=inserted_reference.first_in_range(),
-        )
-
-    @classmethod
     def convert_amendment_and_insertion(cls, amended_reference: Reference, inserted_reference: Reference) -> BlockAmendment:
-        amended_range, amended_type = cls.get_reference_range_and_type(amended_reference)
-        inserted_range, inserted_type = cls.get_reference_range_and_type(inserted_reference)
-        assert amended_type == inserted_type
-        if amended_type.is_next_identifier(amended_range[1], inserted_range[0]):
-            expected_id_range = (amended_range[0], inserted_range[1])
+        # Act has to be cut off first, because otherwise relative_to does not do anything.
+        inserted_reference = attr.evolve(inserted_reference, act=None).relative_to(amended_reference)
+        if amended_reference.contains(inserted_reference.first_in_range()):
+            # The weird case which amends 1-2, and inserts 1a in between
+            union_reference = amended_reference
         else:
-            # Best effor for the weird case which amends 1-2, and inserts 1a in between
-            expected_id_range = amended_range
+            union_reference = Reference.make_range(
+                amended_reference.first_in_range(),
+                inserted_reference.last_in_range()
+            )
         return BlockAmendment(
-            expected_type=amended_type,
-            expected_id_range=expected_id_range,
-            position=amended_reference.first_in_range(),
-            replaces=(amended_reference,),
+            position=union_reference,
         )
 
     @classmethod
@@ -405,9 +372,9 @@ class BlockAmendmentToBlockAmendment(ModelConverter):
             if inserted_reference:
                 yield cls.convert_amendment_and_insertion(amended_reference, inserted_reference)
             else:
-                yield cls.convert_amendment_only(amended_reference)
+                yield BlockAmendment(position=amended_reference)
         elif inserted_reference is not None:
-            yield cls.convert_insertion_only(inserted_reference)
+            yield BlockAmendment(position=inserted_reference)
         else:
             # One or both references were misparsed probably, or grammar is wrong
             # Don't fail horribly in this case, as the rest of the text is probably
@@ -420,41 +387,23 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendmentWithSubtitle
 
     @classmethod
-    def convert_id_range(cls, reference: Optional[Reference]) -> Optional[Tuple[str, str]]:
-        if reference is None or reference.article is None:
-            return None
-        if isinstance(reference.article, str):
-            return (reference.article, reference.article)
-        return reference.article
-
-    @classmethod
-    def convert_amendment_only(cls, structural_reference: StructuralReference, amended_reference: Reference) -> BlockAmendment:
-        expected_id_range = cls.convert_id_range(amended_reference)
-        if structural_reference.subtitle is None:
-            assert isinstance(amended_reference.article, str)
-            structural_reference = StructuralReference(
-                amended_reference.act,
-                subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, amended_reference.article)
+    def convert_one(cls, structural_reference: StructuralReference, reference: Reference) -> BlockAmendment:
+        if reference.article is not None:
+            article_id = reference.article
+            if isinstance(article_id, tuple):
+                # Don't bother with ranges for now. MAYBE TODO
+                article_id = article_id[0]
+            assert article_id is not None
+            position = StructuralReference(
+                act=reference.act,
+                subtitle=SubtitleArticleCombo(
+                    SubtitleArticleComboType.BEFORE_WITH_ARTICLE,
+                    article_id
+                )
             )
-
-        replaces: Tuple[Union[Reference, StructuralReference], ...] = (structural_reference, )
-        if amended_reference.article is not None:
-            replaces = replaces + (amended_reference, )
-        return BlockAmendment(
-            expected_type=Subtitle,
-            expected_id_range=expected_id_range,
-            position=structural_reference,
-            replaces=replaces,
-        )
-
-    @classmethod
-    def convert_insertion_only(cls, structural_reference: StructuralReference, inserted_reference: Optional[Reference]) -> BlockAmendment:
-        expected_id_range = cls.convert_id_range(inserted_reference)
-        return BlockAmendment(
-            expected_type=Subtitle,
-            expected_id_range=expected_id_range,
-            position=structural_reference,
-        )
+        else:
+            position = structural_reference
+        return BlockAmendment(position=position)
 
     @classmethod
     def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendment]:
@@ -462,7 +411,7 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
 
         if tree_element.structural_reference is not None:
-            _, structural_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.structural_reference)
+            structural_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.structural_reference)
         else:
             structural_reference = StructuralReference(act_id)
         amended_reference = ReferenceConversionHelper.convert_potential_reference(act_id, tree_element.amended_reference)
@@ -471,9 +420,9 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
             if inserted_reference:
                 # TODO. Not even part of the grammar currently either.
                 raise ValueError("Simultaneous insertion and amendments with Subtitles not yet supported")
-            yield cls.convert_amendment_only(structural_reference, amended_reference)
+            yield cls.convert_one(structural_reference, amended_reference)
         else:
-            yield cls.convert_insertion_only(structural_reference, inserted_reference)
+            yield cls.convert_one(structural_reference, inserted_reference)
 
 
 class BlockAmendmentStructuralToBlockAmendment(ModelConverter):
@@ -489,17 +438,14 @@ class BlockAmendmentStructuralToBlockAmendment(ModelConverter):
                 # TODO. Not even part of the grammar currently either.
                 raise ValueError("Simultaneous insertion and amendments with Structural References not yet supported")
 
-            expected_type, amended_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.amended_reference)
+            amended_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.amended_reference)
             yield BlockAmendment(
-                expected_type=expected_type,
                 position=amended_reference,
-                replaces=(amended_reference, ),
             )
         else:
             assert tree_element.inserted_reference is not None
-            expected_type, inserted_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.inserted_reference)
+            inserted_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.inserted_reference)
             yield BlockAmendment(
-                expected_type=expected_type,
                 position=inserted_reference,
             )
 

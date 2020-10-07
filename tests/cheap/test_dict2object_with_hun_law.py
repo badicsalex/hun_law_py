@@ -18,22 +18,18 @@ import json
 
 
 from hun_law.structure import \
-    BlockAmendment, SubtitleReferenceArticleRelative, RelativePosition, \
-    Reference, StructuralReference, \
-    Subtitle
+    BlockAmendment, SubtitleArticleCombo, SubtitleArticleComboType, \
+    StructuralReference
 
 from hun_law import dict2object
 
 
 def test_obj_to_dict_can_handle_specials() -> None:
+    # This also used to test for Type fields, but we no longer have those.
+    # But the dict2object unittests do, so it's properly tested.
+    # This test will remain as a real-world test though.
     test_data = BlockAmendment(
-        expected_type=Subtitle,
-        expected_id_range=("123", "123"),
-        position=StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "123")),
-        replaces=(
-            StructuralReference("Btk.", subtitle=SubtitleReferenceArticleRelative(RelativePosition.BEFORE, "123")),
-            Reference(act="Btk.", article="123"),
-        )
+        position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "123")),
     )
 
     the_dict = dict2object.to_dict(test_data, BlockAmendment)

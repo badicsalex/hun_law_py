@@ -28,7 +28,8 @@ from hun_law.structure import \
     StructuralElement, Subtitle, Chapter, Title, Part, Book,\
     SubArticleElement, Paragraph, AlphabeticSubpoint, NumericSubpoint, NumericPoint, AlphabeticPoint, \
     BlockAmendment, \
-    SubArticleChildType, ActChildType
+    SubArticleChildType, ActChildType, \
+    Reference, StructuralReference
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -786,7 +787,7 @@ class BlockAmendmentStructureParser:
 
         try:
             children: Tuple[SubArticleChildType, ...]
-            if issubclass(metadata.expected_type, StructuralElement):
+            if isinstance(metadata.position, StructuralReference):
                 parsers = cls.create_parsers()
                 children = tuple(ActBodyParser.parse_elements(parsers, lines))
             else:
@@ -829,9 +830,12 @@ class BlockAmendmentStructureParser:
 
     @classmethod
     def get_parser_and_id(cls, metadata: BlockAmendment) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
-        structural_type = metadata.expected_type
-        assert metadata.expected_id_range is not None
-        expected_id = metadata.expected_id_range[0]
+        assert isinstance(metadata.position, Reference)
+        expected_id, structural_type = metadata.position.last_component_with_type()
+        if isinstance(expected_id, tuple):
+            expected_id = expected_id[0]
+        assert expected_id is not None
+        assert structural_type is not None
         if structural_type is AlphabeticSubpoint and len(expected_id) != 1:
             # TODO: let's hope it is not a two-letter subpoint like "ny"
             return get_prefixed_alphabetic_subpoint_parser(expected_id[:-1]), expected_id

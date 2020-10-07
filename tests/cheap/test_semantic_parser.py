@@ -23,7 +23,7 @@ import attr
 from hun_law.structure import Act, OutgoingReference, Reference, \
     SemanticData, BlockAmendment, Repeal, TextAmendment, \
     ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
-    Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, BlockAmendmentContainer
+    Article, Paragraph, AlphabeticPoint, BlockAmendmentContainer
 
 from hun_law.utils import Date
 from hun_law.parsers.semantic_parser import ActSemanticsParser
@@ -92,12 +92,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                     ref("2012. évi CXLVII. törvény"),
                     ref("2012. évi CXLVII. törvény", "2", None, ("19", "20")),
                     BlockAmendment(
-                        position=ref('2012. évi CXLVII. törvény', '2', None, '19'),
-                        expected_type=NumericPoint,
-                        expected_id_range=('19', '20'),
-                        replaces=(
-                            ref('2012. évi CXLVII. törvény', '2', None, ('19', '20')),
-                        )
+                        position=ref('2012. évi CXLVII. törvény', '2', None, ('19', '20')),
                     )
                 ),
             ),
@@ -222,11 +217,6 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                     ref("2011. évi LXXV. törvény", "1", "1", "1", "c"),
                     BlockAmendment(
                         position=ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
-                        expected_type=AlphabeticSubpoint,
-                        expected_id_range=('c', 'c'),
-                        replaces=(
-                            ref('2011. évi LXXV. törvény', '1', '1', '1', 'c'),
-                        )
                     ),
                 ),
             ),
@@ -237,11 +227,6 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                     ref("2011. évi LXXV. törvény", "1", "1", "4"),
                     BlockAmendment(
                         position=ref("2011. évi LXXV. törvény", "1", "1", "4"),
-                        expected_type=NumericPoint,
-                        expected_id_range=('4', '4'),
-                        replaces=(
-                            ref("2011. évi LXXV. törvény", "1", "1", "4"),
-                        )
                     ),
                 ),
             ),
@@ -327,11 +312,6 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                     ref("2020. évi III. törvény", "12", "8"),
                     BlockAmendment(
                         position=ref("2020. évi III. törvény", "12", "8"),
-                        expected_type=Paragraph,
-                        expected_id_range=('8', '8'),
-                        replaces=(
-                            ref("2020. évi III. törvény", "12", "8"),
-                        )
                     )
                 ),
             ),
@@ -528,11 +508,6 @@ def test_semantic_reparse_simple() -> None:
     assert with_semantics_1.article('4').paragraph().semantic_data == (
         BlockAmendment(
             position=Reference(act='2041. évi XXX. törvény', article='12', paragraph='8'),
-            expected_type=Paragraph,
-            expected_id_range=('8', '8'),
-            replaces=(
-                Reference(act='2041. évi XXX. törvény', article='12', paragraph='8'),
-            )
         ),
     )
 
@@ -715,11 +690,6 @@ def test_semantic_reparse_abbrevs() -> None:
     assert modified_with_semantics.article('4').paragraph().semantic_data == (
         BlockAmendment(
             position=Reference(act='2057. évi X. törvény', article='12', paragraph='8'),
-            expected_type=Paragraph,
-            expected_id_range=('8', '8'),
-            replaces=(
-                Reference(act='2057. évi X. törvény', article='12', paragraph='8'),
-            )
         ),
     )
 
