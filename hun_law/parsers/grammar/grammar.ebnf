@@ -190,8 +190,15 @@ structural_position_reference =
     | structural_reference:(>any_structural_reference)
     ;
 
+# This rule means: skip everything until an act_reference,
+# except if the found reference continues with "hatálybalépésével összefüggő"
+# in that case, jsut continue skipping
+act_title =
+    { !(act_reference !"hatálybalépésével összefüggő") any_token }*
+    ;
+
 block_amendment::BlockAmendment
-    = /[Aa]z?/ {  !act_reference any_token }* act_reference:act_reference [>structural_position_reference]
+    = /[Aa]z?/ act_title act_reference:act_reference [>structural_position_reference]
     (
         # non-subtitle cases
         amended_reference:reference amendment_suffix ":" |
@@ -200,7 +207,7 @@ block_amendment::BlockAmendment
     );
 
 block_amendment_with_subtitle::BlockAmendmentWithSubtitle
-    = /[Aa]z?/ {  !act_reference any_token }* act_reference:act_reference [>structural_position_reference]
+    = /[Aa]z?/ act_title act_reference:act_reference [>structural_position_reference]
     (
         amended_reference:reference_with_subtitle amendment_suffix ":" |
         amended_reference:reference_with_subtitle amendment_suffix_with_subtitle ":" |
@@ -208,7 +215,7 @@ block_amendment_with_subtitle::BlockAmendmentWithSubtitle
     );
 
 block_amendment_structural::BlockAmendmentStructural
-    = /[Aa]z?/ {  !act_reference any_token }* act_reference:act_reference
+    = /[Aa]z?/ act_title act_reference:act_reference
     (
         # structural cases
         amended_reference:any_structural_reference amendment_suffix ":" |
@@ -263,7 +270,7 @@ enforcement_date::EnforcementDate =
 # ============ TEXT AMENDMENT PARSING ==============
 
 text_amendment::TextAmendment =
-    /[Aa]z?/ { !act_reference any_token }* act_reference:act_reference
+    /[Aa]z?/ act_title act_reference:act_reference
     { references+:reference [list_separator [az]] }+
     { parts+:text_amendment_part [list_separator [az]] }+
     "lép" ["hatályba"] "."
@@ -280,7 +287,7 @@ text_amendment_part::TextAmendmentPart =
 
 repeal::Repeal =
     ("Nem lép hatályba" | "Hatályát veszti")
-    az { !act_reference any_token }* act_reference:act_reference
+    az act_title act_reference:act_reference
     { references+:reference [list_separator [az]] }+
     { [az] texts+:quote ["szövegrész"] [list_separator [az]]}*
     "."

@@ -502,6 +502,15 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
             replaces=(ref("Ht.", "42", ("1", "2")),),
         ),
     ),
+    (
+        "A Polgári Törvénykönyvről szóló 2013. évi V. törvény hatálybalépésével összefüggő átmeneti és felhatalmazó rendelkezésekről szóló 2013. évi CLXXVII. törvény 5. alcíme a következő 12/A. §-sal egészül ki:",
+        BlockAmendment(
+            expected_type=Article,
+            expected_id_range=("12/A", "12/A"),
+            position=ref("2013. évi CLXXVII. törvény", "12/A"),
+        ),
+    ),
+
 )
 
 # TODO:
