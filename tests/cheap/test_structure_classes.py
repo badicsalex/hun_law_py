@@ -368,7 +368,8 @@ def test_at_reference() -> None:
 def test_map_articles() -> None:
     times_called = 0
 
-    def article_modifier(a: Article) -> Article:
+    def article_modifier(r: Reference, a: Article) -> Article:
+        assert r.article == a.identifier
         if a.identifier != '2:1/A':
             return a
         nonlocal times_called
@@ -379,6 +380,21 @@ def test_map_articles() -> None:
     assert times_called == 1
     assert modified_act.article("2:1") is TEST_STRUCTURE.article("2:1")
     assert modified_act.article("2:2") is TEST_STRUCTURE.article("2:2")
+    assert modified_act.article("2:1/A").title == "Modified"
+
+
+def test_map_articles_with_filter() -> None:
+    times_called = 0
+
+    def article_modifier(_r: Reference, a: Article) -> Article:
+        nonlocal times_called
+        times_called = times_called + 1
+        return attr.evolve(a, title="Modified")
+
+    modified_act = TEST_STRUCTURE.map_articles(article_modifier, Reference('2345. évi XD. törvény', ('2:1', '2:1/A')))
+    assert times_called == 2
+    assert modified_act.article("2:2") is TEST_STRUCTURE.article("2:2")
+    assert modified_act.article("2:1").title == "Modified"
     assert modified_act.article("2:1/A").title == "Modified"
 
 

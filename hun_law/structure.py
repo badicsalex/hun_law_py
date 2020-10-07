@@ -663,15 +663,21 @@ class Act:
             )
         )
 
-    def map_articles(self, modifier: Callable[['Article'], 'Article']) -> 'Act':
+    def map_articles(
+        self,
+        modifier: Callable[['Reference', 'Article'], 'Article'],
+        filter_for_reference: Optional['Reference'] = None,
+    ) -> 'Act':
         new_children = []
         children_changed = False
         for child in self.children:
             if isinstance(child, Article):
-                new_child = modifier(child)
-                if new_child is not child:
-                    child = new_child
-                    children_changed = True
+                article_reference = Reference(self.identifier, child.identifier)
+                if filter_for_reference is None or filter_for_reference.contains(article_reference):
+                    new_child = modifier(article_reference, child)
+                    if new_child is not child:
+                        child = new_child
+                        children_changed = True
             new_children.append(child)
         if not children_changed:
             return self
@@ -682,8 +688,8 @@ class Act:
         modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
         filter_for_reference: Optional['Reference'] = None
     ) -> 'Act':
-        def article_modifier(article: Article) -> Article:
-            return article.map_recursive(Reference(self.identifier, article.identifier), modifier, filter_for_reference)
+        def article_modifier(_reference: Reference, article: Article) -> Article:
+            return article.map_recursive(Reference(self.identifier), modifier, filter_for_reference)
         return self.map_articles(article_modifier)
 
 
