@@ -37,7 +37,7 @@ class SemanticParseState:
 
 
 class ActSemanticsParser:
-    INTERESTING_SUBSTRINGS = (")", "§", "törvén")
+    INTERESTING_SUBSTRINGS = (")", "§", "törvén", "hely", "hatály")
 
     @classmethod
     def add_semantics_to_act(cls, act: Act) -> Act:

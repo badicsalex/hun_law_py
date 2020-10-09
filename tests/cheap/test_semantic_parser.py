@@ -20,7 +20,7 @@ from typing import List, Tuple, Union
 import pytest
 import attr
 
-from hun_law.structure import Act, OutgoingReference, Reference, \
+from hun_law.structure import Act, OutgoingReference, Reference, StructuralReference,\
     SemanticData, BlockAmendment, Repeal, TextAmendment, \
     ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
     Article, Paragraph, AlphabeticPoint, BlockAmendmentContainer
@@ -317,6 +317,25 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
             ),
         ),
     ),
+    (
+        """
+            17. § A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:
+                 „VIII. CÍM
+                 NEM
+
+                     1. § Pls no.
+                 ”
+        """,
+        (
+            (
+                ref(None, "17"), (
+                    BlockAmendment(
+                        position=StructuralReference(act='Ptk.', book='3', part=None, title='VIII', chapter=None, subtitle=None)
+                    ),
+                ),
+            ),
+        ),
+    ),
 ]
 
 CASES_WITH_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, OutgoingReference], ...]]] = [
@@ -385,7 +404,7 @@ def quick_parse_with_semantics(act_text: str) -> Act:
     return ActSemanticsParser.add_semantics_to_act(act)
 
 
-@ pytest.mark.parametrize("act_text,act_data", CASES_WITHOUT_POSITIONS)  # type: ignore
+@pytest.mark.parametrize("act_text,act_data", CASES_WITHOUT_POSITIONS)  # type: ignore
 def test_outgoing_references_without_position(act_text: str, act_data: Tuple[Tuple[Reference, Tuple[Union[Reference, SemanticData], ...]], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
     assert act.is_semantic_parsed
@@ -399,7 +418,7 @@ def test_outgoing_references_without_position(act_text: str, act_data: Tuple[Tup
         assert element.semantic_data == expected_semantic_data
 
 
-@ pytest.mark.parametrize("act_text,act_data", CASES_WITH_POSITIONS)  # type: ignore
+@pytest.mark.parametrize("act_text,act_data", CASES_WITH_POSITIONS)  # type: ignore
 def test_outgoing_ref_positions_are_okay(act_text: str, act_data: Tuple[Tuple[Reference, OutgoingReference], ...]) -> None:
     act = quick_parse_with_semantics(act_text)
     assert act.is_semantic_parsed
