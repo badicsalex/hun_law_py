@@ -698,7 +698,7 @@ class Act:
 ReferencePartType = Union[None, str, Tuple[str, str]]
 
 
-@attr.s(slots=True, frozen=True, auto_attribs=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True, order=False)
 class Reference:
     # TODO: There is some weird pylint bug with tuples.
     # Something like https://github.com/PyCQA/pylint/issues/3139
@@ -709,6 +709,40 @@ class Reference:
     paragraph: ReferencePartType = None
     point: ReferencePartType = None
     subpoint: ReferencePartType = None
+
+    def __lt_gt(self, other: 'Reference', lt: bool) -> bool:
+        # We have to do this, because MyPy doesn't support @total_ordering:
+        # https://github.com/python/mypy/issues/4610
+        if not isinstance(other, Reference):
+            return NotImplemented
+        for component_name in 'act', 'article', 'paragraph', 'point', 'subpoint':
+            self_component = getattr(self, component_name)
+            other_component = getattr(other, component_name)
+            if isinstance(self_component, tuple) or isinstance(other_component, tuple):
+                raise ValueError("Cannot compare reference ranges", (self, other))
+            if self_component != other_component:
+                if self_component is None:
+                    # TODO: check other self components
+                    return lt
+                if other_component is None:
+                    return not lt
+                if lt:
+                    return identifier_less(self_component, other_component)
+                return identifier_less(other_component, self_component)
+
+        return False
+
+    def __lt__(self, other: 'Reference') -> bool:
+        return self.__lt_gt(other, True)
+
+    def __gt__(self, other: 'Reference') -> bool:
+        return self.__lt_gt(other, False)
+
+    def __le__(self, other: 'Reference') -> bool:
+        return self == other or self.__lt_gt(other, True)
+
+    def __ge__(self, other: 'Reference') -> bool:
+        return self == other or self.__lt_gt(other, False)
 
     def is_relative(self) -> bool:
         return self.act is None
@@ -795,6 +829,15 @@ class Reference:
             return attr.evolve(self, article=None)
         return Reference()
 
+    def is_parent_of(self, other: 'Reference') -> bool:
+        for component_name in 'act', 'article', 'paragraph', 'point', 'subpoint':
+            self_component = getattr(self, component_name)
+            other_component = getattr(other, component_name)
+            # MAYBE TODO: Assert for not being a range
+            if self_component != other_component:
+                return self_component is None
+        return False
+
     def last_component_with_type(self) -> Tuple[ReferencePartType, Optional[Type[Union[SubArticleElement, Article, Act]]]]:
         # Thanks pylint, but this is the simplest form of this function.
         # pylint: disable=too-many-return-statements
@@ -828,24 +871,20 @@ class Reference:
         return attr.evolve(self, act=abbreviations_map[self.act])
 
     def contains(self, other: 'Reference') -> bool:
-        self_should_be_none = False
-        for component_name in 'article', 'paragraph', 'point', 'subpoint':
-            self_component = getattr(self, component_name)
-            other_component = getattr(other, component_name)
-            if self_should_be_none and self_component is not None:
-                return False
-            if isinstance(self_component, tuple):
-                if isinstance(other_component, tuple):
-                    raise ValueError("Contains does not work with two ranges")
-                if other_component is not None:
-                    return not identifier_less(other_component, self_component[0]) and \
-                        not identifier_less(self_component[1], other_component)
-            if self_component != other_component:
-                if self_component is not None:
-                    return False
-                self_should_be_none = True
-
-        return True
+        self_first = self.first_in_range()
+        self_last = self.last_in_range()
+        other_first = other.first_in_range()
+        other_last = other.last_in_range()
+        return (
+            (
+                (self_first <= other_first) or
+                (self_first.is_parent_of(other_first))
+            ) and
+            (
+                (self_last >= other_last) or
+                (self_last.is_parent_of(other_last))
+            )
+        )
 
 
 class SubtitleArticleComboType(Enum):

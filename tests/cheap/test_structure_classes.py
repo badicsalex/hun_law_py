@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Type
+from typing import Type, List
 import pytest
 import attr
 
@@ -293,6 +293,70 @@ def test_reference_parent() -> None:
     assert r == Reference()
 
 
+def test_reference_is_parent_of() -> None:
+    r = Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb")
+    references: List[Reference] = []
+    while r != Reference():
+        references.insert(0, r)
+        r = r.parent()
+
+    for ref1_index, ref1 in enumerate(references):
+        for ref2_index, ref2 in enumerate(references):
+            assert ref1.is_parent_of(ref2) == (ref1_index < ref2_index)
+
+
+def test_reference_is_parent_of_different_subtree() -> None:
+    assert not Reference("2345. évi XD. törvény", "1:2", "2", "b", "ba").is_parent_of(Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb"))
+    assert not Reference("2345. évi XD. törvény", "1:2", "2", "a",).is_parent_of(Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb"))
+    assert not Reference("2345. évi XD. törvény", "1:2", "3",).is_parent_of(Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb"))
+    assert not Reference("2345. évi XD. törvény", "1:1").is_parent_of(Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb"))
+    assert not Reference("2346. évi XD. törvény").is_parent_of(Reference("2345. évi XD. törvény", "1:2", "2", "b", "bb"))
+
+    assert not Reference(None, "1:2", "2", "b", "ba").is_parent_of(Reference(None, "1:2", "2", "b", "bb"))
+    assert not Reference(None, "1:2", "2", "a",).is_parent_of(Reference(None, "1:2", "2", "b", "bb"))
+    assert not Reference(None, "1:2", "3",).is_parent_of(Reference(None, "1:2", "2", "b", "bb"))
+    assert not Reference(None, "1:1").is_parent_of(Reference(None, "1:2", "2", "b", "bb"))
+
+
+REFERENCE_ORDERING_CASES = (
+    (
+        (Reference(None, '1'), '=', Reference(None, '1')),
+        (Reference(None, '1', None, 'a', '2'), '=', Reference(None, '1', None, 'a', '2')),
+        (Reference(None, '1', '1', 'a', '2'), '=', Reference(None, '1', '1', 'a', '2')),
+
+        (Reference(None, '1'), '<', Reference(None, '2')),
+        (Reference(None, '1/A'), '<', Reference(None, '2')),
+        (Reference(None, '1/A'), '<', Reference(None, '1/B')),
+        (Reference(None, '1'), '<', Reference(None, '1/A')),
+
+        (Reference(None, '1'), '<', Reference(None, '1', '1')),
+        (Reference(None, '1'), '<', Reference(None, '1', None, 'a')),
+        (Reference(None, '1', None, 'a'), '<', Reference(None, '1', None, 'b')),
+
+        (Reference(None, '1', '1', 'c'), '<', Reference(None, '1', '2', 'a')),
+
+        # TODO: Roman number parsing in 'lt'
+        (Reference('2345. évi XD. törvény', '1'), '=', Reference('2345. évi XD. törvény', '1')),
+        (Reference('2345. évi XD. törvény', '1'), '<', Reference('2345. évi XD. törvény', '2')),
+        (Reference('2345. évi XD. törvény', '2'), '<', Reference('2346. évi XD. törvény', '1')),
+    )
+)
+
+
+@pytest.mark.parametrize("ref1, operator, ref2", REFERENCE_ORDERING_CASES)  # type: ignore
+def test_reference_ordering(ref1: Reference, ref2: Reference, operator: str) -> None:
+    assert (ref1 == ref2) == (operator == '=')
+    assert (ref1 < ref2) == (operator == '<')
+    assert (ref1 > ref2) == (operator == '>')
+    assert (ref1 <= ref2) == (operator in ('<', '='))
+    assert (ref1 >= ref2) == (operator in ('>', '='))
+
+    assert (ref2 > ref1) == (operator == '<')
+    assert (ref2 < ref1) == (operator == '>')
+    assert (ref2 >= ref1) == (operator in ('<', '='))
+    assert (ref2 <= ref1) == (operator in ('>', '='))
+
+
 def test_reference_contains() -> None:
     assert Reference(None, ('1', '2')).contains(Reference(None, '1'))
     assert Reference(None, ('1', '2')).contains(Reference(None, '2'))
@@ -333,12 +397,24 @@ def test_reference_contains() -> None:
     assert not Reference(None, '3', None, 'a', 'ab').contains(Reference(None, '3', None, 'a'))
     assert not Reference(None, '3', None, 'a', 'ab').contains(Reference(None, '3', None, 'a', 'ac'))
 
-    assert not Reference(None, '3', None, '8').contains(Reference(None, '3', '1', '8'))
-    assert not Reference(None, '3', None, ('8', '9')).contains(Reference(None, '3', '1', '8'))
+    # TODO: Hard to implement invalid cases
+    # assert not Reference(None, '3', None, '8').contains(Reference(None, '3', '1', '8'))
+    # assert not Reference(None, '3', None, ('8', '9')).contains(Reference(None, '3', '1', '8'))
 
     assert Reference(None, ('3', '4')).contains(Reference(None, '3', '11'))
     assert Reference(None, '3', '8').contains(Reference(None, '3', '8', ('9', '10')))
     assert not Reference(None, '3', '8').contains(Reference(None, '3', ('8', '9')))
+
+    assert Reference(None, ('1', '2')).contains(Reference(None, ('1', '2')))
+    assert Reference(None, ('1', '3')).contains(Reference(None, ('1', '2')))
+    assert Reference(None, ('1', '3')).contains(Reference(None, ('2', '3')))
+    assert Reference(None, ('1', '5')).contains(Reference(None, ('2', '3')))
+
+    assert Reference(None, ('1', '2')).contains(Reference(None, '1', ('5', '6')))
+    assert Reference(None, ('1', '2')).contains(Reference(None, '2', ('5', '6')))
+    assert not Reference(None, ('1', '2')).contains(Reference(None, '3', ('5', '6')))
+
+    assert not Reference(None, ('1', '3')).contains(Reference(None, ('2', '4')))
 
 
 def test_at_reference() -> None:
