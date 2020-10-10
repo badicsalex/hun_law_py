@@ -82,6 +82,7 @@ from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_n
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class StructuralElement(ABC):
+    PARENT_TYPES: ClassVar[Tuple[Type['StructuralElement'], ...]] = ()
     identifier: str = attr.ib()
     title: str
 
@@ -96,6 +97,8 @@ class Book(StructuralElement):
     # 38. §, Könyv
     # Example:
     # NYOLCADIK KÖNYV
+    PARENT_TYPES = ()
+
     @property
     def formatted_identifier(self) -> str:
         return "{} KÖNYV".format(int_to_text_hun(int(self.identifier)).upper())
@@ -107,6 +110,7 @@ class Part(StructuralElement):
     # Example:
     # MÁSODIK RÉSZ
     # KÜLÖNÖS RÉSZ
+    PARENT_TYPES = (Book, )
 
     # 39. § (5)
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ', None)
@@ -123,6 +127,8 @@ class Title(StructuralElement):
     # Nonconformant structural type, present only in PTK
     # Example:
     # XXI. CÍM
+    PARENT_TYPES = (Book, Part)
+
     @property
     def formatted_identifier(self) -> str:
         # TODO: special parts
@@ -136,6 +142,8 @@ class Chapter(StructuralElement):
     # II. FEJEZET
     # IV. Fejezet
     # XXIII. fejezet  <=  not conformant, but present in e.g. PTK
+    PARENT_TYPES = (Book, Part, Title)
+
     @property
     def formatted_identifier(self) -> str:
         # TODO: special parts
@@ -150,6 +158,7 @@ class Subtitle(StructuralElement):
     # 17. Az alcím
     #
     # For older acts, there is no number, only a text.
+    PARENT_TYPES = (Book, Part, Title, Chapter)
 
     @property
     def formatted_identifier(self) -> str:
