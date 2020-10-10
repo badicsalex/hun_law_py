@@ -107,7 +107,7 @@ abbreviation::Abbreviation = s:/[A-ZÉÁŐÚÖÜÓÍŰ][a-zéáőúöüóíű]+\
 
 quote = "„" /[^„”]*/ { quote /[^„”]*/ }* "”" ;
 
-list_separator = ([","] ("és" | "valamint" | "illetve" | "vagy")) | ",";
+list_separator = (["," | ";"] ("és" | "valamint" | "illetve" | "vagy")) | "," | ";";
 
 # ============= STRUCTURAL REFERENCES =============
 

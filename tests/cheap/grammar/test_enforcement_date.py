@@ -274,6 +274,31 @@ CASES: Tuple[Tuple[str, Tuple[EnforcementDate, ...]], ...] = (
             EnforcementDate(position=None, date=Date(2018, 11, 1), repeal_date=Date(2022, 12, 31)),
         )
     ),
+    (
+        "A 4. § (2) bekezdése; a 9. § (2) bekezdése; a 12. § (2) bekezdése; a 21. §; a 28. § (7) bekezdése; a 29. § (1) bekezdése; a 31. § (2)–(3) bekezdése; a 32. § (2) bekezdése; a 34. § (2) bekezdése; a 40. § (3)–(4) bekezdése; a 42. § (1) bekezdése; a 47. § (2) bekezdése; a 63. § (2) bekezdése; a 65. § (1) bekezdése; a 69. § (4)–(5) bekezdése; a 76. § (7)–(8) bekezdése; a 81. § (1) bekezdése; a 84. § (1)–(2) bekezdése; a 87. §; a 96. § 2021. január 1-jén lép hatályba.",
+        (
+            EnforcementDate(position=ref(None, '4', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '9', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '12', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '21'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '28', '7'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '29', '1'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '31', ('2', '3')), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '32', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '34', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '40', ('3', '4')), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '42', '1'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '47', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '63', '2'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '65', '1'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '69', ('4', '5')), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '76', ('7', '8')), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '81', '1'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '84', ('1', '2')), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '87'), date=Date(2021, 1, 1)),
+            EnforcementDate(position=ref(None, '96'), date=Date(2021, 1, 1)),
+        )
+    ),
 )
 
 # TODO: Special
