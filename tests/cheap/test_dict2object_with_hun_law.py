@@ -29,7 +29,7 @@ def test_obj_to_dict_can_handle_specials() -> None:
     # But the dict2object unittests do, so it's properly tested.
     # This test will remain as a real-world test though.
     test_data = BlockAmendment(
-        position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "123")),
+        position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "123")),
     )
 
     the_dict = dict2object.to_dict(test_data, BlockAmendment)

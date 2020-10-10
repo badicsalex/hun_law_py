@@ -237,10 +237,10 @@ class ReferenceConversionHelper:
     def convert_structural_reference(cls, act_id: str, reference: model.StructuralReference) -> StructuralReference:
         assert reference.id is not None
         if isinstance(reference, model.BeforeArticle):
-            return StructuralReference(act_id, subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "".join(reference.id)))
+            return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "".join(reference.id)))
 
         if isinstance(reference, model.AfterArticle):
-            return StructuralReference(act_id, subtitle=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "".join(reference.id)))
+            return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "".join(reference.id)))
 
         if isinstance(reference, model.SubtitleNumber):
             return StructuralReference(act_id, subtitle="".join(reference.id))
@@ -396,7 +396,7 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
             assert article_id is not None
             position = StructuralReference(
                 act=reference.act,
-                subtitle=SubtitleArticleCombo(
+                special=SubtitleArticleCombo(
                     SubtitleArticleComboType.BEFORE_WITH_ARTICLE,
                     article_id
                 )

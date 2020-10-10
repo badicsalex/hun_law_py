@@ -194,25 +194,25 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
     (
         "A Btk. XX. Fejezete a következő alcímmel és 212/A. §-sal kiegészülve lép hatályba:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "212/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "212/A")),
         )
     ),
     (
         "A Btk. 349. §-a és a megelőző alcím helyébe a következő rendelkezés és alcím lép:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "349")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "349")),
         )
     ),
     (
         "A Btk. a 300. §-t megelőzően a következő alcímmel egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "300")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "300")),
         )
     ),
     (
         "A Btk. XXVII. Fejezete a következő alcímmel és 300/A. §-sal egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "300/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "300/A")),
         )
     ),
     (
@@ -230,13 +230,13 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
     (
         "A Btk. a 404. §-t követően a következő alcímmel és 404/A. §-sal kiegészülve lép hatályba:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "404/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "404/A")),
         ),
     ),
     (
         "A Btk. a következő 226/A. §-sal és az azt megelőző alcímmel egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "226/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "226/A")),
         ),
     ),
     (
@@ -248,13 +248,13 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
     (
         "A Btk. XXIV. Fejezete a következő alcímmel és 261/A. §-sal egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "261/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "261/A")),
         ),
     ),
     (
         "A Btk. 388/A. §-a és az azt megelőző alcím helyébe a következő alcím és rendelkezés lép:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "388/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "388/A")),
         ),
     ),
     (
@@ -262,49 +262,49 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         BlockAmendment(
             # Not a range here, because this is more of an insertion point.
             # MAYBE TODO
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "352/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "352/A")),
         ),
     ),
     (
         "A Btk. a következő alcímmel és 410/A. §-sal egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "410/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "410/A")),
         ),
     ),
     (
         "A Btk. 411. §-át megelőző alcím címe és 411. §-a helyébe a következő rendelkezés lép:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "411")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "411")),
         ),
     ),
     (
         "A Btk. IX. Fejezete a 92/A. §-t követően a következő alcímmel egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "92/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "92/A")),
         ),
     ),
     (
         "A Btk. 83. §-t megelőző alcím helyébe a következő alcím lép:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "83")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "83")),
         ),
     ),
     (
         "A Btk. a 124. §-t követően a következő alcímmel és 124/A. §-sal egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "124/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "124/A")),
         ),
     ),
     (
         "Az elektronikus információszabadságról szóló 2005. évi XC. törvény (a továbbiakban: Einfotv.) 12. §-át megelőző alcíme helyébe a következő alcím lép:",
         BlockAmendment(
-            position=StructuralReference("2005. évi XC. törvény", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "12")),
+            position=StructuralReference("2005. évi XC. törvény", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "12")),
         )
     ),
     (
         "A Büntető Törvénykönyvről szóló 2012. évi C. törvény 350. §-a és az azt megelőző alcím-megjelölése helyébe a következő rendelkezés lép:",
         BlockAmendment(
-            position=StructuralReference("2012. évi C. törvény", subtitle=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "350")),
+            position=StructuralReference("2012. évi C. törvény", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "350")),
         )
     ),
     (

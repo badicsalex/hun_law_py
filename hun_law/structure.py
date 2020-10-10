@@ -906,7 +906,8 @@ class StructuralReference:
     part: Optional[str] = None
     title: Optional[str] = None
     chapter: Optional[str] = None
-    subtitle: Union[str, SubtitleArticleCombo, None] = None
+    subtitle: Optional[str] = None
+    special: Union[SubtitleArticleCombo, None] = None
 
     def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'StructuralReference':
         if self.act is None:
