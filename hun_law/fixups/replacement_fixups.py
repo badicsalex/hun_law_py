@@ -923,8 +923,51 @@ replacement_fixups: ReplacementsType = {
     ],
     "2013. évi CXXXV. törvény": [
         {
+            "needle": "41. § A polgári törvénykönyvről szóló 2013. évi V. tv. a 3:297. §-a a következő szöveggel lép hatályba:",
+            "replacement": "41. § A polgári törvénykönyvről szóló 2013. évi V. tv. 3:297. §-a a következő szöveggel lép hatályba:"
+        },
+        {
+            "needle": "„Az átváltozó kötvény",
+            "needle_prev_lines": [
+                "kiegészülve lép hatályba:"
+            ],
+            "replacement": "„3:240/A. § [Az átváltozó kötvény]"
+        },
+        {
+            "needle": "3:240/A. § (1) A részvénytársaság alaptőkéjének feléig forgalomba hozhat olyan névre szóló kötvényt, amely egy",
+            "replacement": "(1) A részvénytársaság alaptőkéjének feléig forgalomba hozhat olyan névre szóló kötvényt, amely egy"
+        },
+        {
+            "needle": "„Elsőbbségi jog gyakorlása",
+            "replacement": "„3:297. § Elsőbbségi jog gyakorlása"
+        },
+        {
+            "needle": "„3:297. § Elsőbbségi jog gyakorlása",
+            "replacement": "„3:297. § [Elsőbbségi jog gyakorlása]"
+        },
+        {
+            "needle": "„5. Alaptőke-emelés átváltoztatható kötvények részvénnyé alakításával,",
+            "replacement": "„"
+        },
+        {
+            "needle": "ill. átváltozó kötvények részvénnyé alakulásával",
+            "replacement": ""
+        },
+        {
+            "needle": "3:303. § [Feltételes alaptőke-emelés]",
+            "replacement": ""
+        },
+        {
+            "needle": "„",
+            "replacement": ""
+        },
+        {
+            "needle": "(1) A részvénytársaság feltételes alaptőke-emelést határozhat el átváltoztatható, ill. átváltozó kötvények forgalomba",
+            "replacement": "„(1) A részvénytársaság feltételes alaptőke-emelést határozhat el átváltoztatható, ill. átváltozó kötvények forgalomba"
+        },
+        {
             "needle": "42. § A polgári törvénykönyvről szóló 2013. évi V. tv. 3:303. § (1)–(3) bekezdése a következő szöveggel lép hatályba:",
-            "replacement": "42. § A polgári törvénykönyvről szóló 2013. évi V. törvény 3:303. §-a és az azt megelőző alcím a következő szöveggel lép hatályba:"
+            "replacement": "42. § A polgári törvénykönyvről szóló 2013. évi V. tv. 3:303. § (1)–(5) bekezdése a következő szöveggel lép hatályba:"
         }
     ],
     "2013. évi LII. törvény": [
