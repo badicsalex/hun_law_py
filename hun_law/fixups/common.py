@@ -108,31 +108,27 @@ def replace_line_content(needle: str, replacement: str, *, needle_prev_lines: Op
             )
             if l.content != needle or not needle_prev_lines_are_same:
                 result.append(l)
-            else:
+            elif replacement:
                 # TODO: slicability depends on the part replaced.
                 common_prefix = l.slice(0, common_prefix_len)
                 replacement_indent = l.slice(common_prefix_len).indent
-                if common_postfix_len != 0:
+                if common_postfix_len:
+                    replacement_part_s = replacement[common_prefix_len: -common_postfix_len]
                     common_postfix = l.slice(-common_postfix_len)
-                    replacement_part = IndentedLine((
-                        IndentedLinePart(
-                            replacement_indent,
-                            replacement[common_prefix_len: -common_postfix_len]
-                        ),
-                    ))
-                    to_append = IndentedLine.from_multiple(common_prefix, replacement_part, common_postfix)
                 else:
-                    replacement_part = IndentedLine(
-                        (
-                            IndentedLinePart(
-                                replacement_indent,
-                                replacement[common_prefix_len:]
-                            ),
-                        ),
-                        l.margin_right
-                    )
-                    to_append = IndentedLine.from_multiple(common_prefix, replacement_part)
+                    replacement_part_s = replacement[common_prefix_len:]
+                    common_postfix = IndentedLine((), l.margin_right)
+                replacement_part = IndentedLine((
+                    IndentedLinePart(
+                        replacement_indent,
+                        replacement_part_s
+                    ),
+                ))
+                to_append = IndentedLine.from_multiple(common_prefix, replacement_part, common_postfix)
                 result.append(to_append)
+                needle_count = needle_count + 1
+            else:
+                # Do nothing, delete line.
                 needle_count = needle_count + 1
 
         if needle_count == 0:
