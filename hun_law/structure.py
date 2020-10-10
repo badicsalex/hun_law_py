@@ -927,6 +927,25 @@ class StructuralReference:
         # abbreviation or not right now.
         return attr.evolve(self, act=abbreviations_map[self.act])
 
+    def last_component_with_type(self) -> Tuple[Optional[str], Optional[Type[Union[Act, StructuralElement]]]]:
+        # Thanks pylint, but this is the simplest form of this function.
+        # pylint: disable=too-many-return-statements
+        if self.special is not None:
+            raise ValueError("last_component_with_type is not supported for special Structural References")
+        if self.subtitle is not None:
+            return self.subtitle, Subtitle
+        if self.chapter is not None:
+            return self.chapter, Chapter
+        if self.title is not None:
+            return self.title, Title
+        if self.part is not None:
+            return self.part, Part
+        if self.book is not None:
+            return self.book, Book
+        if self.act is not None:
+            return self.act, Act
+        return None, None
+
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class ActIdAbbreviation:
