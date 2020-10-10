@@ -492,7 +492,7 @@ def test_amendment_with_multiple_subtitles() -> None:
                 (2) A büntetés egy évtől öt évig terjedő szabadságvesztés, ha az (1) bekezdésben meghatározott bűncselekményt
                 a) fegyveresen,
                 b) felfegyverkezve,
-                c) tömegzavargás résztvevőjeként
+         <NJ>   c) tömegzavargás résztvevőjeként
                 követik el.
                 (3) Aki az (1) bekezdésben meghatározott bűncselekményt fegyveresen vagy felfegyverkezve tömegzavargás
                 résztvevőjeként követi el, két évtől nyolc évig terjedő szabadságvesztéssel büntetendő.
@@ -506,7 +506,7 @@ def test_amendment_with_multiple_subtitles() -> None:
                 (2) A büntetés két évtől nyolc évig terjedő szabadságvesztés, ha az (1) bekezdésben meghatározott bűncselekményt
                 a) fegyveresen,
                 b) felfegyverkezve,
-                c) tömegzavargás résztvevőjeként
+         <NJ>   c) tömegzavargás résztvevőjeként
                 követik el.
                 (3) Aki az (1) bekezdésben meghatározott bűncselekményt fegyveresen vagy felfegyverkezve tömegzavargás
                 résztvevőjeként követi el, öt évtől tíz évig terjedő szabadságvesztéssel büntetendő.
@@ -528,6 +528,7 @@ def test_amendment_with_multiple_subtitles() -> None:
     assert isinstance(article, Article)
     assert article.identifier == '352/A'
     assert article.paragraph('2').point('b').text == "felfegyverkezve,"
+    assert article.paragraph('2').wrap_up == "követik el."
 
     assert amended_structure.children[2] == Subtitle("", "Határzár megrongálása")
     assert amended_structure.children[4] == Subtitle("", "Határzárral kapcsolatos építési munka akadályozása")
@@ -551,3 +552,29 @@ def test_subpoint_with_slash() -> None:
     assert amended_structure.children is not None
     assert len(amended_structure.children) == 1
     assert amended_structure.children[0].identifier == '44/a'
+
+
+def test_wrap_up() -> None:
+    act_text = """
+           1. § A teszteléstről szóló 2020. évi I. törvény 1. § helyébe a következő rendelkezés lép:
+                „1. § (1) Ha egy felsorolas utolso pontja
+                a) modositasban van
+                b) az utolso sora nem sorkizart, es
+           <NJ> c) a bekezdessel van egy behuzason,
+                a wrap_up field helyesen ki lesz toltve.
+                (2) Nincs wrap_up
+                a) felsorolas vege megis sorkizart,
+                b) a pont vege
+                indentalva van.”
+    """
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("1").paragraph().block_amendment()
+
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], Article)
+    the_article: Article = amended_structure.children[0]
+
+    assert the_article.paragraph('1').wrap_up == 'a wrap_up field helyesen ki lesz toltve.'
+    assert the_article.paragraph('2').wrap_up is None
+    assert the_article.paragraph('2').point('b').text == 'a pont vege indentalva van.'

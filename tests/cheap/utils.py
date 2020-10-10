@@ -42,7 +42,9 @@ def quick_parse_structure(act_text: str, *, parse_block_amendments: bool = False
         parts = []
         spaces_num = 1
         bold = '<BOLD>' in l
+        justified = '<NJ>' not in l
         l = l.replace("<BOLD>", "      ")
+        l = l.replace("<NJ>", "    ")
         for char in l:
             if char == ' ':
                 if spaces_num == 0:
@@ -51,7 +53,7 @@ def quick_parse_structure(act_text: str, *, parse_block_amendments: bool = False
             else:
                 parts.append(IndentedLinePart(5 + spaces_num * 5, char, bold=bold))
                 spaces_num = 0
-        lines.append(IndentedLine(tuple(parts)))
+        lines.append(IndentedLine(tuple(parts), 5 if justified else 40))
     act = ActStructureParser.parse("2345 évi I. törvény", Date(2345, 6, 7), "A tesztelésről", lines)
     if parse_block_amendments:
         act = ActBlockAmendmentParser.parse(act)

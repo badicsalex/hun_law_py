@@ -108,7 +108,9 @@ class StructuralElementParser(ABC):
             return True
         return extracted == '1' or is_next_numeric_identifier(self.last_identifier, extracted)
 
-    def parse(self, lines: Sequence[IndentedLine]) -> StructuralElement:
+    def parse(self, lines: Sequence[IndentedLine], properly_indented: bool) -> StructuralElement:
+        # TODO: could be used to detect center-aligned things
+        _ = properly_indented  # Unused, but msut be part of function signature
         identifier = self.extract_identifier(lines[0])
         assert identifier is not None
         title = join_line_strs(l.content for l in lines[1:] if l != EMPTY_LINE)
@@ -191,7 +193,8 @@ class SubtitleParser(StructuralElementParser):
             return True
         return super().is_header(line, previous_line)
 
-    def parse(self, lines: Sequence[IndentedLine]) -> Subtitle:
+    def parse(self, lines: Sequence[IndentedLine], properly_indented: bool) -> Subtitle:
+        _ = properly_indented  # Unused, but msut be part of function signature
         title = join_line_strs(l.content for l in lines if l != EMPTY_LINE)
         identifier = self.extract_identifier(lines[0])
         if identifier is None:
@@ -218,8 +221,8 @@ class ArticleStructuralParser:
         return ArticleParser.extract_identifier(line) is not None
 
     @classmethod
-    def parse(cls, lines: Sequence[IndentedLine]) -> Article:
-        return ArticleParser.parse(lines)
+    def parse(cls, lines: Sequence[IndentedLine], properly_indented: bool) -> Article:
+        return ArticleParser.parse(lines, properly_indented)
 
 
 STRUCTURE_ELEMENT_PARSERS: Tuple[Type[Union[StructuralElementParser, ArticleStructuralParser]], ...] = (
@@ -244,6 +247,9 @@ class SubArticleParsingError(StructureParsingError):
     pass
 
 
+WRAPUP_DETECTION_MARGIN_RIGHT_THRESHOLD = 20
+
+
 class SubArticleElementParser(ABC):
     PARSED_TYPE: ClassVar[Type[SubArticleElement]]
     HEADER_REGEX: ClassVar[Pattern]
@@ -253,7 +259,7 @@ class SubArticleElementParser(ABC):
     PARENT_CAN_HAVE_WRAPUP: ClassVar[bool] = False
 
     @classmethod
-    def parse(cls, lines: Sequence[IndentedLine]) -> SubArticleElement:
+    def parse(cls, lines: Sequence[IndentedLine], properly_indented: bool) -> SubArticleElement:
         text = None
         intro = None
         children = None
@@ -266,7 +272,7 @@ class SubArticleElementParser(ABC):
         indented_first_line = lines[0].slice(len(prefix))
         lines = (indented_first_line, ) + tuple(lines[1:])
         try:
-            intro, children, wrap_up = cls.parse_children_and_wrapup(lines, identifier)
+            intro, children, wrap_up = cls.parse_children_and_wrapup(lines, identifier, properly_indented)
         except NoSubelementsError:
             text = join_line_strs([l.content for l in lines if l != EMPTY_LINE])
         except Exception as e:
@@ -274,7 +280,12 @@ class SubArticleElementParser(ABC):
         return cls.PARSED_TYPE(identifier, text, intro, children, wrap_up)
 
     @classmethod
-    def parse_children_and_wrapup(cls, lines: Sequence[IndentedLine], parent_identifier: Optional[str]) -> Tuple[Optional[str], Tuple[Union[SubArticleElement, QuotedBlock], ...], Optional[str]]:
+    def parse_children_and_wrapup(
+        cls,
+        lines: Sequence[IndentedLine],
+        parent_identifier: Optional[str],
+        properly_indented: bool,
+    ) -> Tuple[Optional[str], Tuple[Union[SubArticleElement, QuotedBlock], ...], Optional[str]]:
         parsers_with_first_header = []
         for parser in cls.get_subelement_parsers(parent_identifier):
             first_header = parser.find_first_header(lines)
@@ -291,7 +302,7 @@ class SubArticleElementParser(ABC):
                     intro = None
                 else:
                     intro = join_line_strs([l.content for l in lines[:first_header] if l != EMPTY_LINE])
-                children, wrapup = parser.extract_multiple_from_text(lines[first_header:])
+                children, wrapup = parser.extract_multiple_from_text(lines[first_header:], properly_indented)
                 return intro, children, wrapup
             except SubArticleElementNotFoundError:
                 pass
@@ -349,26 +360,24 @@ class SubArticleElementParser(ABC):
             header_indentation = line.indent
 
     @classmethod
-    def split_last_item_and_wrapup(cls, lines: Iterable[IndentedLine]) -> Tuple[Tuple[IndentedLine, ...], Optional[str]]:
-        wrap_up = None
-        if cls.PARENT_CAN_HAVE_WRAPUP:
-            lines = list(lines)
+    def split_last_item_and_wrapup(cls, lines: Sequence[IndentedLine], properly_indented: bool) -> Tuple[Tuple[IndentedLine, ...], Optional[str]]:
+        if not cls.PARENT_CAN_HAVE_WRAPUP:
+            return tuple(lines), None
+        lines = tuple(l for l in lines if l != EMPTY_LINE)
+        header_indent = lines[0].indent
+        for i in range(len(lines)-1):
             # TODO: This is a stupid heuristic: we hope line-broken points are indented, while
-            # the wrapup will be at the same level as the headers.
-            header_indent = lines[0].indent
-            wrap_up = None
-            while len(lines) > 1 and (lines[-1] == EMPTY_LINE or similar_indent(lines[-1].indent, header_indent)):
-                line = lines.pop()
-                if line == EMPTY_LINE:
-                    continue
-                if wrap_up is None:
-                    wrap_up = line.content
-                else:
-                    wrap_up = join_line_strs([line.content, wrap_up])
-        return tuple(lines), wrap_up
+            # the wrapup will be at the same level as the headers, and the line before it is not
+            # justified
+            if (
+                (properly_indented or lines[i].margin_right > WRAPUP_DETECTION_MARGIN_RIGHT_THRESHOLD) and
+                similar_indent(lines[i + 1].indent, header_indent)
+            ):
+                return lines[:i+1], join_line_strs(l.content for l in lines[i+1:])
+        return lines, None
 
     @classmethod
-    def extract_multiple_from_text(cls, lines: Sequence[IndentedLine]) -> Tuple[Tuple['SubArticleElement', ...], Optional[str]]:
+    def extract_multiple_from_text(cls, lines: Sequence[IndentedLine], properly_indented: bool) -> Tuple[Tuple['SubArticleElement', ...], Optional[str]]:
         header_lines = tuple(cls.find_header_lines(lines))
         # The only way this is not true is a programming error,
         # it is the callers job to assure this.
@@ -380,11 +389,11 @@ class SubArticleElementParser(ABC):
 
         elements = []
         for start, stop in zip(header_lines[:-1], header_lines[1:]):
-            element = cls.parse(lines[start:stop])
+            element = cls.parse(lines[start:stop], properly_indented)
             elements.append(element)
 
-        remaining_lines, wrap_up = cls.split_last_item_and_wrapup(lines[header_lines[-1]:])
-        element = cls.parse(remaining_lines)
+        remaining_lines, wrap_up = cls.split_last_item_and_wrapup(lines[header_lines[-1]:], properly_indented)
+        element = cls.parse(remaining_lines, properly_indented)
         elements.append(element)
         return tuple(elements), wrap_up
 
@@ -512,8 +521,9 @@ class QuotedBlockParser:
         return None
 
     @classmethod
-    def extract_multiple_from_text(cls, lines: Iterable[IndentedLine]) -> Tuple[Tuple[QuotedBlock, ...], Optional[str]]:
+    def extract_multiple_from_text(cls, lines: Iterable[IndentedLine], properly_indented: bool) -> Tuple[Tuple[QuotedBlock, ...], Optional[str]]:
         # pylint: disable=too-many-branches
+        _ = properly_indented  # Unused, but must be part of the function signature
         state = cls.ParseStates.START
         blocks = []
         wrap_up = None
@@ -581,7 +591,12 @@ class ArticleParser:
     HEADER_REGEX = re.compile("^(([0-9]+:)?([0-9]+(/[A-Z])?))\\. ?§ +(.*)$")
 
     @classmethod
-    def parse(cls, lines: Sequence[IndentedLine], extenally_determined_identifier: Optional[str] = None) -> Article:
+    def parse(
+        cls,
+        lines: Sequence[IndentedLine],
+        properly_indented: bool,
+        extenally_determined_identifier: Optional[str] = None,
+    ) -> Article:
         identifier = cls.extract_identifier(lines[0])
         if identifier is None:
             raise ArticleParsingError("Article does not have a proper header '{}'".format(lines[0].content))
@@ -595,7 +610,7 @@ class ArticleParser:
         position_of_article_sign = lines[0].content.index('§ ')
         truncated_first_line = lines[0].slice(position_of_article_sign + 2)
         try:
-            return cls.parse_body(identifier, (truncated_first_line, ) + tuple(lines[1:]))
+            return cls.parse_body(identifier, (truncated_first_line, ) + tuple(lines[1:]), properly_indented)
         except Exception as e:
             raise ArticleParsingError(str(e), Article, identifier) from e
 
@@ -605,7 +620,7 @@ class ArticleParser:
         return None if result is None else result.group(1)
 
     @classmethod
-    def parse_body(cls, identifier: str, lines: Sequence[IndentedLine]) -> Article:
+    def parse_body(cls, identifier: str, lines: Sequence[IndentedLine], properly_indented: bool) -> Article:
         title = None
 
         if lines[0].content[0] == '[':
@@ -634,9 +649,9 @@ class ArticleParser:
             lines = lines[1:]
 
         if not ParagraphParser.extract_identifier(lines[0]) == ParagraphParser.first_identifier():
-            paragraphs: Tuple[SubArticleElement, ...] = (ParagraphParser.parse(lines), )
+            paragraphs: Tuple[SubArticleElement, ...] = (ParagraphParser.parse(lines, properly_indented), )
         else:
-            paragraphs, wrap_up = ParagraphParser.extract_multiple_from_text(lines)
+            paragraphs, wrap_up = ParagraphParser.extract_multiple_from_text(lines, properly_indented)
             if wrap_up is not None:
                 raise ValueError("Junk detected in Article after last Paragraph")
 
@@ -658,7 +673,7 @@ class ActBodyParser:
         return None
 
     @classmethod
-    def parse_elements(cls, parsers: ActBodyParsersType, lines: Sequence[IndentedLine]) -> Iterable[ActChildType]:
+    def parse_elements(cls, parsers: ActBodyParsersType, lines: Sequence[IndentedLine], properly_indented: bool) -> Iterable[ActChildType]:
         elements = []
         current_lines = []
         current_element_parser = None
@@ -673,12 +688,12 @@ class ActBodyParser:
                 current_lines.append(line)
                 continue
             if current_element_parser is not None:
-                elements.append(current_element_parser.parse(current_lines))
+                elements.append(current_element_parser.parse(current_lines, properly_indented))
             current_element_parser = new_header_parser
             current_lines = [line]
             current_element_parser.step_to_next(current_lines[0])
         assert current_element_parser is not None
-        elements.append(current_element_parser.parse(current_lines))
+        elements.append(current_element_parser.parse(current_lines, properly_indented))
         return elements
 
 
@@ -694,7 +709,7 @@ class ActStructureParser:
         try:
             parsers = cls.create_parsers()
             preamble, lines = cls.parse_preamble(parsers, lines)
-            elements = ActBodyParser.parse_elements(parsers, lines)
+            elements = ActBodyParser.parse_elements(parsers, lines, properly_indented=True)
         except Exception as e:
             raise ActParsingError("Error during parsing body: {}".format(e), Act, identifier) from e
 
@@ -749,7 +764,7 @@ class BlockAmendmentStructureParser:
             children: Tuple[SubArticleChildType, ...]
             if isinstance(metadata.position, StructuralReference):
                 parsers = cls.create_parsers()
-                children = tuple(ActBodyParser.parse_elements(parsers, lines))
+                children = tuple(ActBodyParser.parse_elements(parsers, lines, properly_indented=False))
             else:
                 parser, expected_id = cls.get_parser_and_id(metadata)
                 children = tuple(cls.do_parse_block_by_block(parser, expected_id, lines))
@@ -781,12 +796,12 @@ class BlockAmendmentStructureParser:
                 parser.PARSED_TYPE.is_next_identifier(last_identifier, extracted_identifier)
             )
             if header_found:
-                yield parser.parse(current_lines)
+                yield parser.parse(current_lines, properly_indented=False)
                 assert extracted_identifier is not None
                 last_identifier = extracted_identifier
                 current_lines = []
             current_lines.append(line)
-        yield parser.parse(current_lines)
+        yield parser.parse(current_lines, properly_indented=False)
 
     @classmethod
     def get_parser_and_id(cls, metadata: BlockAmendment) -> Tuple[Type[Union[ArticleParser, SubArticleElementParser]], str]:
