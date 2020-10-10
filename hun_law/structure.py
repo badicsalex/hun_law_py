@@ -23,7 +23,10 @@ import sys
 
 import attr
 
-from hun_law.utils import int_to_text_hun, int_to_text_roman, IndentedLine, is_next_letter_hun, Date, identifier_less
+from hun_law.utils import int_to_text_hun, text_to_int_hun, \
+    roman_to_arabic_with_postfix, arabic_to_roman_with_postfix,\
+    IndentedLine, Date, \
+    is_next_letter_hun, identifier_less, is_next_numeric_identifier
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -91,6 +94,11 @@ class StructuralElement(ABC):
     def formatted_identifier(self) -> str:
         pass
 
+    @classmethod
+    @abstractmethod
+    def identifier_from_string(cls, s: str) -> str:
+        pass
+
 
 @attr.s(slots=True, frozen=True)
 class Book(StructuralElement):
@@ -102,6 +110,10 @@ class Book(StructuralElement):
     @property
     def formatted_identifier(self) -> str:
         return "{} KÖNYV".format(int_to_text_hun(int(self.identifier)).upper())
+
+    @classmethod
+    def identifier_from_string(cls, s: str) -> str:
+        return str(text_to_int_hun(s))
 
 
 @attr.s(slots=True, frozen=True)
@@ -120,6 +132,10 @@ class Part(StructuralElement):
         # TODO: special parts
         return "{} RÉSZ".format(int_to_text_hun(int(self.identifier)).upper())
 
+    @classmethod
+    def identifier_from_string(cls, s: str) -> str:
+        return str(text_to_int_hun(s))
+
 
 @attr.s(slots=True, frozen=True)
 class Title(StructuralElement):
@@ -132,7 +148,11 @@ class Title(StructuralElement):
     @property
     def formatted_identifier(self) -> str:
         # TODO: special parts
-        return "{}. CÍM".format(int_to_text_roman(int(self.identifier)).upper())
+        return "{}. CÍM".format(arabic_to_roman_with_postfix(self.identifier).upper())
+
+    @classmethod
+    def identifier_from_string(cls, s: str) -> str:
+        return roman_to_arabic_with_postfix(s)
 
 
 @attr.s(slots=True, frozen=True)
@@ -147,7 +167,11 @@ class Chapter(StructuralElement):
     @property
     def formatted_identifier(self) -> str:
         # TODO: special parts
-        return "{}. FEJEZET".format(int_to_text_roman(int(self.identifier)).upper())
+        return "{}. FEJEZET".format(arabic_to_roman_with_postfix(self.identifier).upper())
+
+    @classmethod
+    def identifier_from_string(cls, s: str) -> str:
+        return roman_to_arabic_with_postfix(s)
 
 
 @attr.s(slots=True, frozen=True)
@@ -166,6 +190,10 @@ class Subtitle(StructuralElement):
             return ""
         # TODO: special parts
         return "{}.".format(self.identifier)
+
+    @classmethod
+    def identifier_from_string(cls, s: str) -> str:
+        return s
 
 
 STRUCTURE_ELEMENT_TYPES = (
@@ -365,7 +393,7 @@ class NumericSubpoint(SubArticleElement):
 
     @classmethod
     def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
-        return NumericPoint.is_next_identifier(identifier, next_identifier)
+        return is_next_numeric_identifier(identifier, next_identifier)
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -390,20 +418,7 @@ class NumericPoint(SubArticleElement):
 
     @classmethod
     def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
-        identifier = identifier.replace('/', '')
-        next_identifier = next_identifier.replace('/', '')
-        if identifier.isdigit():
-            if next_identifier.isdigit():
-                # "1" and "2"
-                return int(identifier) + 1 == int(next_identifier)
-            # "1" and "1a"
-            return identifier + 'a' == next_identifier
-        if next_identifier.isdigit():
-            # "1a" and "2"
-            # TODO: lets hope for no "1sz" or similar
-            return int(identifier[:-1]) + 1 == int(next_identifier)
-        # "1a" and "1b"
-        return identifier[:-1] == next_identifier[:-1] and is_next_letter_hun(identifier[-1], next_identifier[-1])
+        return is_next_numeric_identifier(identifier, next_identifier)
 
     @property
     def relative_reference(self) -> 'Reference':
@@ -499,7 +514,7 @@ class Paragraph(SubArticleElement):
 
     @classmethod
     def is_next_identifier(cls, identifier: str, next_identifier: str) -> bool:
-        return NumericPoint.is_next_identifier(identifier, next_identifier)
+        return is_next_numeric_identifier(identifier, next_identifier)
 
     @property
     def relative_reference(self) -> 'Reference':

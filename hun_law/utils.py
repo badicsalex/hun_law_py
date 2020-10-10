@@ -18,6 +18,7 @@
 import collections
 import textwrap
 import datetime
+import re
 from string import ascii_uppercase
 from typing import Tuple, List, Iterable, TypeVar, Optional, Union, Dict, Any, TextIO
 
@@ -272,7 +273,7 @@ def int_to_text_roman(i: int) -> str:
     return result
 
 
-def text_to_int_roman(s: str) -> int:
+def text_to_int_roman_with_postfix(s: str) -> Tuple[int, str]:
     result = 0
     while s:
         for text, val in ROMAN_NUMERALS:
@@ -280,9 +281,33 @@ def text_to_int_roman(s: str) -> int:
                 s = s[len(text):]
                 result = result + val
                 break
-        else:
-            raise ValueError("Numeral is not Roman.")
+        else:  # No valid numeral found
+            break
+    if result == 0:
+        raise ValueError("No roman numerals found.")
+    return result, s
+
+
+def text_to_int_roman(s: str) -> int:
+    result, postfix = text_to_int_roman_with_postfix(s)
+    if postfix:
+        raise ValueError("Numeral is not roman.")
     return result
+
+
+NUMBER_FINDER_RE = re.compile("([0-9]+)(.*)")
+
+
+def arabic_to_roman_with_postfix(s: str) -> str:
+    m = NUMBER_FINDER_RE.match(s)
+    if m is None:
+        raise ValueError("String does not begin with a number", s)
+    return int_to_text_roman(int(m.group(1))) + m.group(2)
+
+
+def roman_to_arabic_with_postfix(s: str) -> str:
+    result, postfix = text_to_int_roman_with_postfix(s)
+    return str(result) + postfix
 
 
 HUNGARIAN_UPPERCASE_CHARS = set(ascii_uppercase + 'ÉÁŐÚŰÖÜÓÍ')
@@ -412,6 +437,23 @@ def identifier_less(a: str, b: str) -> bool:
     a_parts = split_identifier_to_parts(a)
     b_parts = split_identifier_to_parts(b)
     return a_parts < b_parts
+
+
+def is_next_numeric_identifier(identifier: str, next_identifier: str) -> bool:
+    identifier = identifier.replace('/', '')
+    next_identifier = next_identifier.replace('/', '')
+    if identifier.isdigit():
+        if next_identifier.isdigit():
+            # "1" and "2"
+            return int(identifier) + 1 == int(next_identifier)
+        # "1" and "1a"
+        return next_identifier in (identifier + 'a', identifier + 'A')
+    if next_identifier.isdigit():
+        # "1a" and "2"
+        # TODO: lets hope for no "1sz" or similar
+        return int(identifier[:-1]) + 1 == int(next_identifier)
+    # "1a" and "1b"
+    return identifier[:-1] == next_identifier[:-1] and is_next_letter_hun(identifier[-1], next_identifier[-1])
 
 
 def join_line_strs(lines: Iterable[str]) -> str:

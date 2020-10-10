@@ -23,6 +23,7 @@ from hun_law.utils import \
     IndentedLine, IndentedLinePart, EMPTY_LINE, \
     text_to_int_hun, int_to_text_hun, \
     text_to_int_roman, int_to_text_roman, \
+    roman_to_arabic_with_postfix, arabic_to_roman_with_postfix, \
     Date, \
     split_identifier_to_parts, identifier_less
 
@@ -264,6 +265,27 @@ def test_text_to_int_roman() -> None:
         text_to_int_roman("Invalid")
     with pytest.raises(ValueError):
         text_to_int_roman("XIX/A")
+
+
+def test_text_to_int_roman_to_arabic() -> None:
+    assert roman_to_arabic_with_postfix("MCMXCVIII") == '1998'
+    assert arabic_to_roman_with_postfix("1998") == "MCMXCVIII"
+    assert roman_to_arabic_with_postfix("MCMXCVIII/A") == '1998/A'
+    assert arabic_to_roman_with_postfix("1998/A") == "MCMXCVIII/A"
+
+    # This is counterintuitive though.
+    assert roman_to_arabic_with_postfix("Invalid") == '1nvalid'
+    assert arabic_to_roman_with_postfix("1nvalid") == "Invalid"
+
+    for postfix in ('', '/A', '.X'):
+        for i in range(1, 2000):
+            test_str = str(i) + postfix
+            assert test_str == roman_to_arabic_with_postfix(arabic_to_roman_with_postfix(test_str))
+
+    with pytest.raises(ValueError):
+        roman_to_arabic_with_postfix("Nope")
+    with pytest.raises(ValueError):
+        arabic_to_roman_with_postfix("Nope")
 
 
 def test_date_from_hungarian_text() -> None:

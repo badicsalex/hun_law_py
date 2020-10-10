@@ -21,8 +21,10 @@ from enum import Enum
 from typing import Type, Pattern, ClassVar, Sequence, Optional, Tuple, Iterable, Iterator, Union, List, Mapping
 
 from hun_law.utils import \
-    IndentedLine, EMPTY_LINE, Date, text_to_int_hun, text_to_int_roman, \
-    is_uppercase_hun, iterate_with_quote_level, quote_level_diff, join_line_strs
+    IndentedLine, EMPTY_LINE, Date, \
+    is_uppercase_hun, iterate_with_quote_level, quote_level_diff, join_line_strs, \
+    is_next_numeric_identifier
+
 from hun_law.structure import \
     Act, Article, QuotedBlock, BlockAmendmentContainer,\
     StructuralElement, Subtitle, Chapter, Title, Part, Book,\
@@ -84,33 +86,42 @@ class StructureParsingError(ValueError):
 
 class StructuralElementParser(ABC):
     PARSED_TYPE: ClassVar[Type[StructuralElement]]
+    HEADER_REGEX: ClassVar[Pattern]
     strict: bool
 
     def __init__(self, strict: bool = True) -> None:
-        self.expected_number = 1
+        self.last_identifier = '0'
         self.strict = strict
 
-    @abstractmethod
-    def extract_number(self, line: IndentedLine) -> Optional[int]:
-        pass
-
-    def step_to_next_number(self, line: IndentedLine) -> None:
-        extracted = self.extract_number(line)
+    def step_to_next(self, line: IndentedLine) -> None:
+        extracted = self.extract_identifier(line)
         if extracted is None:
-            self.expected_number = 1
+            self.last_identifier = '0'
         else:
-            self.expected_number = extracted + 1
+            self.last_identifier = extracted
 
     def is_header(self, line: IndentedLine, _previous_line: IndentedLine) -> bool:
-        number = self.extract_number(line)
+        extracted = self.extract_identifier(line)
+        if extracted is None:
+            return False
         if not self.strict:
-            return number is not None
-        return number in (1, self.expected_number)
+            return True
+        return extracted == '1' or is_next_numeric_identifier(self.last_identifier, extracted)
 
     def parse(self, lines: Sequence[IndentedLine]) -> StructuralElement:
-        number = self.extract_number(lines[0])
+        identifier = self.extract_identifier(lines[0])
+        assert identifier is not None
         title = join_line_strs(l.content for l in lines[1:] if l != EMPTY_LINE)
-        return self.PARSED_TYPE(str(number), title)
+        return self.PARSED_TYPE(identifier, title)
+
+    def extract_identifier(self, line: IndentedLine) -> Optional[str]:
+        result = self.HEADER_REGEX.match(line.content)
+        if result is None:
+            return None
+        try:
+            return self.PARSED_TYPE.identifier_from_string(result.group(1))
+        except ValueError:
+            return None
 
 
 class BookParser(StructuralElementParser):
@@ -121,15 +132,6 @@ class BookParser(StructuralElementParser):
     PARSED_TYPE = Book
     HEADER_REGEX = re.compile(r'(.*) KÖNYV$')
 
-    def extract_number(self, line: IndentedLine) -> Optional[int]:
-        result = self.HEADER_REGEX.match(line.content)
-        if result is None:
-            return None
-        try:
-            return text_to_int_hun(result.group(1))
-        except ValueError:
-            return None
-
 
 class PartParser(StructuralElementParser):
     # 39. § Rész
@@ -138,27 +140,16 @@ class PartParser(StructuralElementParser):
     # MÁSODIK RÉSZ
     # KÜLÖNÖS RÉSZ
     PARSED_TYPE = Part
+    HEADER_REGEX = re.compile(r'(.*) RÉSZ$')
 
     # 39. § (5)
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ')
 
-    HEADER_REGEX = re.compile(r'(.*) RÉSZ$')
-
-    def __init__(self, strict: bool = True) -> None:
-        super().__init__(strict)
-        self.is_special = False
-
-    def extract_number(self, line: IndentedLine) -> Optional[int]:
+    def extract_identifier(self, line: IndentedLine) -> Optional[str]:
+        # TODO: don't allow mixing of special and non-special
         if line.content in self.SPECIAL_PARTS:
-            return self.SPECIAL_PARTS.index(line.content) + 1
-
-        result = self.HEADER_REGEX.match(line.content)
-        if result is None:
-            return None
-        try:
-            return text_to_int_hun(result.group(1))
-        except ValueError:
-            return None
+            return str(self.SPECIAL_PARTS.index(line.content) + 1)
+        return super().extract_identifier(line)
 
 
 class TitleParser(StructuralElementParser):
@@ -167,17 +158,7 @@ class TitleParser(StructuralElementParser):
     # Example:
     # XXI. CÍM
     PARSED_TYPE = Title
-
     HEADER_REGEX = re.compile(r'(.*)\. CÍM$')
-
-    def extract_number(self, line: IndentedLine) -> Optional[int]:
-        result = self.HEADER_REGEX.match(line.content)
-        if result is None:
-            return None
-        try:
-            return text_to_int_roman(result.group(1))
-        except ValueError:
-            return None
 
 
 class ChapterParser(StructuralElementParser):
@@ -187,17 +168,7 @@ class ChapterParser(StructuralElementParser):
     # IV. Fejezet
     # XXIII. fejezet  <=  not conformant, but present in e.g. PTK
     PARSED_TYPE = Chapter
-
     HEADER_REGEX = re.compile(r'(.*)\. fejezet$', flags=re.IGNORECASE)
-
-    def extract_number(self, line: IndentedLine) -> Optional[int]:
-        result = self.HEADER_REGEX.match(line.content)
-        if result is None:
-            return None
-        try:
-            return text_to_int_roman(result.group(1))
-        except ValueError:
-            return None
 
 
 class SubtitleParser(StructuralElementParser):
@@ -208,36 +179,25 @@ class SubtitleParser(StructuralElementParser):
     # For older acts, there is no number, only a text.
 
     PARSED_TYPE = Subtitle
-
-    HEADER_REGEX = re.compile(r'([0-9]+)\. ')
-
-    def extract_number(self, line: IndentedLine) -> Optional[int]:
-        result = self.HEADER_REGEX.match(line.content)
-        if result is None:
-            return None
-        try:
-            return int(result.group(1))
-        except ValueError:
-            return None
+    HEADER_REGEX = re.compile(r'([0-9]+(/[A-Z])?)\. ')
 
     def is_header(self, line: IndentedLine, previous_line: IndentedLine) -> bool:
         if not line.bold:
             return False
         if not self.strict:
-            return is_uppercase_hun(line.content[0]) or self.extract_number(line) is not None
+            return is_uppercase_hun(line.content[0]) or self.extract_identifier(line) is not None
 
         if previous_line == EMPTY_LINE and is_uppercase_hun(line.content[0]):
             return True
-        number = self.extract_number(line)
-        return number in (1, self.expected_number)
+        return super().is_header(line, previous_line)
 
     def parse(self, lines: Sequence[IndentedLine]) -> Subtitle:
         title = join_line_strs(l.content for l in lines if l != EMPTY_LINE)
-        number = self.extract_number(lines[0])
-        if number is None:
+        identifier = self.extract_identifier(lines[0])
+        if identifier is None:
             return Subtitle("", title)
         title = title.split('. ', 1)[1]
-        return Subtitle(str(number), title)
+        return Subtitle(identifier, title)
 
 
 class ArticleStructuralParser:
@@ -249,7 +209,7 @@ class ArticleStructuralParser:
         self.strict = strict
         self.indent: Optional[float] = None
 
-    def step_to_next_number(self, line: IndentedLine) -> None:
+    def step_to_next(self, line: IndentedLine) -> None:
         self.indent = line.indent
 
     def is_header(self, line: IndentedLine, _previous_line: IndentedLine) -> bool:
@@ -716,7 +676,7 @@ class ActBodyParser:
                 elements.append(current_element_parser.parse(current_lines))
             current_element_parser = new_header_parser
             current_lines = [line]
-            current_element_parser.step_to_next_number(current_lines[0])
+            current_element_parser.step_to_next(current_lines[0])
         assert current_element_parser is not None
         elements.append(current_element_parser.parse(current_lines))
         return elements
