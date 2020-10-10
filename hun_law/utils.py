@@ -35,6 +35,7 @@ class IndentedLinePart:
 @attr.s(slots=True, frozen=True)
 class IndentedLine:
     _parts: Tuple[IndentedLinePart, ...] = attr.ib(factory=tuple)
+    margin_right: float = attr.ib(default=0, eq=False, hash=False)
     content: str = attr.ib(init=False)
     indent: float = attr.ib(init=False)
     bold: bool = attr.ib(init=False)
@@ -113,7 +114,12 @@ class IndentedLine:
         if skipped_x:
             first_part = attr.evolve(first_part, dx=first_part.dx + skipped_x)
 
-        return IndentedLine((first_part,) + self._parts[skipped_parts_index+1:included_parts_index])
+        # TODO: This is a heuristic, hard coded character width.
+        # Really ugly hack, I know, but it's kind of the same as the space
+        # detection in PDF parser
+        margin_right = self.margin_right + 20 * (len(self._parts) - included_parts_index)
+
+        return IndentedLine((first_part,) + self._parts[skipped_parts_index+1:included_parts_index], margin_right)
 
     @classmethod
     def from_multiple(cls, *others: 'IndentedLine') -> 'IndentedLine':
@@ -132,7 +138,7 @@ class IndentedLine:
                 else:
                     parts.append(p)
                     x += p.dx
-        return IndentedLine(tuple(parts))
+        return IndentedLine(tuple(parts), others[-1].margin_right if others else 0)
 
 
 EMPTY_LINE = IndentedLine()

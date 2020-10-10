@@ -122,12 +122,15 @@ def replace_line_content(needle: str, replacement: str, *, needle_prev_lines: Op
                     ))
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part, common_postfix)
                 else:
-                    replacement_part = IndentedLine((
-                        IndentedLinePart(
-                            replacement_indent,
-                            replacement[common_prefix_len:]
+                    replacement_part = IndentedLine(
+                        (
+                            IndentedLinePart(
+                                replacement_indent,
+                                replacement[common_prefix_len:]
+                            ),
                         ),
-                    ))
+                        l.margin_right
+                    )
                     to_append = IndentedLine.from_multiple(common_prefix, replacement_part)
                 result.append(to_append)
                 needle_count = needle_count + 1
@@ -172,7 +175,8 @@ def ptke_article_header_fixer(body: Iterable[IndentedLine]) -> Iterable[Indented
                     IndentedLinePart(
                         prev_line.indent, "[{}]".format(title_match.group(1))
                     )
-                ]
+                ],
+                prev_line.margin_right
             )
 
             fixed_title = IndentedLine.from_multiple(article_header, fixed_title_string)

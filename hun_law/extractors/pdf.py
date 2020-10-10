@@ -204,10 +204,11 @@ def sort_textboxes_into_dicts(textboxes: Iterable[TextBox]) -> Dict[float, Dict[
     return textboxes_as_dicts
 
 
-def convert_textbox_dict_to_line(textbox_dict: Dict[float, TextBox]) -> IndentedLine:
+def convert_textbox_dict_to_line(textbox_dict: Dict[float, TextBox], rightmost_on_page: float) -> IndentedLine:
     parts = []
     threshold_to_space = None
     prev_x = 0.0
+    margin_right = 0.0
     for x in sorted(textbox_dict):
         box = textbox_dict[x]
         if threshold_to_space is not None and (x > threshold_to_space or box.content == '„'):
@@ -217,20 +218,22 @@ def convert_textbox_dict_to_line(textbox_dict: Dict[float, TextBox]) -> Indented
         parts.append(IndentedLinePart(box.x - prev_x, box.content, box.bold))
         prev_x = box.x
         threshold_to_space = x + box.width + box.width_of_space * 0.5
+        margin_right = rightmost_on_page - (box.x - box.width)
 
-    return IndentedLine(tuple(parts))
+    return IndentedLine(tuple(parts), margin_right)
 
 
 def extract_single_page(page: PageOfTextBoxes) -> PageOfLines:
     processed_page = PageOfLines()
     textboxes_as_dicts = sort_textboxes_into_dicts(page.textboxes)
+    rightmost_on_page = max(tb.width + tb.x for tb in page.textboxes)
     prev_y = 0.0
     for y in sorted(textboxes_as_dicts, reverse=True):
         # TODO: don't hardcode the 18, but use actual textbox dimensions
         if prev_y != 0 and (prev_y - y) > 18:
             processed_page.add_line(EMPTY_LINE)
         prev_y = y
-        processed_page.add_line(convert_textbox_dict_to_line(textboxes_as_dicts[y]))
+        processed_page.add_line(convert_textbox_dict_to_line(textboxes_as_dicts[y], rightmost_on_page))
     return processed_page
 
 
@@ -246,7 +249,7 @@ PDF_OF_LINES_CONVERTER = dict2object.get_converter(PdfOfLines)
 
 @Extractor(PDFFileDescriptor)
 def CachedPdfParser(f: PDFFileDescriptor) -> Iterable[PdfOfLines]:
-    cache_object = CacheObject(f.cache_id + ".parsed_v4.gz")
+    cache_object = CacheObject(f.cache_id + ".parsed_v5.gz")
     if cache_object.exists():
         result = PDF_OF_LINES_CONVERTER.to_object(cache_object.read_json())
         yield result

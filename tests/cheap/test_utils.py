@@ -41,6 +41,7 @@ def test_indented_line_construction() -> None:
     assert IndentedLine() == IndentedLine()
     assert IndentedLine() == EMPTY_LINE
     assert IndentedLine(tuple()) == EMPTY_LINE
+    assert IndentedLine(tuple(), 123.4) == EMPTY_LINE
 
 
 def test_indented_line_slice() -> None:
@@ -51,7 +52,7 @@ def test_indented_line_slice() -> None:
         IndentedLinePart(5, ' '),
         IndentedLinePart(5, 'f')
     )
-    line = IndentedLine(parts)
+    line = IndentedLine(parts, 30.0)
     assert line.content == 'abcde f'
     assert line.indent == 5
 
@@ -59,9 +60,11 @@ def test_indented_line_slice() -> None:
 
     assert line.slice(1).content == 'bcde f'
     assert line.slice(1).indent == 10
+    assert line.slice(1).margin_right == 30.0
 
     assert line.slice(2).content == 'cde f'
     assert line.slice(2).indent == 15
+    assert line.slice(2).margin_right == 30.0
 
     with pytest.raises(Exception):
         _invalid_slice = line.slice(3)
@@ -74,10 +77,15 @@ def test_indented_line_slice() -> None:
 
     assert line.slice(-2).content == ' f'
     assert line.slice(-2).indent == 20
+    assert line.slice(-2).margin_right == 30.0
 
     assert line.slice(0, -1).content == 'abcde '
     assert line.slice(0, -2).content == 'abcde'
     assert line.slice(0, 5).content == 'abcde'
+
+    # TODO: This should probably be exact somehow
+    assert line.slice(0, -1).margin_right > 30.0
+    assert line.slice(0, -2).margin_right > line.slice(0, -1).margin_right
 
     assert line.slice(1, -1).content == 'bcde '
     assert line.slice(2, -2).content == 'cde'
@@ -100,7 +108,7 @@ def test_indented_line_serialization() -> None:
         IndentedLinePart(5, ' '),
         IndentedLinePart(5, 'f')
     )
-    line = IndentedLine(parts)
+    line = IndentedLine(parts, 43.123)
     serialized_form = indented_line_converter.to_dict(line)
     # test transformability to json
     json_string = json.dumps(serialized_form)
@@ -159,23 +167,28 @@ def test_indented_line_concat() -> None:
         IndentedLinePart(5, 'f'),
     )
 
-    line1 = IndentedLine(parts1)
-    line2 = IndentedLine(parts2)
+    line1 = IndentedLine(parts1, 100.0)
+    line2 = IndentedLine(parts2, 30.0)
     line = IndentedLine.from_multiple(line1, line2)
 
     assert line.content == 'abcde f'
     assert line.indent == 5
+    assert line.margin_right == 30.0
+
     assert line.slice(1).content == 'bcde f'
     assert line.slice(1).indent == 10
+    assert line.slice(1).margin_right == 30.0
 
     assert line.slice(2).content == 'cde f'
     assert line.slice(2).indent == 15
+    assert line.slice(2).margin_right == 30.0
 
     with pytest.raises(Exception):
         _invalid_slice = line.slice(3)
 
     assert line.slice(-2, -1).content == ' '
     assert line.slice(-2, -1).indent == 20
+    assert line.slice(-2, -1).margin_right > 30.0
 
 
 BOLDNESS_TESTS = [
