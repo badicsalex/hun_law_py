@@ -23,6 +23,7 @@ import tatsu.model
 
 from hun_law.structure import Reference, \
     Article, Paragraph, AlphabeticPoint, NumericPoint, AlphabeticSubpoint, \
+    Book, Part, Title, Chapter, Subtitle,\
     Act, SubArticleElement, \
     ReferencePartType, \
     StructuralReference, SubtitleArticleCombo, SubtitleArticleComboType,\
@@ -231,7 +232,7 @@ class ReferenceConversionHelper:
     def convert_book_id(cls, book_id: Optional[str]) -> Optional[str]:
         if book_id is None:
             return None
-        return str(text_to_int_hun(book_id))
+        return Book.identifier_from_string(book_id)
 
     @classmethod
     def convert_structural_reference(cls, act_id: str, reference: model.StructuralReference) -> StructuralReference:
@@ -243,23 +244,23 @@ class ReferenceConversionHelper:
             return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "".join(reference.id)))
 
         if isinstance(reference, model.SubtitleNumber):
-            return StructuralReference(act_id, subtitle="".join(reference.id))
+            return StructuralReference(act_id, subtitle=Subtitle.identifier_from_string("".join(reference.id)))
 
         if isinstance(reference, model.ChapterNumber):
-            return StructuralReference(act_id, chapter="".join(reference.id))
+            return StructuralReference(act_id, chapter=Chapter.identifier_from_string("".join(reference.id)))
 
         if isinstance(reference, model.TitleNumber):
             return StructuralReference(
                 act_id,
                 book=cls.convert_book_id(reference.book_id),
-                title="".join(reference.id),
+                title=Title.identifier_from_string("".join(reference.id)),
             )
 
         if isinstance(reference, model.PartNumber):
             return StructuralReference(
                 act_id,
                 book=cls.convert_book_id(reference.book_id),
-                part=str(text_to_int_hun(reference.id)),
+                part=Part.identifier_from_string(reference.id),
             )
 
         raise TypeError("Unknown Structural Reference type")

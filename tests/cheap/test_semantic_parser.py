@@ -319,8 +319,8 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
     ),
     (
         """
-            17. § A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:
-                 „VIII. CÍM
+            17. § A Ptk. Harmadik Könyv VIII/A. Címének helyébe a következő cím lép:
+                 „VIII/A. CÍM
                  NEM
 
                      1. § Pls no.
@@ -330,7 +330,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
             (
                 ref(None, "17"), (
                     BlockAmendment(
-                        position=StructuralReference(act='Ptk.', book='3', part=None, title='VIII', chapter=None, subtitle=None)
+                        position=StructuralReference(act='Ptk.', book='3', part=None, title='8/A', chapter=None, subtitle=None)
                     ),
                 ),
             ),

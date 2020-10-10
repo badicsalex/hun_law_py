@@ -322,25 +322,25 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
     (
         "A Ptk. Harmadik Könyv VIII. Címének helyébe a következő cím lép:",
         BlockAmendment(
-            position=StructuralReference("Ptk.", book="3", title="VIII"),
+            position=StructuralReference("Ptk.", book="3", title="8"),
         ),
     ),
     (
         "A Ptk. Harmadik Könyve a következő VIII. Címmel egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Ptk.", book="3", title="VIII"),
+            position=StructuralReference("Ptk.", book="3", title="8"),
         ),
     ),
     (
         "Az Szt. a következő VI/A. Fejezettel egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Szt.", chapter="VI/A"),
+            position=StructuralReference("Szt.", chapter="6/A"),
         ),
     ),
     (
         "A Btk. XXIV. Fejezete helyébe a következő fejezet lép:",
         BlockAmendment(
-            position=StructuralReference("Btk.", chapter="XXIV"),
+            position=StructuralReference("Btk.", chapter="24"),
         ),
     ),
     (
