@@ -24,6 +24,7 @@ start_default =
     | block_amendment_with_subtitle $
     | block_amendment_structural $
     | text_amendment $
+    | article_title_amendment $
     | enforcement_date $
     | repeal $
     | {any_simple_expression}+ $;
@@ -67,6 +68,10 @@ article_range = start:article_id ["." article_suffix] dash end:article_id "." ;
 article_single = id:article_id ".";
 article_id = id:([number ":" ] number ["/" /[A-Z]/]);
 article_suffix = /§-[a-zéáőúöüóíű]+/ | "§" ;
+
+single_article_reference::SingleArticleReference =
+    >article_id "." article_suffix
+    ;
 
 paragraph_reference::ParagraphReferencePart::ReferencePart
     = {(ranges+:paragraph_range | singles+:paragraph_single) [list_separator [az]]}+ paragraph_suffix ;
@@ -281,6 +286,23 @@ text_amendment_part::TextAmendmentPart =
     ("szövegrészek"| "szövegrész") ("helyébe" | "helyett")
     [az] replacement_text:quote
     ("szöveggel"| "szöveg" | "szövegrész")
+    ;
+# ============ ARTICLE TITLE AMENDMENT PARSING ==============
+#   Article Title change:
+#   "A Ptk. 5:99. § címében az „átruházása” szövegrész helyébe az „átruházása és megterhelése” szöveg lép."
+#
+#   Title change
+#   "6:534. § címe az „életviszonyok” szövegrész helyett az „értékviszonyok” szöveggel
+article_title_token = /cím[a-zéáőúöüóíű]+/;
+article_title_amendment::ArticleTitleAmendment =
+    /[Aa]z?/ act_title act_reference:act_reference
+    article:single_article_reference
+    article_title_token
+    [az] original_text:quote
+    ("szövegrészek"| "szövegrész") ("helyébe" | "helyett")
+    [az] replacement_text:quote
+    ("szöveggel"| "szöveg" | "szövegrész")
+    "lép" ["hatályba"] "."
     ;
 
 # ============ REPEAL PARSING ==============

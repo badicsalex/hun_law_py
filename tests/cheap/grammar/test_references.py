@@ -540,6 +540,22 @@ CASES: List[Tuple[
         ],
         [],
     ),
+    (
+        "A Ptk. 5:99. § címében az „átruházása” szövegrész helyébe az „átruházása és megterhelése” szöveg lép.",
+        "  [  ] <     >                                                                                       ",
+        [
+            ref("Ptk.", "5:99"),
+        ],
+        ["Ptk."],
+    ),
+    (
+        "A Ptk. 6:534. § címe az „életviszonyok” szövegrész helyett az „értékviszonyok” szöveggel lép hatályba.",
+        "  [  ] <      >                                                                                       ",
+        [
+            ref("Ptk.", "6:534"),
+        ],
+        ["Ptk."],
+    )
 ]
 
 

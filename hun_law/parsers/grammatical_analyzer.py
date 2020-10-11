@@ -29,7 +29,7 @@ from hun_law.structure import Reference, \
     StructuralReference, SubtitleArticleCombo, SubtitleArticleComboType,\
     ActIdAbbreviation, OutgoingReference, BlockAmendment, SemanticData, \
     EnforcementDate, DaysAfterPublication, DayInMonthAfterPublication, \
-    TextAmendment, Repeal
+    TextAmendment, ArticleTitleAmendment, Repeal
 
 from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
 
@@ -556,6 +556,37 @@ class TextAmendmentToReference(ModelConverter):
         yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
 
 
+class ArticleTitleAmendmentToArticleTitleAmendment(ModelConverter):
+    CONVERTED_TYPE = model.ArticleTitleAmendment
+
+    @classmethod
+    def convert(cls, tree_element: model.ArticleTitleAmendment) -> Iterable[ArticleTitleAmendment]:
+        assert tree_element.article is not None
+        assert tree_element.act_reference is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        article_id = "".join(tree_element.article.id)
+        yield ArticleTitleAmendment(
+            position=Reference(act_id, article_id),
+            original_text=convert_quote_to_string(tree_element.original_text),
+            replacement_text=convert_quote_to_string(tree_element.replacement_text),
+        )
+
+
+class ArticleTitleAmendmentToReference(ModelConverter):
+    CONVERTED_TYPE = model.ArticleTitleAmendment
+
+    @classmethod
+    def convert(cls, tree_element: model.ArticleTitleAmendment) -> Iterable[OutgoingReference]:
+        assert tree_element.article is not None
+        assert tree_element.act_reference is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        article_id = "".join(tree_element.article.id)
+        act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
+        yield OutgoingReference(act_start_pos, act_end_pos, Reference(act=act_id))
+        ref_start_pos, ref_end_pos = get_subtree_start_and_end_pos(tree_element.article)
+        yield OutgoingReference(ref_start_pos, ref_end_pos, Reference(act=act_id, article=article_id))
+
+
 class RepealToRepeal(ModelConverter):
     CONVERTED_TYPE = model.Repeal
 
@@ -597,6 +628,8 @@ class GrammarResultContainer:
         EnforcementDateToReference,
         TextAmendmentToTextAmendment,
         TextAmendmentToReference,
+        ArticleTitleAmendmentToArticleTitleAmendment,
+        ArticleTitleAmendmentToReference,
         RepealToRepeal,
         RepealToReference,
     )

@@ -139,15 +139,8 @@ CASES: Tuple[Tuple[str, Tuple[TextAmendment, ...]], ...] = (
     ),
 )
 
-# TODO:
-#   Article Title change:
-#   "A Ptk. 5:99. § címében az „átruházása” szövegrész helyébe az „átruházása és megterhelése” szöveg lép."
-#
-#   Title change
-#   "6:534. § címe az „életviszonyok” szövegrész helyett az „értékviszonyok” szöveggel
 
-
-@ pytest.mark.parametrize("s,correct_metadata", CASES)  # type: ignore
+@pytest.mark.parametrize("s,correct_metadata", CASES)  # type: ignore
 def test_text_amendment_parsing(s: str, correct_metadata: Tuple[TextAmendment, ...]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.semantic_data

@@ -1015,6 +1015,17 @@ class TextAmendment(SemanticData):
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
+class ArticleTitleAmendment(SemanticData):
+    position: Reference
+    original_text: str
+    replacement_text: str
+
+    def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'ArticleTitleAmendment':
+        position = self.position.resolve_abbreviations(abbreviations_map)
+        return attr.evolve(self, position=position)
+
+
+@attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class Repeal(SemanticData):
     position: Reference
     text: Optional[str] = None

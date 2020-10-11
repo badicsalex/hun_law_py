@@ -21,7 +21,7 @@ import pytest
 import attr
 
 from hun_law.structure import Act, OutgoingReference, Reference, StructuralReference,\
-    SemanticData, BlockAmendment, Repeal, TextAmendment, \
+    SemanticData, BlockAmendment, Repeal, TextAmendment, ArticleTitleAmendment, \
     ActIdAbbreviation, EnforcementDate, DaysAfterPublication, \
     Article, Paragraph, AlphabeticPoint, BlockAmendmentContainer
 
@@ -277,6 +277,7 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
             18. § Az Rvtv. 12. § (7) bekezdésében a „fontatlan” szövegrész helyébe a „nem fontos” szöveg lép.
             19. § Az Rvtv. 12. § (8) bekezdése helyébe a következő rendelkezés lép:
                    „(8) Rövidíteni tudni kell.”
+            20. § Az Rvtv. 12. § címében a „röv.” szövegrész helyébe a „rövidítés” szöveg lép.
         """,
         (
             (
@@ -313,6 +314,18 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                     BlockAmendment(
                         position=ref("2020. évi III. törvény", "12", "8"),
                     )
+                ),
+            ),
+            (
+                ref(None, "20"),
+                (
+                    ref("2020. évi III. törvény"),
+                    ref("2020. évi III. törvény", "12"),
+                    ArticleTitleAmendment(
+                        position=ref("2020. évi III. törvény", "12"),
+                        original_text="röv.",
+                        replacement_text="rövidítés",
+                    ),
                 ),
             ),
         ),
