@@ -5,4 +5,4 @@ disable=missing-docstring,invalid-name,fixme,line-too-long,too-few-public-method
 max-attributes=15
 
 [MASTER]
-ignore=hun_law/parsers/grammar
+ignore=hun_law/grammar

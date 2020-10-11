@@ -33,8 +33,8 @@ from hun_law.structure import Reference, \
 
 from hun_law.utils import text_to_month_hun, text_to_int_hun, Date, flatten
 
-from .grammar import model
-from .grammar.parser import ActGrammarParser  # type: ignore
+from hun_law.grammar import model
+from hun_law.grammar.parser import ActGrammarParser  # type: ignore
 
 
 def get_subtree_start_and_end_pos(subtree: model.ModelBase) -> Tuple[int, int]:
