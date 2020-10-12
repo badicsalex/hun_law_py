@@ -364,16 +364,18 @@ class SubArticleElementParser(ABC):
         if not cls.PARENT_CAN_HAVE_WRAPUP:
             return tuple(lines), None
         lines = tuple(l for l in lines if l != EMPTY_LINE)
-        header_indent = lines[0].indent
-        for i in range(len(lines)-1):
-            # TODO: This is a stupid heuristic: we hope line-broken points are indented, while
-            # the wrapup will be at the same level as the headers, and the line before it is not
-            # justified
-            if (
-                (properly_indented or lines[i].margin_right > WRAPUP_DETECTION_MARGIN_RIGHT_THRESHOLD) and
-                similar_indent(lines[i + 1].indent, header_indent)
-            ):
-                return lines[:i+1], join_line_strs(l.content for l in lines[i+1:])
+        # TODO: These are two stupid heuristics:
+        if properly_indented:
+            # Assume line-broken points are indented, while the wrapup will be at the same level as the headers
+            header_indent = lines[0].indent
+            for i in range(len(lines)-1):
+                if similar_indent(lines[i + 1].indent, header_indent):
+                    return lines[:i+1], join_line_strs(l.content for l in lines[i+1:])
+        else:
+            # Assume that the line is not justified just before the wrap-up
+            for i in range(len(lines)-1, 0, -1):
+                if lines[i-1].margin_right > WRAPUP_DETECTION_MARGIN_RIGHT_THRESHOLD:
+                    return lines[:i], join_line_strs(l.content for l in lines[i:])
         return lines, None
 
     @classmethod

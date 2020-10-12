@@ -578,3 +578,67 @@ def test_wrap_up() -> None:
     assert the_article.paragraph('1').wrap_up == 'a wrap_up field helyesen ki lesz toltve.'
     assert the_article.paragraph('2').wrap_up is None
     assert the_article.paragraph('2').point('b').text == 'a pont vege indentalva van.'
+
+
+def test_btk_mod_complex() -> None:
+    act_text = """2. § A Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: 2012. évi C. törvény) 370. §-a a következő
+      <NJ>      szöveggel lép hatályba:
+      <NJ>      „370. § (1) Aki idegen dolgot mástól azért vesz el, hogy azt jogtalanul eltulajdonítsa, lopást követ el.
+      <NJ>      (2) A büntetés vétség miatt két évig terjedő szabadságvesztés, ha
+      <NJ>      a) a lopást kisebb értékre vagy
+      <NJ>      b) a szabálysértési értékre elkövetett lopást
+      <NJ>      ba) bűnszövetségben,
+      <NJ>      bb) üzletszerűen,
+                bc) dolog elleni erőszakkal – ideértve azt is, ha a dolog eltulajdonításának megakadályozására szolgáló eszközt
+                állagsérelem okozása nélkül eltávolítják, vagy a dolog eltulajdonításának megakadályozására alkalmatlanná teszik –,
+      <NJ>      bd) zsebtolvajlás útján,
+      <NJ>      be) egy vagy több közokirat, magánokirat vagy készpénz-helyettesítő fizetési eszköz egyidejű elvételével,
+                bf) helyiségbe vagy ehhez tartozó bekerített helyre megtévesztéssel, vagy a jogosult, illetve a használó tudta és
+      <NJ>      beleegyezése nélkül bemenve,
+      <NJ>      bg) hamis vagy lopott kulcs használatával,
+      <NJ>      bh) lakást vagy hasonló helyiséget az elkövetővel közösen használó sérelmére vagy
+      <NJ>      bi) erdőben jogellenes fakivágással
+      <NJ>      követik el.
+
+      <NJ>      (3) A büntetés bűntett miatt három évig terjedő szabadságvesztés, ha
+      <NJ>      a) a lopást nagyobb értékre,
+      <NJ>      b) a kisebb értékre elkövetett lopást
+      <NJ>      ba) a (2) bekezdés ba)–be) pontjában meghatározott valamely módon,
+      <NJ>      bb) védett kulturális javak körébe tartozó tárgyra vagy régészeti leletre,
+      <NJ>      bc) vallási tisztelet tárgyára,
+      <NJ>      bd) holttesten lévő tárgyra, illetve temetőben vagy temetkezési emlékhelyen a halott emlékére rendelt tárgyra,
+      <NJ>      be) nemesfémre vagy
+
+      <NJ>      c) a lopást szabálysértési vagy kisebb értékre közveszély színhelyén
+      <NJ>      követik el.
+      <NJ>      (4) A büntetés egy évtől öt évig terjedő szabadságvesztés, ha
+      <NJ>      a) a lopást jelentős értékre vagy
+                b) a nagyobb értékre elkövetett lopást a (2) bekezdés ba)–be) pontjában meghatározott valamely módon vagy
+      <NJ>      közveszély színhelyén
+      <NJ>      követik el.
+      <NJ>      (5) A büntetés két évtől nyolc évig terjedő szabadságvesztés, ha
+      <NJ>      a) a lopást különösen nagy értékre vagy
+                b) a jelentős értékre elkövetett lopást a (2) bekezdés ba)–be) pontjában meghatározott valamely módon vagy
+      <NJ>      közveszély színhelyén
+      <NJ>      követik el.
+      <NJ>      (6) A büntetés öt évtől tíz évig terjedő szabadságvesztés, ha
+      <NJ>      a) a lopást különösen jelentős értékre vagy
+                b) a különösen nagy értékre elkövetett lopást a (2) bekezdés ba)–be) pontjában meghatározott valamely módon vagy
+      <NJ>      közveszély színhelyén
+      <NJ>      követik el.”
+    """
+    resulting_structure = quick_parse_structure(act_text, parse_block_amendments=True)
+    amended_structure = resulting_structure.article("2").paragraph().block_amendment()
+    assert amended_structure.children is not None
+    assert len(amended_structure.children) == 1
+    assert isinstance(amended_structure.children[0], Article)
+    the_article: Article = amended_structure.children[0]
+
+    assert the_article.paragraph('2').point('b').subpoint('bb').text == "üzletszerűen,"
+    assert the_article.paragraph('2').point('b').subpoint('bc').text == \
+        "dolog elleni erőszakkal – ideértve azt is, ha a dolog eltulajdonításának megakadályozására szolgáló eszközt " \
+        "állagsérelem okozása nélkül eltávolítják, vagy a dolog eltulajdonításának megakadályozására alkalmatlanná teszik –,"
+    assert the_article.paragraph('2').wrap_up == 'követik el.'
+    assert the_article.paragraph('3').point('b').subpoint('be').text == 'nemesfémre vagy'
+    assert the_article.paragraph('5').wrap_up == 'követik el.'
+    assert the_article.paragraph('6').wrap_up == 'követik el.'
