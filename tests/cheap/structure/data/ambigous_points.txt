@@ -23,5 +23,5 @@
           a) one real subpoint
           b) two real subpoints
           However, if there is
-          2. another point, then we can do nothing but have
-          numeric subpoints. Such is life.
+          2. another point, then we can do nothing but have numeric subpoints.
+          Such is life.

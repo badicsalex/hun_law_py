@@ -1,0 +1,141 @@
+{
+    "children": [
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "children": [
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "1",
+                            "text": "1 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "2",
+                            "text": "2 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "3",
+                            "text": "3 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "4",
+                            "text": "4 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "5",
+                            "text": "5 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "6",
+                            "text": "6 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "7",
+                            "text": "7 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "8",
+                            "text": "8 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "9",
+                            "text": "9 pontbol, vagy"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "10",
+                            "text": "10 pontbol,"
+                        }
+                    ],
+                    "intro": "A szamozott pontok akkor is pontok, ha",
+                    "wrap_up": "allnak."
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "children": [
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "1",
+                            "text": "1 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "2",
+                            "text": "2 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "3",
+                            "text": "3 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "4",
+                            "text": "4 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "5",
+                            "text": "5 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "6",
+                            "text": "6 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "7",
+                            "text": "7 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "8",
+                            "text": "8 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "9",
+                            "text": "9 pontbol,"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "10",
+                            "text": "kilenc plusz egy pontbol, vagy"
+                        },
+                        {
+                            "__type__": "NumericPoint",
+                            "identifier": "11",
+                            "text": "11 pontbol,"
+                        }
+                    ],
+                    "intro": "Sot, akkor is, ha",
+                    "wrap_up": "allnak."
+                }
+            ],
+            "identifier": "1"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "publication_date": {
+        "day": 7,
+        "month": 6,
+        "year": 2345
+    },
+    "subject": "A tesztelésről"
+}

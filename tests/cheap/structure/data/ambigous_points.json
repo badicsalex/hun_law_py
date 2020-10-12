@@ -111,9 +111,10 @@
                         {
                             "__type__": "NumericPoint",
                             "identifier": "2",
-                            "text": "another point, then we can do nothing but have numeric subpoints. Such is life."
+                            "text": "another point, then we can do nothing but have numeric subpoints."
                         }
-                    ]
+                    ],
+                    "wrap_up": "Such is life."
                 }
             ]
         }

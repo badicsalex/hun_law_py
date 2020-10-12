@@ -432,12 +432,9 @@ class NumericPointParser(SubArticleElementParser):
 
     PARENT_MUST_HAVE_INTRO = True  # 47. § (2)
     PARENT_MUST_HAVE_MULTIPLE_OF_THIS = True
-    # No PARENT_CAN_HAVE_WRAPUP, because it looks like numbered lists are usuaally
-    # not well-indented, i.e.:
-    # 1. Element: blalbalba, lalblblablabl, lbalb
-    # blballabalvblbla, lbblaa.
-    # 2. Element: saddsadasdsadsa, adsdsadas
-    # adsasddas.
+    # WARN: numbered list MIGHT not be properly indented. At least there was a warning here before.
+    # So beware.
+    PARENT_CAN_HAVE_WRAPUP = True
 
     HEADER_REGEX = re.compile(r'([0-9]+(/?[a-z])?)\. ')
 

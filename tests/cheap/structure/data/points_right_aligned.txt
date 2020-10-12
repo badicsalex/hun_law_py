@@ -1,0 +1,26 @@
+            1. § A szamozott pontok akkor is pontok, ha
+                 1. 1 pontbol,
+                 2. 2 pontbol,
+                 3. 3 pontbol,
+                 4. 4 pontbol,
+                 5. 5 pontbol,
+                 6. 6 pontbol,
+                 7. 7 pontbol,
+                 8. 8 pontbol,
+                 9. 9 pontbol, vagy
+                10. 10 pontbol,
+                allnak.
+            1. § Sot, akkor is, ha
+                 1. 1 pontbol,
+                 2. 2 pontbol,
+                 3. 3 pontbol,
+                 4. 4 pontbol,
+                 5. 5 pontbol,
+                 6. 6 pontbol,
+                 7. 7 pontbol,
+                 8. 8 pontbol,
+                 9. 9 pontbol,
+                10.  kilenc plusz
+                    egy pontbol, vagy
+                11. 11 pontbol,
+                allnak.
