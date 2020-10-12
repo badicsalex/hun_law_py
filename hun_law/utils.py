@@ -326,7 +326,7 @@ def is_uppercase_hun(s: str) -> bool:
     return True
 
 
-def indented_line_wrapped_print(s: str, indent_string: str = "", width: int = 120, file: Optional[TextIO] = None) -> None:
+def indented_line_wrapped_print(s: str, indent_string: str = "", width: int = 90, file: Optional[TextIO] = None) -> None:
     for l in textwrap.wrap(s, width-len(indent_string)):
         if file is not None:
             print(indent_string + l, file=file)
