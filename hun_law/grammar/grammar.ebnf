@@ -288,11 +288,6 @@ text_amendment_part::TextAmendmentPart =
     ("szöveggel"| "szöveg" | "szövegrész")
     ;
 # ============ ARTICLE TITLE AMENDMENT PARSING ==============
-#   Article Title change:
-#   "A Ptk. 5:99. § címében az „átruházása” szövegrész helyébe az „átruházása és megterhelése” szöveg lép."
-#
-#   Title change
-#   "6:534. § címe az „életviszonyok” szövegrész helyett az „értékviszonyok” szöveggel
 article_title_token = /cím[a-zéáőúöüóíű]+/;
 article_title_amendment::ArticleTitleAmendment =
     /[Aa]z?/ act_title act_reference:act_reference
