@@ -1625,6 +1625,26 @@ replacement_fixups: ReplacementsType = {
             "replacement": "Hungary Mongolia”"
         }
     ],
+    "2016. évi XLIV. törvény": [
+        {
+            "needle": "a kérelmezővel szemben lefolytatott fegyelmi eljárásokat.",
+            "replacement": "a kérelmezővel szemben lefolytatott fegyelmi eljárásokat.”"
+        },
+        {
+            "needle": "az Európai Könyvvizsgálat-felügyeleti Szervek Bizottságával (a továbbiakban: CEAOB).",
+            "replacement": "az Európai Könyvvizsgálat-felügyeleti Szervek Bizottságával (a továbbiakban: CEAOB).”"
+        },
+        {
+            "needle": "„68. § (1) Amennyiben a harmadik országbeli illetőséggel rendelkező gazdálkodó (szervezet) átruházható",
+            "replacement": "68. § (1) Amennyiben a harmadik országbeli illetőséggel rendelkező gazdálkodó (szervezet) átruházható"
+        }
+    ],
+    "2016. évi XXXVIII. törvény": [
+        {
+            "needle": "1. 9. § (2) bekezdésében a „7. § (5) bekezdése” szövegrész helyébe a „7. § (10)” bekezdése” szövegrész,",
+            "replacement": "1. 9. § (2) bekezdésében a „7. § (5) bekezdése” szövegrész helyébe a „7. § (10) bekezdése” szövegrész,"
+        }
+    ],
     "2017. évi CLXXXII. törvény": [
         {
             "needle": "közhírré teszi.”",
@@ -1699,6 +1719,226 @@ replacement_fixups: ReplacementsType = {
         {
             "needle": "Magyarország Kormánya nevében Maryland Állam nevében“",
             "replacement": "Magyarország Kormánya nevében Maryland Állam nevében”"
+        }
+    ],
+    "2017. évi CXL. törvény": [
+        {
+            "needle": "– a vámkontingensek teljes mennyiségét alkalmazzák.”",
+            "replacement": "– a vámkontingensek teljes mennyiségét alkalmazzák.””"
+        }
+    ],
+    "2017. évi CXLI. törvény": [
+        {
+            "needle": "lényegesen nehezebb lenne.“",
+            "replacement": "lényegesen nehezebb lenne.”"
+        },
+        {
+            "needle": "Ungarn und die Republik Österreich (im Folgenden: „Vertragsstaaten“),",
+            "replacement": "Ungarn und die Republik Österreich (im Folgenden: „Vertragsstaaten”),"
+        },
+        {
+            "needle": "der Fassung des Berichtigungsprotokolls vom 12. Juli 2005 (im Folgenden: „Vertrag“) wie folgt zu ändern:",
+            "replacement": "der Fassung des Berichtigungsprotokolls vom 12. Juli 2005 (im Folgenden: „Vertrag”) wie folgt zu ändern:"
+        },
+        {
+            "needle": "und Bekämpfung der grenzüberschreitenden Kriminalität“",
+            "replacement": "und Bekämpfung der grenzüberschreitenden Kriminalität”"
+        },
+        {
+            "needle": "(2) In der Präambel des Vertrages wird die Wortfolge „die Republik Ungarn“ durch das Wort „Ungarn“ ersetzt.",
+            "replacement": "(2) In der Präambel des Vertrages wird die Wortfolge „die Republik Ungarn” durch das Wort „Ungarn” ersetzt."
+        },
+        {
+            "needle": "(3) In Artikel 25 Absatz 2 der ungarischen Sprachfassung wird die Wortfolge „A Magyar Szerződő Állam“ durch das",
+            "replacement": "(3) In Artikel 25 Absatz 2 der ungarischen Sprachfassung wird die Wortfolge „A Magyar Szerződő Állam” durch das"
+        },
+        {
+            "needle": "Wort „Magyarország“ ersetzt. In Artikel 25 Absatz 2 der deutschen Sprachfassung wird die Wortfolge „der Republik",
+            "replacement": "Wort „Magyarország” ersetzt. In Artikel 25 Absatz 2 der deutschen Sprachfassung wird die Wortfolge „der Republik"
+        },
+        {
+            "needle": "Ungarn“ durch das Wort „Ungarn“ ersetzt.",
+            "replacement": "Ungarn” durch das Wort „Ungarn” ersetzt."
+        },
+        {
+            "needle": "dessen bevollmächtigte Vertreter.“",
+            "replacement": "dessen bevollmächtigte Vertreter.”"
+        },
+        {
+            "needle": "andere in deren Auftrag handelnde Justizbehörden.“",
+            "replacement": "andere in deren Auftrag handelnde Justizbehörden.”"
+        },
+        {
+            "needle": "– der Bundesminister für Inneres.“",
+            "replacement": "– der Bundesminister für Inneres.”"
+        },
+        {
+            "needle": "fahrplanmäßigen Haltebahnhof.“",
+            "replacement": "fahrplanmäßigen Haltebahnhof.”"
+        },
+        {
+            "needle": "fremdenpolizeilichen Bereich.“",
+            "replacement": "fremdenpolizeilichen Bereich.”"
+        },
+        {
+            "needle": "gemeinsam die Schwerpunkte und beraten und stimmen die erforderlichen Maßnahmen ab.“",
+            "replacement": "gemeinsam die Schwerpunkte und beraten und stimmen die erforderlichen Maßnahmen ab.”"
+        },
+        {
+            "needle": "Sicherheit.“",
+            "replacement": "Sicherheit.”"
+        },
+        {
+            "needle": "– der Bundesminister für Inneres / Generaldirektion für die öffentliche Sicherheit / Bundeskriminalamt.“",
+            "needle_prev_lines": [
+                "Direktion für Spezialeinheiten,"
+            ],
+            "replacement": "– der Bundesminister für Inneres / Generaldirektion für die öffentliche Sicherheit / Bundeskriminalamt.”"
+        },
+        {
+            "needle": "Verhinderung oder Aufklärung der strafbaren Handlungen notwendig sind;“",
+            "replacement": "Verhinderung oder Aufklärung der strafbaren Handlungen notwendig sind;”"
+        },
+        {
+            "needle": "die für den anderen Vertragsstaat von Bedeutung sein könnten, mitgeteilt;“",
+            "replacement": "die für den anderen Vertragsstaat von Bedeutung sein könnten, mitgeteilt;”"
+        },
+        {
+            "needle": "und Aufklärung einer strafbaren Handlung erforderlich sind.“",
+            "replacement": "und Aufklärung einer strafbaren Handlung erforderlich sind.”"
+        },
+        {
+            "needle": "innerstaatliche Recht beider Vertragsstaaten es erlaubt,“",
+            "replacement": "innerstaatliche Recht beider Vertragsstaaten es erlaubt,”"
+        },
+        {
+            "needle": "geregelt.“",
+            "replacement": "geregelt.”"
+        },
+        {
+            "needle": "Verfügung gestellt hat.“",
+            "replacement": "Verfügung gestellt hat.”"
+        },
+        {
+            "needle": "Observation darf auf dem Land-, Luft- und Wasserweg durchgeführt werden.“",
+            "replacement": "Observation darf auf dem Land-, Luft- und Wasserweg durchgeführt werden.”"
+        },
+        {
+            "needle": "– der Bundesminister für Inneres / Generaldirektion für die öffentliche Sicherheit.“",
+            "replacement": "– der Bundesminister für Inneres / Generaldirektion für die öffentliche Sicherheit.”"
+        },
+        {
+            "needle": "aus einem Drittstaat erfolgen.“",
+            "replacement": "aus einem Drittstaat erfolgen.”"
+        },
+        {
+            "needle": "– die Landespolizeidirektion Burgenland.“",
+            "replacement": "– die Landespolizeidirektion Burgenland.”"
+        },
+        {
+            "needle": "Ort anhalten, sowie aus Sicherheitsgründen die Kleidung und das Gepäck dieser Person durchsuchen.“",
+            "replacement": "Ort anhalten, sowie aus Sicherheitsgründen die Kleidung und das Gepäck dieser Person durchsuchen.”"
+        },
+        {
+            "needle": "ohne zeitliche Begrenzung durchgeführt werden.“",
+            "replacement": "ohne zeitliche Begrenzung durchgeführt werden.”"
+        },
+        {
+            "needle": "– der Bundesminister für Inneres / Generaldirektion für die öffentliche Sicherheit / Bundeskriminalamt.“",
+            "needle_prev_lines": [
+                "b) auf Seiten der Republik Österreich:"
+            ],
+            "replacement": "– der Bundesminister für Inneres / Generaldirektion für die öffentliche Sicherheit / Bundeskriminalamt.”"
+        },
+        {
+            "needle": "erschwert würde.“",
+            "replacement": "erschwert würde.”"
+        },
+        {
+            "needle": "unverzüglich zu beenden.“",
+            "replacement": "unverzüglich zu beenden.”"
+        },
+        {
+            "needle": "Handlungen anhängig sind, und daher eine Abstimmung der Ermittlungen erforderlich ist.“",
+            "replacement": "Handlungen anhängig sind, und daher eine Abstimmung der Ermittlungen erforderlich ist.”"
+        },
+        {
+            "needle": "„Die gemeinsame Ermittlungsgruppe kommt im Einzelfall aufgrund einer Vereinbarung der Behörden zustande.“",
+            "replacement": "„Die gemeinsame Ermittlungsgruppe kommt im Einzelfall aufgrund einer Vereinbarung der Behörden zustande.”"
+        },
+        {
+            "needle": "„f) die Rechte und Pflichten des Beamten der Behörde des anderen Vertragsstaates;“",
+            "replacement": "„f) die Rechte und Pflichten des Beamten der Behörde des anderen Vertragsstaates;”"
+        },
+        {
+            "needle": "an der im vorliegenden Vertrag geregelten Zusammenarbeit teilnehmen.“",
+            "replacement": "an der im vorliegenden Vertrag geregelten Zusammenarbeit teilnehmen.”"
+        },
+        {
+            "needle": "– der Bundesminister für Inneres / das Bundesamt zur Korruptionsprävention und Korruptionsbekämpfung.“",
+            "replacement": "– der Bundesminister für Inneres / das Bundesamt zur Korruptionsprävention und Korruptionsbekämpfung.”"
+        },
+        {
+            "needle": "Kontrollmaßnahmen durch.“",
+            "replacement": "Kontrollmaßnahmen durch.”"
+        },
+        {
+            "needle": "„Gemischter Streifendienst“",
+            "replacement": "„Gemischter Streifendienst”"
+        },
+        {
+            "needle": "Handlungen dürfen die Behörden der Vertragsstaaten einen gemischten Streifendienst durchführen.“",
+            "replacement": "Handlungen dürfen die Behörden der Vertragsstaaten einen gemischten Streifendienst durchführen.”"
+        },
+        {
+            "needle": "„sowie deren Kleidung und Gepäck aus Sicherheitsgründen zu durchsuchen.“",
+            "replacement": "„sowie deren Kleidung und Gepäck aus Sicherheitsgründen zu durchsuchen.”"
+        },
+        {
+            "needle": "(4) Absätze 1 bis 3 gelten entsprechend für den Schiffsverkehr.“",
+            "replacement": "(4) Absätze 1 bis 3 gelten entsprechend für den Schiffsverkehr.”"
+        },
+        {
+            "needle": "Vertragsstaates gestattet.“",
+            "replacement": "Vertragsstaates gestattet.”"
+        },
+        {
+            "needle": "Vertragsstaaten es erlaubt;“",
+            "replacement": "Vertragsstaaten es erlaubt;”"
+        },
+        {
+            "needle": "Datenantrages anzugeben;“",
+            "replacement": "Datenantrages anzugeben;”"
+        },
+        {
+            "needle": "Zweck, zugestimmt.“",
+            "replacement": "Zweck, zugestimmt.”"
+        },
+        {
+            "needle": "– Informationssicherheitskommission.“",
+            "replacement": "– Informationssicherheitskommission.”"
+        },
+        {
+            "needle": "Eisenbahn- oder Schifffahrtsunternehmens auf deren Nachfrage nachzuweisen.“",
+            "replacement": "Eisenbahn- oder Schifffahrtsunternehmens auf deren Nachfrage nachzuweisen.”"
+        },
+        {
+            "needle": "entrichten sind, befreit.“",
+            "replacement": "entrichten sind, befreit.”"
+        },
+        {
+            "needle": "beeinträchtigt und nicht den Rechtsvorschriften des Vertragsstaates, in dem der Einsatz stattfindet, widerspricht.“",
+            "replacement": "beeinträchtigt und nicht den Rechtsvorschriften des Vertragsstaates, in dem der Einsatz stattfindet, widerspricht.”"
+        },
+        {
+            "needle": "den Durchgangsverkehr das Recht des Durchgangsstaats Anwendung.“",
+            "replacement": "den Durchgangsverkehr das Recht des Durchgangsstaats Anwendung.”"
+        }
+    ],
+    "2017. évi CXLIII. törvény": [
+        {
+            "needle": "„(1) A 32/A. § (1) bekezdés alapján hozott határozat három napon belül közigazgatási perben megtámadható.",
+            "replacement": "„32/B. § (1) A 32/A. § (1) bekezdés alapján hozott határozat három napon belül közigazgatási perben megtámadható."
         }
     ],
     "2017. évi CXV. törvény": [
