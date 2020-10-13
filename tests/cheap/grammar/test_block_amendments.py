@@ -63,18 +63,21 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "Az Eht. 188. §-a a következő 31/a. ponttal egészül ki:",
         BlockAmendment(
             position=ref("Eht.", "188", None, "31/a"),
+            pure_insertion=True,
         )
     ),
     (
         "A légiközlekedésről szóló 1995. évi XCVII. törvény 71. §-a a következő 3a. ponttal egészül ki:",
         BlockAmendment(
             position=ref("1995. évi XCVII. törvény", "71", None, "3a"),
+            pure_insertion=True,
         )
     ),
     (
         "A Víziközmű tv. 63. §-a a következő (5)–(7) bekezdéssel egészül ki:",
         BlockAmendment(
             position=ref("Víziközmű tv.", "63", ("5", "7")),
+            pure_insertion=True,
         )
     ),
     (
@@ -93,6 +96,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Ptk. 3:391. §-a a következő (3) bekezdéssel kiegészülve lép hatályba:",
         BlockAmendment(
             position=ref("Ptk.", "3:391", "3"),
+            pure_insertion=True,
         )
     ),
     (
@@ -111,6 +115,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Gyvt. 69/D. §-a a következő (1a) és (1b) bekezdéssel egészül ki:",
         BlockAmendment(
             position=ref("Gyvt.", "69/D", ("1a", "1b")),
+            pure_insertion=True,
         )
     ),
     (
@@ -171,6 +176,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "Az egyszerűsített foglalkoztatásról szóló 2010. évi LXXV. törvény (a továbbiakban: Efotv.) a következő 1. § (1a) bekezdéssel egészül ki:",
         BlockAmendment(
             position=ref("2010. évi LXXV. törvény", "1", "1a"),
+            pure_insertion=True,
         )
     ),
     (
@@ -195,6 +201,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Btk. XX. Fejezete a következő alcímmel és 212/A. §-sal kiegészülve lép hatályba:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "212/A")),
+            pure_insertion=True,
         )
     ),
     (
@@ -207,48 +214,56 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Btk. a 300. §-t megelőzően a következő alcímmel egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "300")),
+            pure_insertion=True,
         )
     ),
     (
         "A Btk. XXVII. Fejezete a következő alcímmel és 300/A. §-sal egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "300/A")),
+            pure_insertion=True,
         )
     ),
     (
         "A Btk. Terrorcselekmény alcíme a következő 316/A. §-sal egészül ki:",
         BlockAmendment(
             position=ref("Btk.", "316/A"),
+            pure_insertion=True,
         ),
     ),
     (
         "A Btk. Terrorizmus finanszírozása alcíme a következő 318/A. és 318/B. §-sal egészül ki:",
         BlockAmendment(
             position=ref("Btk.", ("318/A", "318/B")),
+            pure_insertion=True,
         ),
     ),
     (
         "A Btk. a 404. §-t követően a következő alcímmel és 404/A. §-sal kiegészülve lép hatályba:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "404/A")),
+            pure_insertion=True,
         ),
     ),
     (
         "A Btk. a következő 226/A. §-sal és az azt megelőző alcímmel egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "226/A")),
+            pure_insertion=True,
         ),
     ),
     (
         "A Btk. „Új pszichoaktív anyaggal visszaélés” alcíme a következő 184/A–184/D. §-sal egészül ki:",
         BlockAmendment(
             position=ref("Btk.", ("184/A", "184/D")),
+            pure_insertion=True,
         ),
     ),
     (
         "A Btk. XXIV. Fejezete a következő alcímmel és 261/A. §-sal egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "261/A")),
+            pure_insertion=True,
         ),
     ),
     (
@@ -263,12 +278,14 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
             # Not a range here, because this is more of an insertion point.
             # MAYBE TODO
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "352/A")),
+            pure_insertion=True,
         ),
     ),
     (
         "A Btk. a következő alcímmel és 410/A. §-sal egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "410/A")),
+            pure_insertion=True,
         ),
     ),
     (
@@ -281,6 +298,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Btk. IX. Fejezete a 92/A. §-t követően a következő alcímmel egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER, "92/A")),
+            pure_insertion=True,
         ),
     ),
     (
@@ -293,6 +311,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Btk. a 124. §-t követően a következő alcímmel és 124/A. §-sal egészül ki:",
         BlockAmendment(
             position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "124/A")),
+            pure_insertion=True,
         ),
     ),
     (
@@ -329,12 +348,14 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Ptk. Harmadik Könyve a következő VIII. Címmel egészül ki:",
         BlockAmendment(
             position=StructuralReference("Ptk.", book="3", title="8"),
+            pure_insertion=True,
         ),
     ),
     (
         "Az Szt. a következő VI/A. Fejezettel egészül ki:",
         BlockAmendment(
             position=StructuralReference("Szt.", chapter="6/A"),
+            pure_insertion=True,
         ),
     ),
     (
@@ -359,6 +380,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Polgári Törvénykönyvről szóló 2013. évi V. törvény hatálybalépésével összefüggő átmeneti és felhatalmazó rendelkezésekről szóló 2013. évi CLXXVII. törvény 5. alcíme a következő 12/A. §-sal egészül ki:",
         BlockAmendment(
             position=ref("2013. évi CLXXVII. törvény", "12/A"),
+            pure_insertion=True,
         ),
     ),
     (
@@ -383,6 +405,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         "A Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: Btk.) 322. §-át követően a következő alcím címmel és 322/A. §-sal egészül ki:",
         BlockAmendment(
             position=StructuralReference("2012. évi C. törvény",  special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "322/A")),
+            pure_insertion=True,
         ),
     ),
 )

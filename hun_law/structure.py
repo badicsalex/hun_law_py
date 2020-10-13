@@ -971,6 +971,7 @@ class ActIdAbbreviation:
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class BlockAmendment(SemanticData):
     position: Union[Reference, StructuralReference]
+    pure_insertion: bool = False
 
     def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'BlockAmendment':
         position = self.position.resolve_abbreviations(abbreviations_map)

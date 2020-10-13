@@ -386,7 +386,7 @@ class BlockAmendmentToBlockAmendment(ModelConverter):
             else:
                 yield BlockAmendment(position=amended_reference)
         elif inserted_reference is not None:
-            yield BlockAmendment(position=inserted_reference)
+            yield BlockAmendment(position=inserted_reference, pure_insertion=True)
         else:
             # One or both references were misparsed probably, or grammar is wrong
             # Don't fail horribly in this case, as the rest of the text is probably
@@ -399,7 +399,7 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
     CONVERTED_TYPE = model.BlockAmendmentWithSubtitle
 
     @classmethod
-    def convert_one(cls, structural_reference: StructuralReference, reference: Reference) -> BlockAmendment:
+    def convert_one(cls, structural_reference: StructuralReference, reference: Reference, pure_insertion: bool = False) -> BlockAmendment:
         if reference.article is not None:
             article_id = reference.article
             if isinstance(article_id, tuple):
@@ -415,7 +415,7 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
             )
         else:
             position = structural_reference
-        return BlockAmendment(position=position)
+        return BlockAmendment(position=position, pure_insertion=pure_insertion)
 
     @classmethod
     def convert(cls, tree_element: model.BlockAmendment) -> Iterable[BlockAmendment]:
@@ -434,7 +434,7 @@ class BlockAmendmentWithSubtitleToBlockAmendment(ModelConverter):
                 raise ValueError("Simultaneous insertion and amendments with Subtitles not yet supported")
             yield cls.convert_one(structural_reference, amended_reference)
         else:
-            yield cls.convert_one(structural_reference, inserted_reference)
+            yield cls.convert_one(structural_reference, inserted_reference, pure_insertion=True)
 
 
 class BlockAmendmentStructuralToBlockAmendment(ModelConverter):
@@ -459,6 +459,7 @@ class BlockAmendmentStructuralToBlockAmendment(ModelConverter):
             inserted_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.inserted_reference)
             yield BlockAmendment(
                 position=inserted_reference,
+                pure_insertion=True,
             )
 
 
