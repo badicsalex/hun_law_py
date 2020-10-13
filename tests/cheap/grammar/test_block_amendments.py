@@ -379,6 +379,12 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
             position=StructuralReference("Btk.", subtitle="Terrorizmus finanszírozása"),
         ),
     ),
+    (
+        "A Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: Btk.) 322. §-át követően a következő alcím címmel és 322/A. §-sal egészül ki:",
+        BlockAmendment(
+            position=StructuralReference("2012. évi C. törvény",  special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITH_ARTICLE, "322/A")),
+        ),
+    ),
 )
 
 # TODO:

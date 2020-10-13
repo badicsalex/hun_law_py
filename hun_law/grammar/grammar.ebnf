@@ -163,7 +163,7 @@ title_insertion_with_book::TitleNumber::StructuralReference =
     insertion_token
     id:(roman [["/"] /[A-Z]/]) "." title_suffix;
 
-subtitle_token = ("alcímmel" | "alcímekkel" | "alcím-megjelölése" | "alcím-megjelölés" |  "alcíme" | "alcím" ["címe"]);
+subtitle_token = ("alcímmel" | "alcímekkel" | "alcím-megjelölése" | "alcím-megjelölés" |  "alcíme" | "alcím" [/ *cím[a-zéáőúöüóíű]*/]);
 
 reference_with_subtitle::ReferenceWithSubtitle::Reference =
     | subtitle_token "és" article:article_reference
