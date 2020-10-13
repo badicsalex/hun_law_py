@@ -248,6 +248,7 @@ class SubArticleParsingError(StructureParsingError):
 
 
 WRAPUP_DETECTION_MARGIN_RIGHT_THRESHOLD = 20
+SIMILAR_INDENT_THRESHOLD = 1
 
 
 class SubArticleElementParser(ABC):
@@ -369,7 +370,9 @@ class SubArticleElementParser(ABC):
             # Assume line-broken points are indented, while the wrapup will be at the same level as the headers
             header_indent = lines[0].indent
             for i in range(len(lines)-1):
-                if similar_indent(lines[i + 1].indent, header_indent):
+                # No indentation should be less than the header indent in well-formed cases, but
+                # It happens in Btk., so check for that instead of only similar_indent
+                if lines[i + 1].indent < header_indent + SIMILAR_INDENT_THRESHOLD:
                     return lines[:i+1], join_line_strs(l.content for l in lines[i+1:])
         else:
             # Assume that the line is not justified just before the wrap-up
@@ -818,4 +821,4 @@ class BlockAmendmentStructureParser:
 
 def similar_indent(a: float, b: float) -> bool:
     # Super scientific
-    return abs(a - b) < 1
+    return abs(a - b) < SIMILAR_INDENT_THRESHOLD

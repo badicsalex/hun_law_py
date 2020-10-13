@@ -1,0 +1,86 @@
+{
+    "children": [
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "intro": "A jogtalan támadást úgy kell tekinteni, mintha az a védekező életének kioltására is irányult volna, ha",
+                    "children": [
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "a",
+                            "intro": "azt személy ellen",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "aa",
+                                    "text": "éjjel,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ab",
+                                    "text": "fegyveresen,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ac",
+                                    "text": "felfegyverkezve vagy"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ad",
+                                    "text": "csoportosan"
+                                }
+                            ],
+                            "wrap_up": "követik el,"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "b",
+                            "intro": "az a lakásba",
+                            "children": [
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "ba",
+                                    "text": "éjjel,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "bb",
+                                    "text": "fegyveresen,"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "bc",
+                                    "text": "felfegyverkezve vagy"
+                                },
+                                {
+                                    "__type__": "AlphabeticSubpoint",
+                                    "identifier": "bd",
+                                    "text": "csoportosan"
+                                }
+                            ],
+                            "wrap_up": "történő jogtalan behatolás, vagy"
+                        },
+                        {
+                            "__type__": "AlphabeticPoint",
+                            "identifier": "c",
+                            "text": "az a lakáshoz tartozó bekerített helyre fegyveresen történő jogtalan behatolás."
+                        }
+                    ],
+                    "identifier": "1"
+                }
+            ],
+            "identifier": "1"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "publication_date": {
+        "day": 7,
+        "month": 6,
+        "year": 2345
+    },
+    "subject": "A tesztelésről"
+}
+
