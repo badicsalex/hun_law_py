@@ -914,7 +914,7 @@ class Reference:
 class SubtitleArticleComboType(Enum):
     BEFORE_WITH_ARTICLE = 1
     BEFORE_WITHOUT_ARTICLE = 2
-    AFTER_WITHOUT_ARTICLE = 3
+    AFTER = 3
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)

@@ -280,7 +280,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
     (
         "A Btk. IX. Fejezete a 92/A. §-t követően a következő alcímmel egészül ki:",
         BlockAmendment(
-            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "92/A")),
+            position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER, "92/A")),
         ),
     ),
     (

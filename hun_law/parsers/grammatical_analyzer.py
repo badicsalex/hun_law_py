@@ -252,7 +252,7 @@ class ReferenceConversionHelper:
             return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "".join(reference.id)))
 
         if isinstance(reference, model.AfterArticle):
-            return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER_WITHOUT_ARTICLE, "".join(reference.id)))
+            return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.AFTER, "".join(reference.id)))
 
         if isinstance(reference, model.SubtitleNumber):
             return StructuralReference(act_id, subtitle=Subtitle.identifier_from_string("".join(reference.id)))
