@@ -366,7 +366,19 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
         BlockAmendment(
             position=ref("Ket.", "172", None, ("p", "t")),
         ),
-    )
+    ),
+    (
+        "A Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: Btk.) „Emberkereskedelem” című alcíme helyébe a következő rendelkezés lép:",
+        BlockAmendment(
+            position=StructuralReference("2012. évi C. törvény", subtitle="Emberkereskedelem"),
+        ),
+    ),
+    (
+        "A Btk. Terrorizmus finanszírozása alcíme helyébe a következő rendelkezés lép:",
+        BlockAmendment(
+            position=StructuralReference("Btk.", subtitle="Terrorizmus finanszírozása"),
+        ),
+    ),
 )
 
 # TODO:

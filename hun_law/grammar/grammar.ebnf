@@ -118,7 +118,7 @@ list_separator = (["," | ";"] ("és" | "valamint" | "illetve" | "vagy")) | "," |
 
 after_article::AfterArticle::StructuralReference = [az] >article_id "." article_suffix ("követően" | "követő" );
 before_article::BeforeArticle::StructuralReference = [az] >article_id "." article_suffix ("megelőzően" | "megelőző" );
-subtitle_title::SubtitleTitle::StructuralReference = {!"alcíme" any_token} "alcíme";
+subtitle_title::SubtitleTitle::StructuralReference = (quoted_title:quote | raw_title:{!"alcíme" !"című" any_token}) ["című"] "alcíme";
 
 subtitle_number::SubtitleNumber::StructuralReference =
     id:(number [["/"] /[A-Z]/])  "." subtitle_suffix;
@@ -140,6 +140,7 @@ title_suffix = /Cím[a-zéáőúöüóíű]+/ | "Cím";
 
 any_structural_reference =
     | subtitle_number
+    | subtitle_title
     | chapter_number
     | part_number
     | title_number
@@ -191,7 +192,6 @@ insertion_suffix =
 structural_position_reference =
     | [chapter_number] structural_reference:after_article
     | [chapter_number] structural_reference:before_article
-    | subtitle_title
     | structural_reference:(>any_structural_reference)
     ;
 

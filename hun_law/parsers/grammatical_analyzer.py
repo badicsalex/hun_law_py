@@ -236,6 +236,17 @@ class ReferenceConversionHelper:
 
     @classmethod
     def convert_structural_reference(cls, act_id: str, reference: model.StructuralReference) -> StructuralReference:
+        # Sorry pylint, the alternative is having 8 2-line functions and a huge mapping,
+        # and at this point I'm not willing to do that.
+        # pylint: disable=too-many-return-statements
+        if isinstance(reference, model.SubtitleTitle):
+            if reference.raw_title is not None:
+                title = " ".join(reference.raw_title)
+            else:
+                assert reference.quoted_title is not None
+                title = convert_quote_to_string(reference.quoted_title)
+            return StructuralReference(act_id, subtitle=title)
+
         assert reference.id is not None
         if isinstance(reference, model.BeforeArticle):
             return StructuralReference(act_id, special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "".join(reference.id)))
