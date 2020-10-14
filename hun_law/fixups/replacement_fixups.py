@@ -2208,5 +2208,11 @@ replacement_fixups: ReplacementsType = {
             "needle": "„44a. képzés: a 22/C. § alkalmazásában olyan oktatást tartalmazó képzés, amely nem kizárólag vagy nem",
             "replacement": "„44/a. képzés: a 22/C. § alkalmazásában olyan oktatást tartalmazó képzés, amely nem kizárólag vagy nem"
         }
+    ],
+    "2020. évi V. törvény": [
+        {
+            "needle": "12. § A Btk. XIX. fejezete a következő alcímmel egészül ki:",
+            "replacement": "12. § A Btk. a következő alcímmel és 207/A. §-al egészül ki:"
+        }
     ]
 }
