@@ -285,7 +285,7 @@ text_amendment_part::TextAmendmentPart =
     [az] original_text:quote
     ("szövegrészek"| "szövegrész") ("helyébe" | "helyett")
     [az] replacement_text:quote
-    ("szöveggel"| "szöveg" | "szövegrész")
+    (&list_separator | "szöveggel"| "szöveg" | "szövegrész")
     ;
 # ============ ARTICLE TITLE AMENDMENT PARSING ==============
 article_title_token = /cím[a-zéáőúöüóíű]+/;

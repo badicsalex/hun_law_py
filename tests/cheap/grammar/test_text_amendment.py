@@ -137,6 +137,31 @@ CASES: Tuple[Tuple[str, Tuple[TextAmendment, ...]], ...] = (
             ),
         )
     ),
+    (
+        "A Btk. 294. § (1) bekezdésében és 296. § (1) bekezdésében az „előnyt kér, az előnyt” szövegrész helyébe a „jogtalan előnyt kér, a jogtalan előnyt”, az „előny kérőjével” szövegrész helyébe a „jogtalan előny kérőjével” szöveg lép.",
+        (
+            TextAmendment(
+                position=ref("Btk.", "294", "1"),
+                original_text="előnyt kér, az előnyt",
+                replacement_text="jogtalan előnyt kér, a jogtalan előnyt",
+            ),
+            TextAmendment(
+                position=ref("Btk.", "294", "1"),
+                original_text="előny kérőjével",
+                replacement_text="jogtalan előny kérőjével",
+            ),
+            TextAmendment(
+                position=ref("Btk.", "296", "1"),
+                original_text="előnyt kér, az előnyt",
+                replacement_text="jogtalan előnyt kér, a jogtalan előnyt",
+            ),
+            TextAmendment(
+                position=ref("Btk.", "296", "1"),
+                original_text="előny kérőjével",
+                replacement_text="jogtalan előny kérőjével",
+            ),
+        )
+    )
 )
 
 
