@@ -314,7 +314,7 @@ repeal::Repeal =
 
 any_token = word | number | /./;
 
-az = /az?/;
+az = /az? /;
 number_with_dot = number "." ;
 roman_with_dot = roman "." ;
 number = /[0-9]+/ ;

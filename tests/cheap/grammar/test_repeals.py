@@ -102,6 +102,13 @@ CASES: Tuple[Tuple[str, Tuple[Repeal, ...]], ...] = (
             Repeal(position=ref("Flt.", "39", "3", "a"), text="az álláskeresést ösztönző juttatás"),
         )
     ),
+    (
+        "Hatályát veszti a Büntető Törvénykönyvről szóló 2012. évi C. törvény 388. § (4) bekezdés a) pont ag) és ah) alpontja.",
+        (
+            Repeal(position=ref("2012. évi C. törvény", "388", "4", "a", ("ag", "ah"))),
+        ),
+    ),
+
 )
 
 
