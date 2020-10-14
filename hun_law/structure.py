@@ -127,9 +127,14 @@ class Part(StructuralElement):
     # 39. § (5)
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ', None)
 
+    special: bool = attr.ib(default=False)
+
     @property
     def formatted_identifier(self) -> str:
-        # TODO: special parts
+        if self.special:
+            result = self.SPECIAL_PARTS[int(self.identifier) - 1]
+            assert result is not None
+            return result
         return "{} RÉSZ".format(int_to_text_hun(int(self.identifier)).upper())
 
     @classmethod

@@ -3,7 +3,8 @@
         {
             "__type__": "Part",
             "identifier": "1",
-            "title": ""
+            "title": "",
+            "special": true
         },
         {
             "__type__": "Chapter",
@@ -28,7 +29,8 @@
         {
             "__type__": "Part",
             "identifier": "2",
-            "title": ""
+            "title": "",
+            "special": true
         },
         {
             "__type__": "Chapter",
@@ -65,7 +67,8 @@
         {
             "__type__": "Part",
             "identifier": "3",
-            "title": ""
+            "title": "",
+            "special": true
         },
         {
             "__type__": "Subtitle",

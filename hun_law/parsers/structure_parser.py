@@ -147,6 +147,12 @@ class PartParser(StructuralElementParser):
     # 39. § (5)
     SPECIAL_PARTS = ('ÁLTALÁNOS RÉSZ', 'KÜLÖNÖS RÉSZ', 'ZÁRÓ RÉSZ')
 
+    def parse(self, lines: Sequence[IndentedLine], properly_indented: bool) -> StructuralElement:
+        if lines[0].content in self.SPECIAL_PARTS:
+            identifier = str(self.SPECIAL_PARTS.index(lines[0].content) + 1)
+            return Part(identifier, "", special=True)
+        return super().parse(lines, properly_indented)
+
     def extract_identifier(self, line: IndentedLine) -> Optional[str]:
         # TODO: don't allow mixing of special and non-special
         if line.content in self.SPECIAL_PARTS:
