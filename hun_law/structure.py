@@ -1033,7 +1033,7 @@ class ArticleTitleAmendment(SemanticData):
 
 @attr.s(slots=True, frozen=True, auto_attribs=True, kw_only=True)
 class Repeal(SemanticData):
-    position: Reference
+    position: Union[Reference, StructuralReference]
     text: Optional[str] = None
 
     def resolve_abbreviations(self, abbreviations_map: Mapping[str, str]) -> 'Repeal':

@@ -27,6 +27,7 @@ start_default =
     | article_title_amendment $
     | enforcement_date $
     | repeal $
+    | structural_repeal $
     | {any_simple_expression}+ $;
 
 # ============ STRUCTURE PARSING ============
@@ -302,13 +303,21 @@ article_title_amendment::ArticleTitleAmendment =
 
 # ============ REPEAL PARSING ==============
 
-repeal::Repeal =
+repeal::SimpleRepeal::Repeal =
     ("Nem lép hatályba" | "Hatályát veszti")
     az act_title act_reference:act_reference
     { references+:reference [list_separator [az]] }+
     { [az] texts+:quote ["szövegrész"] [list_separator [az]]}*
     "."
     ;
+
+structural_repeal::StructuralRepeal::Repeal =
+    ("Nem lép hatályba" | "Hatályát veszti")
+    az act_title act_reference:act_reference
+    >structural_position_reference [subtitle_token]
+    "."
+    ;
+
 
 # ============ SIMPLE TOKENS ============
 

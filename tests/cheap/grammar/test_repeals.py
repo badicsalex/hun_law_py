@@ -20,7 +20,7 @@ from typing import Tuple
 import pytest
 
 from hun_law.parsers.grammatical_analyzer import GrammaticalAnalyzer
-from hun_law.structure import Repeal
+from hun_law.structure import Repeal, StructuralReference, SubtitleArticleCombo, SubtitleArticleComboType
 
 from tests.cheap.utils import ref
 
@@ -108,12 +108,23 @@ CASES: Tuple[Tuple[str, Tuple[Repeal, ...]], ...] = (
             Repeal(position=ref("2012. évi C. törvény", "388", "4", "a", ("ag", "ah"))),
         ),
     ),
-
+    (
+        "Hatályát veszti a Btk. 297. §-át megelőző alcíme.",
+        (
+            Repeal(position=StructuralReference("Btk.", special=SubtitleArticleCombo(SubtitleArticleComboType.BEFORE_WITHOUT_ARTICLE, "297"))),
+        )
+    ),
+    (
+        "Hatályát veszti a Btk. „Kényszermunka” című alcíme.",
+        (
+            Repeal(position=StructuralReference("Btk.", subtitle="Kényszermunka")),
+        )
+    ),
 )
 
 
 @pytest.mark.parametrize("s,correct_metadata", CASES)
 def test_text_amendment_parsing(s: str, correct_metadata: Tuple[Repeal, ...]) -> None:
-    parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
+    parsed = GrammaticalAnalyzer().analyze(s, print_result=True, debug=True)
     parsed_metadata = parsed.semantic_data
     assert correct_metadata == parsed_metadata

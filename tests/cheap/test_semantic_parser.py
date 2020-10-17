@@ -38,7 +38,9 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                            a)   a Polgári Törvénykönyvről szóló 1959. évi IV. törvény 261. § (4) bekezdése,
                            b)   a Polgári Törvénykönyv hatálybalépéséről és végrehajtásáról szóló 1960. évi 11. törvényerejű
                                 rendelet 83/A. §-a,
-                           c)   az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése.
+                           c)   az ingatlan-nyilvántartásról szóló 1997. évi CXLI. törvény 16/A. §-a és 91. § (2) bekezdése,
+                           d)   a Büntető Törvénykönyvről szóló 2012. évi C. törvény (a továbbiakban: Btk.) 1. §-a,
+                           e)   a Btk. „Kényszermunka” című alcíme.
         """,
         (
             (
@@ -64,6 +66,21 @@ CASES_WITHOUT_POSITIONS: List[Tuple[str, Tuple[Tuple[Reference, Tuple[Union[Refe
                     ref("1997. évi CXLI. törvény", "91", "2"),
                     Repeal(position=ref("1997. évi CXLI. törvény", "16/A")),
                     Repeal(position=ref("1997. évi CXLI. törvény", "91", "2")),
+                ),
+            ),
+            (
+                ref(None, "17", None, "d"),
+                (
+                    ref("2012. évi C. törvény"),
+                    ref("2012. évi C. törvény", "1"),
+                    Repeal(position=ref("2012. évi C. törvény", "1")),
+                ),
+            ),
+            (
+                ref(None, "17", None, "e"),
+                (
+                    ref("2012. évi C. törvény"),
+                    Repeal(position=StructuralReference("2012. évi C. törvény", subtitle="Kényszermunka")),
                 ),
             ),
         ),

@@ -599,11 +599,11 @@ class ArticleTitleAmendmentToReference(ModelConverter):
         yield OutgoingReference(ref_start_pos, ref_end_pos, Reference(act=act_id, article=article_id))
 
 
-class RepealToRepeal(ModelConverter):
-    CONVERTED_TYPE = model.Repeal
+class SimpleRepealToRepeal(ModelConverter):
+    CONVERTED_TYPE = model.SimpleRepeal
 
     @classmethod
-    def convert(cls, tree_element: model.Repeal) -> Iterable[Repeal]:
+    def convert(cls, tree_element: model.SimpleRepeal) -> Iterable[Repeal]:
         assert tree_element.references is not None
         assert tree_element.texts is not None
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
@@ -615,11 +615,11 @@ class RepealToRepeal(ModelConverter):
                     yield Repeal(position=reference.reference, text=convert_quote_to_string(text))
 
 
-class RepealToReference(ModelConverter):
-    CONVERTED_TYPE = model.Repeal
+class SimpleRepealToReference(ModelConverter):
+    CONVERTED_TYPE = model.SimpleRepeal
 
     @classmethod
-    def convert(cls, tree_element: model.Repeal) -> Iterable[OutgoingReference]:
+    def convert(cls, tree_element: model.SimpleRepeal) -> Iterable[OutgoingReference]:
         assert tree_element.references is not None
         act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
         act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
@@ -627,24 +627,32 @@ class RepealToReference(ModelConverter):
         yield from ReferenceConversionHelper.convert_multiple_in_text_references(act_id, tree_element.references)
 
 
+class StructuralRepealToRepeal(ModelConverter):
+    CONVERTED_TYPE = model.StructuralRepeal
+
+    @classmethod
+    def convert(cls, tree_element: model.StructuralRepeal) -> Iterable[Repeal]:
+        assert tree_element.act_reference is not None
+        assert tree_element.structural_reference is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        structural_reference = ReferenceConversionHelper.convert_structural_reference(act_id, tree_element.structural_reference)
+        yield Repeal(position=structural_reference)
+
+
+class StructuralRepealToReference(ModelConverter):
+    CONVERTED_TYPE = model.StructuralRepeal
+
+    @classmethod
+    def convert(cls, tree_element: model.StructuralRepeal) -> Iterable[OutgoingReference]:
+        assert tree_element.act_reference is not None
+        act_id = ActReferenceConversionHelper.get_act_id_from_parse_result(tree_element.act_reference)
+        act_start_pos, act_end_pos = ActReferenceConversionHelper.get_act_id_pos_from_parse_result(tree_element.act_reference)
+        yield OutgoingReference(act_start_pos, act_end_pos, Reference(act=act_id))
+
+
 @attr.s(slots=True, frozen=True)
 class GrammarResultContainer:
-    CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = (
-        CompoundReferenceToOutgoingReference,
-        ActReferenceToActIdAbbreviation,
-        BlockAmendmentToBlockAmendment,
-        BlockAmendmentWithSubtitleToBlockAmendment,
-        BlockAmendmentStructuralToBlockAmendment,
-        BlockAmendmentToOutgoingReference,
-        EnforcementDateToEnforcementDate,
-        EnforcementDateToReference,
-        TextAmendmentToTextAmendment,
-        TextAmendmentToReference,
-        ArticleTitleAmendmentToArticleTitleAmendment,
-        ArticleTitleAmendmentToReference,
-        RepealToRepeal,
-        RepealToReference,
-    )
+    CONVERTER_CLASSES: Tuple[Type[ModelConverter], ...] = tuple(ModelConverter.__subclasses__())
 
     tree: Any = attr.ib()
     results: Tuple[ConversionResultType, ...] = attr.ib(init=False)
