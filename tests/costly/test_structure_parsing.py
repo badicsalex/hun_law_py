@@ -65,7 +65,7 @@ def test_end_to_end_2012_92() -> None:
     assert btk.subject == "a Büntető Törvénykönyvről"
 
     assert btk.children[:3] == (
-        Part("1", ""),
+        Part("1", "", special=True),
         Chapter("1", "ALAPVETŐ RENDELKEZÉSEK"),
         Subtitle("", "A törvényesség elve"),
     )
