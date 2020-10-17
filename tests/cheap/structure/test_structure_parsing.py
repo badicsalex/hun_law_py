@@ -42,7 +42,7 @@ def structure_testcase_provider() -> Iterable[Any]:
             )
 
 
-@pytest.mark.parametrize("text,expected_structure", structure_testcase_provider())  # type: ignore
+@pytest.mark.parametrize("text,expected_structure", structure_testcase_provider())
 def test_structure_parsing_exact(text: str, expected_structure: Any) -> None:
     resulting_structure = quick_parse_structure(text)
     result_as_dict = dict2object.to_dict(resulting_structure, type(resulting_structure))

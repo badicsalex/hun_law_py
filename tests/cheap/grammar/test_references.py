@@ -559,7 +559,7 @@ CASES: List[Tuple[
 ]
 
 
-@pytest.mark.parametrize("s,positions,refs,act_refs", CASES)  # type: ignore
+@pytest.mark.parametrize("s,positions,refs,act_refs", CASES)
 def test_parse_results_are_correct(s: str, positions: Optional[str], refs: Optional[List[Reference]], act_refs: Optional[List[str]]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     if refs is None:

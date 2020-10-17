@@ -229,7 +229,7 @@ def test_next_identifiers_article_unhappy() -> None:
     assert not Article.is_next_identifier("3:2/C", "2:1")
 
 
-@pytest.mark.parametrize("numeric_cls", (Paragraph, NumericPoint, NumericSubpoint))  # type: ignore
+@pytest.mark.parametrize("numeric_cls", (Paragraph, NumericPoint, NumericSubpoint))
 def test_next_identifiers_simple_numeric(numeric_cls: Type) -> None:
     assert numeric_cls.is_next_identifier("2", "3")
     assert numeric_cls.is_next_identifier("2", "2a")
@@ -343,7 +343,7 @@ REFERENCE_ORDERING_CASES = (
 )
 
 
-@pytest.mark.parametrize("ref1, operator, ref2", REFERENCE_ORDERING_CASES)  # type: ignore
+@pytest.mark.parametrize("ref1, operator, ref2", REFERENCE_ORDERING_CASES)
 def test_reference_ordering(ref1: Reference, ref2: Reference, operator: str) -> None:
     assert (ref1 == ref2) == (operator == '=')
     assert (ref1 < ref2) == (operator == '<')

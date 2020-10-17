@@ -248,7 +248,7 @@ BOLDNESS_TESTS = [
 ]
 
 
-@pytest.mark.parametrize("parts,should_be_bold", BOLDNESS_TESTS)  # type: ignore
+@pytest.mark.parametrize("parts,should_be_bold", BOLDNESS_TESTS)
 def test_indented_line_bold(parts: Iterable[Tuple[str, bool]], should_be_bold: bool) -> None:
     line = IndentedLine(
         tuple(IndentedLinePart(5, s, bold) for s, bold in parts)

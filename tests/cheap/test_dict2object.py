@@ -279,17 +279,17 @@ TEST_DATA: List[Tuple[TypeOrGeneric, Any, Any]] = [
 ]
 
 
-@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)  # type: ignore
+@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)
 def test_to_dict(cls: Type, obj: Any, dct: Any) -> None:
     assert to_dict(obj, cls) == dct
 
 
-@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)  # type: ignore
+@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)
 def test_to_obj(cls: Type, obj: Any, dct: Any) -> None:
     assert to_object(dct, cls) == obj
 
 
-@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)  # type: ignore
+@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)
 def test_optional(cls: Type, obj: Any, dct: Any) -> None:
     assert to_dict(obj, Optional[cls]) == dct
     assert to_object(dct, Optional[cls]) == obj
@@ -297,7 +297,7 @@ def test_optional(cls: Type, obj: Any, dct: Any) -> None:
     assert to_object(None, Optional[cls]) is None
 
 
-@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)  # type: ignore
+@pytest.mark.parametrize("cls,obj,dct", TEST_DATA)
 def test_as_field(cls: Type, obj: Any, dct: Any) -> None:
     @attr.s(slots=True, frozen=True, auto_attribs=True)
     class Tester:

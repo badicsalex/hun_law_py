@@ -77,7 +77,7 @@ ABBREVIATION_CASES: Tuple[Tuple[str, List[ActIdAbbreviation]], ...] = (
 )
 
 
-@pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)  # type: ignore
+@pytest.mark.parametrize("s,abbrevs", ABBREVIATION_CASES)
 def test_new_abbreviations(s: str, abbrevs: List[ActIdAbbreviation]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     new_abbrevs = list(parsed.act_id_abbreviations)

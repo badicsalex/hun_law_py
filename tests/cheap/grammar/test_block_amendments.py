@@ -419,7 +419,7 @@ BLOCK_AMENDMENT_CASES: Tuple[Tuple[str, BlockAmendment], ...] = (
 #   "A helyi adókról szóló 1990. évi C. törvény (a továbbiakban: Htv.) a 11. §-t követően a következő 11/A. §-sal egészül ki"
 
 
-@pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)  # type: ignore
+@pytest.mark.parametrize("s,correct_metadata", BLOCK_AMENDMENT_CASES)
 def test_block_amendment_parsing(s: str, correct_metadata: BlockAmendment) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.semantic_data

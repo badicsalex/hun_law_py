@@ -48,7 +48,7 @@ CASES: Tuple[Tuple[str, Tuple[ArticleTitleAmendment, ...]], ...] = (
 )
 
 
-@pytest.mark.parametrize("s,correct_metadata", CASES)  # type: ignore
+@pytest.mark.parametrize("s,correct_metadata", CASES)
 def test_article_title_amendment_parsing(s: str, correct_metadata: Tuple[ArticleTitleAmendment, ...]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.semantic_data

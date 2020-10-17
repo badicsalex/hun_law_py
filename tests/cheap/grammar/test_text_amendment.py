@@ -165,7 +165,7 @@ CASES: Tuple[Tuple[str, Tuple[TextAmendment, ...]], ...] = (
 )
 
 
-@pytest.mark.parametrize("s,correct_metadata", CASES)  # type: ignore
+@pytest.mark.parametrize("s,correct_metadata", CASES)
 def test_text_amendment_parsing(s: str, correct_metadata: Tuple[TextAmendment, ...]) -> None:
     parsed = GrammaticalAnalyzer().analyze(s, print_result=True)
     parsed_metadata = parsed.semantic_data
