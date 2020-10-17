@@ -79,6 +79,11 @@ class GenerateCommand:
             choices=tuple(sorted(self.EXTRACTION_STEP_TO_CLASS.keys())),
             help="Stop at a specific extraction/parsing step, instead of doing a full parse."
         )
+        self.argparser.add_argument(
+            '--workers', '-j', default=1,
+            type=int,
+            help="Worker processes to use for extraction. One worker works on a whole issue at once. 1 means single process mode."
+        )
 
     def run(self, argv: Sequence[str]) -> None:
         init_cache(os.path.join(os.path.dirname(__file__), '..', 'cache'))
@@ -86,10 +91,15 @@ class GenerateCommand:
         if parsed_args.output_dir is not None:
             os.makedirs(parsed_args.output_dir, exist_ok=True)
 
-        print("Starting extraction of {} issue(s)".format(len(parsed_args.issues)), file=sys.stderr)
+        if parsed_args.workers > 1:
+            worker_mode = "using at most {} worker processes".format(parsed_args.workers)
+        else:
+            worker_mode = "using single-threaded mode"
+
+        print("Starting extraction of {} issue(s) {}".format(len(parsed_args.issues), worker_mode), file=sys.stderr)
         output_fn = getattr(self, "output_" + parsed_args.output_format)
         output_class = self.EXTRACTION_STEP_TO_CLASS[parsed_args.extraction_step]
-        for extracted in do_extraction(parsed_args.issues, (output_class,)):
+        for extracted in do_extraction(parsed_args.issues, (output_class,), workers=parsed_args.workers):
             if output_class in (BlockAmendmentOnlyAct, StructureOnlyAct):
                 extracted = extracted.act
             if output_class in (Act, MagyarKozlonyLawRawText):

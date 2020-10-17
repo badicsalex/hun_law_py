@@ -160,7 +160,7 @@ init_cache(os.path.join(os.path.dirname(__file__), 'cache'))
 
 extracted = do_extraction(
     [KozlonyToDownload(int(sys.argv[1]), int(sys.argv[2]))],
-    end_result_classes=(MagyarKozlonyLawRawText, )
+    result_classes=(MagyarKozlonyLawRawText, )
 )
 
 for e in extracted:

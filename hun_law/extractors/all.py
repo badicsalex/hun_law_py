@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import cast, Any, Tuple, Type
+from typing import Any, Iterable, Tuple, Type, Sequence
+import multiprocessing
 
 from . import extractors_for_class
 
@@ -25,15 +26,39 @@ from . import extractors_for_class
 from . import file, kozlonyok_hu_downloader, magyar_kozlony, pdf, act
 
 
-def do_extraction(to_be_processed_objects: Any, end_result_classes: Tuple[Type] = cast(Tuple[Type], ())) -> Any:
+# This hack is needed instead of a lambda or wrapped function, since neither of these
+# can be pickled by default, which in turn is needed for multiprocessing's map()
+class _DoExtractionWrapper:
+    def __init__(self, result_classes: Tuple[Type, ...]):
+        self.result_classes = result_classes
+
+    def __call__(self, o: Any) -> Iterable[Any]:
+        # Listify, because a generator result cannot be pickled.
+        return list(self.do_work((o, ), self.result_classes))
+
+    @staticmethod
+    def do_work(objects: Iterable[Any], result_classes: Tuple[Type, ...] = ()) -> Iterable[Any]:
+        global extractors_for_class
+        queue = list(objects)  # simple copy, or listify if not list
+        while queue:
+            data = queue.pop()
+            if data.__class__ in result_classes:
+                yield data
+            else:
+                for extractor_fn in extractors_for_class[data.__class__]:
+                    for extracted in extractor_fn(data):
+                        queue.append(extracted)
+
+
+def _do_extraction_multithreaded(objects: Iterable[Any], result_classes: Tuple[Type, ...], workers: int) -> Iterable[Any]:
+    with multiprocessing.Pool(workers) as pool:
+        for result in pool.imap_unordered(_DoExtractionWrapper(result_classes), objects):
+            yield from result
+
+
+def do_extraction(objects: Sequence[Any], result_classes: Tuple[Type, ...] = (), *, workers: int = 1) -> Iterable[Any]:
     """Processes all objects, and returns the end result processed objects."""
-    global extractors_for_class
-    queue = list(to_be_processed_objects)  # simple copy, or listify if not list
-    while queue:
-        data = queue.pop()
-        if data.__class__ in end_result_classes:
-            yield data
-        else:
-            for extractor_fn in extractors_for_class[data.__class__]:
-                for extracted in extractor_fn(data):
-                    queue.append(extracted)
+    if workers > 1 and len(objects) > 1:
+        yield from _do_extraction_multithreaded(objects, result_classes, min(workers, len(objects)))
+    else:
+        yield from _DoExtractionWrapper.do_work(objects, result_classes)
