@@ -140,11 +140,11 @@ blockquote {
     grid-column: 4 / end;
 }
 
-.alphabeticsubpoint_id {
+.alphabeticsubpoint_id, .numericsubpoint_id {
     grid-column: 4;
 }
 
-.alphabeticsubpoint_text {
+.alphabeticsubpoint_text, .numericsubpoint_text {
     grid-column: 5 / end;
 }
 
