@@ -1252,6 +1252,16 @@ replacement_fixups: ReplacementsType = {
             "replacement": "„(1a) Ha az erős felindulásban elkövetett emberölés, a háromévi szabadságvesztésnél súlyosabban büntetendő"
         }
     ],
+    "2014. évi LXXII. törvény": [
+        {
+            "needle": "az elkövetővel szemben életfogytig tartó szabadságvesztést kell kiszabni. Halmazati büntetés esetén a 81. §",
+            "replacement": "az elkövetővel szemben életfogytig tartó szabadságvesztést kell kiszabni. Halmazati büntetés esetén a 81. § (3)"
+        },
+        {
+            "needle": "(3) bekezdése szerinti büntetési tételt, tárgyalásról lemondás esetén a 83. § (2) bekezdése szerinti büntetési tételt",
+            "replacement": "bekezdése szerinti büntetési tételt, tárgyalásról lemondás esetén a 83. § (2) bekezdése szerinti büntetési tételt"
+        }
+    ],
     "2014. évi LXXIV. törvény": [
         {
             "needle": "a „2013. január 1-jétől” szövegrész helyébe a „2013. július 1-jétől” szöveg, a 2015. január 1-jével” szövegrész",
