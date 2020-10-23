@@ -410,7 +410,7 @@ class NumericSubpoint(SubArticleElement):
 
 @attr.s(slots=True, frozen=True)
 class NumericPoint(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, )
+    ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = (AlphabeticSubpoint, )
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:
@@ -436,7 +436,7 @@ class NumericPoint(SubArticleElement):
 
 @attr.s(slots=True, frozen=True)
 class AlphabeticPoint(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = (AlphabeticSubpoint, NumericSubpoint, )
+    ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = (AlphabeticSubpoint, NumericSubpoint, )
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:
@@ -484,7 +484,8 @@ class BlockAmendmentContainer(SubArticleElement):
 
 @attr.s(slots=True, frozen=True)
 class Paragraph(SubArticleElement):
-    ALLOWED_CHILDREN_TYPE = (AlphabeticPoint, NumericPoint, QuotedBlock, BlockAmendmentContainer)
+    ALLOWED_CHILDREN_TYPE: ClassVar[Tuple[Type[SubArticleChildType], ...]] = \
+        (AlphabeticPoint, NumericPoint, QuotedBlock, BlockAmendmentContainer)
 
     @classmethod
     def header_prefix(cls, identifier: Optional[str]) -> str:
@@ -660,7 +661,7 @@ class Act:
     publication_date: Date
     subject: str
     preamble: str
-    children: Tuple[ActChildType, ...]
+    children: Tuple[ActChildType, ...] = attr.ib()
 
     articles: Tuple[Article, ...] = attr.ib(init=False)
     articles_map: Mapping[str, Article] = attr.ib(init=False)
