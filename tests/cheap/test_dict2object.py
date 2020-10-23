@@ -307,3 +307,24 @@ def test_as_field(cls: Type, obj: Any, dct: Any) -> None:
 
     assert to_dict(obj, Tester) == dct
     assert to_object(dct, Tester) == obj
+
+
+def test_subclassing_after_serialization() -> None:
+    @attr.s(slots=True, frozen=True, auto_attribs=True)
+    class X:
+        f: int
+
+    @attr.s(slots=True, frozen=True, auto_attribs=True)
+    class XContainer:
+        x: X
+
+    obj = XContainer(X(5))
+    dct = to_dict(obj, XContainer)
+
+    @attr.s(slots=True, frozen=True, auto_attribs=True)
+    class Y(X):
+        g: int
+    gc.collect()
+
+    obj2 = to_object(dct, XContainer)
+    assert obj == obj2

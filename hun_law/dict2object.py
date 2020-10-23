@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set
+from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set, Optional
 from abc import ABC, abstractmethod
 from inspect import isclass
 from enum import Enum
@@ -251,13 +251,15 @@ class AttrsClassConverter(Converter):
 
 
 class DictDisambiguator:
-    __slots__ = ('subconverters_to_dict', 'subconverters_to_obj')
+    __slots__ = ('subconverters_to_dict', 'subconverters_to_obj', 'default_object_converter')
     subconverters_to_dict: Dict[Type, Converter]
     subconverters_to_obj: Dict[str, Converter]
+    default_object_converter: Optional[Converter]
 
     def __init__(self, subconverters: Iterable[Converter]):
         self.subconverters_to_dict = {}
         self.subconverters_to_obj = {}
+        self.default_object_converter = None
         for subconverter in subconverters:
             assert subconverter.converted_type() is dict
             for input_type in subconverter.input_types():
@@ -269,13 +271,16 @@ class DictDisambiguator:
                     raise TypeError("Type name collision within Union (or subclasses): {}".format(type_name))
                 self.subconverters_to_obj[type_name] = subconverter
                 self.subconverters_to_dict[input_type] = subconverter
+                if self.default_object_converter is None:
+                    self.default_object_converter = subconverter
 
     def can_convert_to_dict(self, data: Any) -> bool:
         return type(data) in self.subconverters_to_dict
 
     def to_object(self, data: Any) -> Any:
-        if len(self.subconverters_to_obj) == 1:
-            return next(iter(self.subconverters_to_obj.values())).to_object(data)
+        if len(self.subconverters_to_obj) == 1 or '__type__' not in data:
+            assert self.default_object_converter is not None
+            return self.default_object_converter.to_object(data)
         return self.subconverters_to_obj[data['__type__']].to_object(data)
 
     def to_dict(self, data: Any) -> Any:
@@ -299,9 +304,11 @@ class UnionConverter(Converter):
         self.subconverters_to_dict = {}
         self.subconverters_to_obj = {}
         dict_converters = []
-        all_possible_types: Set[Type] = set()
+        all_possible_types: List[Type] = []
         for contained_type in the_type:
-            all_possible_types.update(get_subclasses_recursive(contained_type))
+            for candidate_type in get_subclasses_recursive(contained_type):
+                if candidate_type not in all_possible_types:
+                    all_possible_types.append(candidate_type)
 
         for contained_type in all_possible_types:
             subconverter = converter_factory.create(contained_type, handle_subclasses=False)
