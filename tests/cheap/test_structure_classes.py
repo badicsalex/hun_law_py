@@ -529,3 +529,17 @@ def test_map_saes_with_filter() -> None:
     assert modified_act.article("1:2").paragraph("2").point("b").subpoint("bb") is \
         TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb")
     assert modified_act.article("1:2").paragraph("2").point("b").subpoint("ba").text == "Modified"
+
+
+def test_map_saes_children_first() -> None:
+    def text_modifier(r: Reference, sae: SubArticleElement) -> SubArticleElement:
+        print(r, sae.identifier, sae.__class__.__name__)
+        if r == Reference('2345. évi XD. törvény', '1:2', '2', 'b', 'ba'):
+            return attr.evolve(sae, text="Modified")
+        if r == Reference('2345. évi XD. törvény', '1:2', '2', 'b'):
+            assert isinstance(sae, AlphabeticPoint)
+            assert sae.subpoint('ba').text == "Modified"
+        return sae
+
+    modified_act = TEST_STRUCTURE.map_saes(text_modifier, children_first=True)
+    assert modified_act.article("1:2").paragraph("2").point("b").subpoint("ba").text == "Modified"

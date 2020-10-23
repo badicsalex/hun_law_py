@@ -333,7 +333,8 @@ class SubArticleElement(ABC):
         self,
         parent_reference: 'Reference',
         modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
-        filter_for_reference: Optional['Reference'] = None
+        filter_for_reference: Optional['Reference'] = None,
+        children_first: bool = False,
     ) -> 'SubArticleElement':
         try:
             reference = self.relative_reference.relative_to(parent_reference)
@@ -348,23 +349,30 @@ class SubArticleElement(ABC):
             return self
 
         result = self
-        if filter_for_reference is None or filter_for_reference.contains(reference):
-            # Only call the callback if we are actually in the filter, and not just
-            # here for the children
-            result = modifier(reference, self)
+        if not children_first:
+            if filter_for_reference is None or filter_for_reference.contains(reference):
+                # Only call the callback if we are actually in the filter, and not just
+                # here for the children
+                result = modifier(reference, result)
 
         if result.children:
             new_children = []
             children_changed = False
             for child in result.children:
                 if isinstance(child, SubArticleElement):
-                    new_child = child.map_recursive(reference, modifier, filter_for_reference)
+                    new_child = child.map_recursive(reference, modifier, filter_for_reference, children_first)
                     if new_child is not child:
                         child = new_child
                         children_changed = True
                 new_children.append(child)
             if children_changed:
                 result = attr.evolve(result, children=tuple(new_children))
+
+        if children_first:
+            if filter_for_reference is None or filter_for_reference.contains(reference):
+                # Only call the callback if we are actually in the filter, and not just
+                # here for the children
+                result = modifier(reference, result)
         return result
 
 
@@ -620,7 +628,8 @@ class Article:
         self,
         parent_reference: 'Reference',
         modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
-        filter_for_reference: Optional['Reference'] = None
+        filter_for_reference: Optional['Reference'] = None,
+        children_first: bool = False,
     ) -> 'Article':
         reference = self.relative_reference.relative_to(parent_reference)
 
@@ -632,7 +641,7 @@ class Article:
         new_children = []
         children_changed = False
         for child in self.children:
-            new_child = child.map_recursive(reference, modifier, filter_for_reference)
+            new_child = child.map_recursive(reference, modifier, filter_for_reference, children_first)
             assert isinstance(new_child, Paragraph)
             if new_child is not child:
                 child = new_child
@@ -718,10 +727,11 @@ class Act:
     def map_saes(
         self,
         modifier: Callable[['Reference', 'SubArticleElement'], 'SubArticleElement'],
-        filter_for_reference: Optional['Reference'] = None
+        filter_for_reference: Optional['Reference'] = None,
+        children_first: bool = False,
     ) -> 'Act':
         def article_modifier(_reference: Reference, article: Article) -> Article:
-            return article.map_recursive(Reference(self.identifier), modifier, filter_for_reference)
+            return article.map_recursive(Reference(self.identifier), modifier, filter_for_reference, children_first)
         return self.map_articles(article_modifier)
 
 
