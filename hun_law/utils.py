@@ -161,6 +161,11 @@ class Date:
         native_date = datetime.date(self.year, self.month, self.day) + datetime.timedelta(days=days)
         return Date(native_date.year, native_date.month, native_date.day)
 
+    @classmethod
+    def today(cls) -> 'Date':
+        native_date = datetime.date.today()
+        return Date(native_date.year, native_date.month, native_date.day)
+
 
 T = TypeVar('T')
 
