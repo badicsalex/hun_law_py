@@ -300,9 +300,7 @@ class SubArticleElement(ABC):
         if children is None:
             return
         for c in children:
-            # We really do want type equality here, not "isintance".
-            # pylint: disable=unidiomatic-typecheck
-            if type(c) not in self.ALLOWED_CHILDREN_TYPE:
+            if not isinstance(c, self.ALLOWED_CHILDREN_TYPE):
                 raise TypeError("Children of {} can only be {} (got {})".format(type(self), self.ALLOWED_CHILDREN_TYPE, self.children_type))
 
     def child(self, child_id: str) -> SubArticleChildType:
