@@ -317,6 +317,54 @@ def test_date_add() -> None:
     assert Date(2011, 7, 28).add_days(20) == Date(2011, 8, 17)
 
 
+def test_date_creation() -> None:
+    # Should not raise:
+    Date(2020, 11, 30)
+    Date(2020, 12, 31)
+    Date(2020, 2, 29)
+    Date(2021, 2, 28)
+    with pytest.raises(ValueError):
+        Date(2020, 0, 1)
+    with pytest.raises(ValueError):
+        Date(2020, 1, 0)
+    with pytest.raises(ValueError):
+        Date(2020, 13, 1)
+    with pytest.raises(ValueError):
+        Date(2020, 11, 31)
+    with pytest.raises(ValueError):
+        Date(2020, 2, 30)
+    with pytest.raises(ValueError):
+        Date(2001, 2, 29)
+
+
+def test_date_from_simple_string() -> None:
+    assert Date.from_simple_string('2134.01.01') == Date(2134, 1, 1)
+    assert Date.from_simple_string('2134.1.1') == Date(2134, 1, 1)
+    assert Date.from_simple_string('2134.12.13') == Date(2134, 12, 13)
+    assert Date.from_simple_string('2134.12.13.') == Date(2134, 12, 13)
+
+    assert Date.from_simple_string('2134/01/01') == Date(2134, 1, 1)
+    assert Date.from_simple_string('2134/1/1') == Date(2134, 1, 1)
+    assert Date.from_simple_string('2134/12/13') == Date(2134, 12, 13)
+
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134.0.1')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2021.2.29')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134.1')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134.1.1.1')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134/1.1')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134.1/1')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134/1')
+    with pytest.raises(ValueError):
+        Date.from_simple_string('2134/1/1/1')
+
+
 def test_identifier_less() -> None:
     assert split_identifier_to_parts('1') == ('', 1)
     assert split_identifier_to_parts('a') == ('a',)

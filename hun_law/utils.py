@@ -150,12 +150,28 @@ class Date:
     month: int
     day: int
 
+    def __attrs_post_init__(self) -> None:
+        _should_not_raise = datetime.date(self.year, self.month, self.day)
+
     @classmethod
     def from_hungarian_text(cls, s: str) -> 'Date':
         # e.g. 2011. június 28., kedd
         s = s.split(',', 1)[0]
         year, month, day = s.split(' ')
         return cls(int(year[:-1]), text_to_month_hun(month), int(day[:-1]))
+
+    @classmethod
+    def from_simple_string(cls, s: str) -> 'Date':
+        parts = []
+        if '.' in s:
+            if s.endswith('.'):
+                s = s[:-1]
+            parts = s.split('.')
+        elif '/' in s:
+            parts = s.split('/')
+        if len(parts) != 3:
+            raise ValueError("Date not in YEAR/MONTH/DAY or YEAR.MONTH.DAY format")
+        return cls(int(parts[0]), int(parts[1]), int(parts[2]))
 
     def add_days(self, days: int) -> 'Date':
         native_date = datetime.date(self.year, self.month, self.day) + datetime.timedelta(days=days)
