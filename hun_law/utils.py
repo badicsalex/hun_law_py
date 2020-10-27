@@ -348,6 +348,9 @@ def is_uppercase_hun(s: str) -> bool:
 
 
 def indented_line_wrapped_print(s: str, indent_string: str = "", width: int = 90, file: Optional[TextIO] = None) -> None:
+    if not width:
+        print(indent_string + s)
+        return
     for l in textwrap.wrap(s, width-len(indent_string)):
         if file is not None:
             print(indent_string + l, file=file)

@@ -14,78 +14,76 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-from typing import TextIO, Any, Callable, Type
+from typing import TextIO, Any, Callable
 
 from hun_law.extractors.magyar_kozlony import MagyarKozlonyLawRawText
 from hun_law.structure import StructuralElement, SubArticleElement, BlockAmendmentContainer, QuotedBlock, Article, Act, Subtitle
 from hun_law.utils import indented_line_wrapped_print, EMPTY_LINE
 
-TxtWriterFn = Callable[[TextIO, Any, str], None]
+TxtWriterFn = Callable[[Any, TextIO, str, int], None]
 
 all_txt_writers = []
 
 
-def txt_writer(printed_type: Type) -> Callable[[TxtWriterFn], TxtWriterFn]:
-    def txt_writer_decorator(fn: TxtWriterFn) -> TxtWriterFn:
-        global all_txt_writers
-        all_txt_writers.append((printed_type, fn))
-        return fn
-    return txt_writer_decorator
+def txt_writer(fn: TxtWriterFn) -> TxtWriterFn:
+    global all_txt_writers
+    all_txt_writers.append((fn.__annotations__['element'], fn))
+    return fn
 
 
-@txt_writer(Subtitle)
-def write_subtitle_as_txt(output_file: TextIO, element: Subtitle, indent: str) -> None:
+@txt_writer
+def write_subtitle_as_txt(element: Subtitle, output_file: TextIO, indent: str, width: int) -> None:
     id_to_print = ""
     if element.formatted_identifier:
         id_to_print = element.formatted_identifier + " "
     if element.title:
         id_to_print = id_to_print + element.title
-    indented_line_wrapped_print(id_to_print.strip(), indent, file=output_file)
+    indented_line_wrapped_print(id_to_print.strip(), indent, width, file=output_file)
 
 
-@txt_writer(StructuralElement)
-def write_structural_element_as_txt(output_file: TextIO, element: StructuralElement, indent: str) -> None:
-    indented_line_wrapped_print(element.formatted_identifier, indent, file=output_file)
+@txt_writer
+def write_structural_element_as_txt(element: StructuralElement, output_file: TextIO, indent: str, width: int) -> None:
+    indented_line_wrapped_print(element.formatted_identifier, indent, width, file=output_file)
     indent = " " * len(indent)
     if element.title:
-        indented_line_wrapped_print(element.title, indent, file=output_file)
+        indented_line_wrapped_print(element.title, indent, width, file=output_file)
 
 
-@txt_writer(BlockAmendmentContainer)
-def write_block_amendment_as_txt(output_file: TextIO, element: BlockAmendmentContainer, indent: str) -> None:
+@txt_writer
+def write_block_amendment_as_txt(element: BlockAmendmentContainer, output_file: TextIO, indent: str, width: int) -> None:
     if element.intro:
-        indented_line_wrapped_print('(' + element.intro + ')', indent, file=output_file)
+        indented_line_wrapped_print('(' + element.intro + ')', indent, width, file=output_file)
     print(indent + '„', file=output_file)
     assert element.children is not None
     for c in element.children:
-        write_txt(output_file, c, indent + " " * 5)
+        write_txt(c, output_file, indent + " " * 5, width)
     print(indent + '”', file=output_file)
     if element.wrap_up:
-        indented_line_wrapped_print('(' + element.wrap_up + ')', indent, file=output_file)
+        indented_line_wrapped_print('(' + element.wrap_up + ')', indent, width, file=output_file)
 
 
-@txt_writer(SubArticleElement)
-def write_sub_article_element_as_txt(output_file: TextIO, element: SubArticleElement, indent: str) -> None:
+@txt_writer
+def write_sub_article_element_as_txt(element: SubArticleElement, output_file: TextIO, indent: str, width: int) -> None:
     if element.identifier:
         indent = indent + "{:<5}".format(element.header_prefix(element.identifier))
     else:
         indent = indent + " " * 5
     if element.text:
-        indented_line_wrapped_print(element.text, indent, file=output_file)
+        indented_line_wrapped_print(element.text, indent, width, file=output_file)
     else:
         if element.intro:
-            indented_line_wrapped_print(element.intro, indent, file=output_file)
+            indented_line_wrapped_print(element.intro, indent, width, file=output_file)
             indent = " " * len(indent)
         assert element.children is not None
         for c in element.children:
-            write_txt(output_file, c, indent)
+            write_txt(c, output_file, indent, width)
             indent = " " * len(indent)
         if element.wrap_up:
-            indented_line_wrapped_print(element.wrap_up, indent, file=output_file)
+            indented_line_wrapped_print(element.wrap_up, indent, width, file=output_file)
 
 
-@txt_writer(QuotedBlock)
-def write_quoted_block_as_txt(output_file: TextIO, element: QuotedBlock, indent: str) -> None:
+@txt_writer
+def write_quoted_block_as_txt(element: QuotedBlock, output_file: TextIO, indent: str, _width: int) -> None:
     print(indent + '„', file=output_file)
     indent = " " * len(indent)
     base_indent_of_quote = min(l.indent for l in element.lines if l != EMPTY_LINE)
@@ -95,30 +93,30 @@ def write_quoted_block_as_txt(output_file: TextIO, element: QuotedBlock, indent:
     print(indent + '”', file=output_file)
 
 
-@txt_writer(Article)
-def write_article_as_txt(output_file: TextIO, element: Article, indent: str) -> None:
+@txt_writer
+def write_article_as_txt(element: Article, output_file: TextIO, indent: str, width: int) -> None:
     indent = indent + "{:<10}".format(element.identifier + ". §")
     if element.title:
-        indented_line_wrapped_print("     [{}]".format(element.title), indent, file=output_file)
+        indented_line_wrapped_print("     [{}]".format(element.title), indent, width, file=output_file)
         indent = " " * len(indent)
 
     for c in element.children:
-        write_txt(output_file, c, indent)
+        write_txt(c, output_file, indent, width)
         indent = " " * len(indent)
 
 
-@txt_writer(Act)
-def write_act_as_txt(output_file: TextIO, element: Act, indent: str) -> None:
+@txt_writer
+def write_act_as_txt(element: Act, output_file: TextIO, indent: str, width: int) -> None:
     print("==== {} - {} =====\n".format(element.identifier, element.subject), file=output_file)
-    indented_line_wrapped_print(element.preamble, file=output_file)
+    indented_line_wrapped_print(element.preamble, width=width, file=output_file)
     for c in element.children:
-        write_txt(output_file, c, indent)
+        write_txt(c, output_file, indent, width)
         indent = " " * len(indent)
         print(file=output_file)
 
 
-@txt_writer(MagyarKozlonyLawRawText)
-def write_mk_raw_as_txt(output_file: TextIO, element: MagyarKozlonyLawRawText, indent: str) -> None:
+@txt_writer
+def write_mk_raw_as_txt(element: MagyarKozlonyLawRawText, output_file: TextIO, indent: str, _width: int) -> None:
     print("==== {} - {} =====\n".format(element.identifier, element.subject), file=output_file)
     base_indent_of_body = min(l.indent for l in element.body if l != EMPTY_LINE)
     for l in element.body:
@@ -128,11 +126,11 @@ def write_mk_raw_as_txt(output_file: TextIO, element: MagyarKozlonyLawRawText, i
     print(file=output_file)
 
 
-def write_txt(output_file: TextIO, element: Any, indent: str = '') -> None:
+def write_txt(element: Any, output_file: TextIO, indent: str = '', width: int = 90) -> None:
     global all_txt_writers
     for printable_type, printer in all_txt_writers:
         if isinstance(element, printable_type):
-            printer(output_file, element, indent)
+            printer(element, output_file, indent, width)
             break
     else:
         print("Unkown object type: {}\n".format(type(element)), file=output_file)

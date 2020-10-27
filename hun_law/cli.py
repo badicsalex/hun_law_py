@@ -119,7 +119,7 @@ class GenerateCommand:
 
     @classmethod
     def output_txt(cls, extracted: Union[Act, MagyarKozlonyLawRawText], output_file: TextIO) -> None:
-        write_txt(output_file, extracted)
+        write_txt(extracted, output_file)
 
     @classmethod
     def output_json(cls, extracted: Union[Act, MagyarKozlonyLawRawText], output_file: TextIO) -> None:
