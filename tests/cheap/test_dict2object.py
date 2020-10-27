@@ -324,6 +324,8 @@ def test_subclassing_after_serialization() -> None:
     @attr.s(slots=True, frozen=True, auto_attribs=True)
     class Y(X):
         g: int
+
+    _ = Y(1, 2)  # Silence, pylint!
     gc.collect()
 
     obj2 = to_object(dct, XContainer)
