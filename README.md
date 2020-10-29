@@ -5,8 +5,9 @@ A small project for parsing Hungarian Law. It does the following thigs:
 * Parse PDF files into lines using pdfminer. It does so much more accurately
   than other pdf2txt implementations.
 * Parse "Magyar Közlöny" PDFs into individual Acts
-* Parse internal and external references in legal text
 * Separate Acts into structural elements (Articles, subpoints, etc.)
+* Parse internal and external references in legal text
+* Parse special phrases like amendments and repeals into easy-to-use objects
 * Generate simple TXT, JSON and HTML version of the parsed documents
 
 ## Usage
@@ -30,5 +31,9 @@ cp style.css /var/www/hun_law
 
 ## Things planned:
 
-* Parse amendments and create the applicable set of laws for any given time
 * Export into Akoma Ntoso format
+* Export into epub or mobi format
+
+## Contribution
+
+Feel free to open issues for feature reqests or found bugs. Merge Requests are more than welcome too, as long as all tests and static analysis passes.
