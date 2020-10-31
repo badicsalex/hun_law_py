@@ -26,7 +26,7 @@ import attr
 from hun_law.utils import int_to_text_hun, text_to_int_hun, \
     roman_to_arabic_with_postfix, arabic_to_roman_with_postfix,\
     IndentedLine, Date, \
-    is_next_letter_hun, identifier_less, is_next_numeric_identifier
+    is_next_letter_hun, identifier_less, is_next_numeric_identifier, cut_by_identifier
 
 # Main act on which all the code was based:
 # 61/2009. (XII. 14.) IRM rendelet a jogszabályszerkesztésről
@@ -324,7 +324,7 @@ class SubArticleElement(ABC):
         pass
 
     @abstractmethod
-    def at_reference(self, reference: 'Reference') -> 'SubArticleElement':
+    def at_reference(self, reference: 'Reference') -> Tuple['SubArticleElement', ...]:
         pass
 
     def map_recursive(
@@ -392,7 +392,7 @@ class AlphabeticSubpoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(subpoint=self.identifier)
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
         raise ValueError("Alphabetic subpoints never have children")
 
 
@@ -410,7 +410,7 @@ class NumericSubpoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(subpoint=self.identifier)
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
         raise ValueError("Alphabetic subpoints never have children")
 
 
@@ -435,9 +435,11 @@ class NumericPoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(point=self.identifier)
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
-        assert isinstance(reference.subpoint, str)
-        return self.subpoint(reference.subpoint)
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
+        assert reference.subpoint is not None
+        if isinstance(reference.subpoint, tuple):
+            return cut_by_identifier(self.children, reference.subpoint[0], reference.subpoint[1])  # type: ignore
+        return (self.subpoint(reference.subpoint),)
 
 
 @attr.s(slots=True, frozen=True)
@@ -461,9 +463,11 @@ class AlphabeticPoint(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(point=self.identifier)
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
-        assert isinstance(reference.subpoint, str)
-        return self.subpoint(reference.subpoint)
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
+        assert reference.subpoint is not None
+        if isinstance(reference.subpoint, tuple):
+            return cut_by_identifier(self.children, reference.subpoint[0], reference.subpoint[1])  # type: ignore
+        return (self.subpoint(reference.subpoint),)
 
 
 @attr.s(slots=True, frozen=True)
@@ -484,7 +488,7 @@ class BlockAmendmentContainer(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         raise TypeError("Block Amendments cannot be referred to.")
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
         raise ValueError("Children of BlockAmendments cannotbe reached with at_reference")
 
 
@@ -532,12 +536,14 @@ class Paragraph(SubArticleElement):
     def relative_reference(self) -> 'Reference':
         return Reference(paragraph=self.identifier)
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
-        assert isinstance(reference.point, str)
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
+        assert reference.point is not None
+        if isinstance(reference.point, tuple):
+            return cut_by_identifier(self.children, reference.point[0], reference.point[1])  # type: ignore
         point = self.point(reference.point)
         if reference.subpoint is None:
-            return point
-        return point.at_reference(Reference(subpoint=reference.subpoint))
+            return (point,)
+        return point.at_reference(reference)
 
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
@@ -610,17 +616,13 @@ class Article:
     def relative_reference(self) -> 'Reference':
         return Reference(article=self.identifier)
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
-        assert not isinstance(reference.paragraph, tuple)
+    def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
+        if isinstance(reference.paragraph, tuple):
+            return cut_by_identifier(self.children, reference.paragraph[0], reference.paragraph[1])
         paragraph = self.paragraph_map[reference.paragraph]
         if reference.point is None:
-            return paragraph
-        return paragraph.at_reference(
-            Reference(
-                point=reference.point,
-                subpoint=reference.subpoint
-            )
-        )
+            return (paragraph,)
+        return paragraph.at_reference(reference)
 
     def map_recursive(
         self,
@@ -691,16 +693,15 @@ class Act:
         assert self.articles_map[str(article_id)].identifier == str(article_id)
         return self.articles_map[str(article_id)]
 
-    def at_reference(self, reference: 'Reference') -> SubArticleElement:
+    def at_reference(self, reference: 'Reference') -> Tuple[Union[Article, SubArticleElement], ...]:
         assert reference.act is None or reference.act == self.identifier
+        assert reference.article is not None
+        if reference.paragraph is None and reference.point is None and reference.subpoint is None:
+            if isinstance(reference.article, str):
+                return (self.article(reference.article),)
+            return cut_by_identifier(self.articles, reference.article[0], reference.article[1])
         assert isinstance(reference.article, str)
-        return self.articles_map[reference.article].at_reference(
-            Reference(
-                paragraph=reference.paragraph,
-                point=reference.point,
-                subpoint=reference.subpoint
-            )
-        )
+        return self.article(reference.article).at_reference(reference)
 
     def map_articles(
         self,

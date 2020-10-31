@@ -493,3 +493,19 @@ def join_line_strs(lines: Iterable[str]) -> str:
             result = result + ' '
         result = result + s
     return result
+
+
+_HIT = TypeVar("_HIT")
+
+
+def cut_by_identifier(elements: Iterable[_HIT], from_identifier: str, to_identifier: str) -> Tuple[_HIT, ...]:
+    result = []
+    for element in elements:
+        if (
+            element.identifier is None or  # type: ignore
+            identifier_less(element.identifier, from_identifier) or  # type: ignore
+            identifier_less(to_identifier, element.identifier)  # type: ignore
+        ):
+            continue
+        result.append(element)
+    return tuple(result)

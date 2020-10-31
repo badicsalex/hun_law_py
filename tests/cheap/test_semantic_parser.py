@@ -441,7 +441,9 @@ def test_outgoing_references_without_position(act_text: str, act_data: Tuple[Tup
     for reference, data in act_data:
         expected_outgoing_references = tuple(d for d in data if isinstance(d, Reference))
         expected_semantic_data = tuple(d for d in data if isinstance(d, SemanticData))
-        element = act.at_reference(reference)
+        element = act.at_reference(reference)[0]
+        if isinstance(element, Article):
+            element = element.paragraph()
         assert element.outgoing_references is not None
         outgoing_references = tuple(r.reference for r in element.outgoing_references)
         assert outgoing_references == expected_outgoing_references
@@ -453,7 +455,9 @@ def test_outgoing_ref_positions_are_okay(act_text: str, act_data: Tuple[Tuple[Re
     act = quick_parse_with_semantics(act_text)
     assert act.is_semantic_parsed
     for reference, outgoing_reference in act_data:
-        element = act.at_reference(reference)
+        element = act.at_reference(reference)[0]
+        if isinstance(element, Article):
+            element = element.paragraph()
         assert element.outgoing_references == (outgoing_reference,)
 
 

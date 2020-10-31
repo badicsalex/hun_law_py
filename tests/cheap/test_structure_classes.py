@@ -420,36 +420,81 @@ def test_reference_contains() -> None:
 def test_at_reference() -> None:
     assert TEST_STRUCTURE.at_reference(Reference(
         article="1:1"
-    )) is TEST_STRUCTURE.article("1:1").paragraph()
+    )) == (TEST_STRUCTURE.article("1:1"),)
+
+    assert TEST_STRUCTURE.article("1:1").at_reference(Reference()) == \
+        (TEST_STRUCTURE.article("1:1").paragraph(),)
 
     assert TEST_STRUCTURE.at_reference(Reference(
         article="1:2",
         paragraph="1"
-    )) is TEST_STRUCTURE.article("1:2").paragraph("1")
+    )) == (TEST_STRUCTURE.article("1:2").paragraph("1"),)
 
     assert TEST_STRUCTURE.at_reference(Reference(
         article="1:2",
         paragraph="2",
-    )) is TEST_STRUCTURE.article("1:2").paragraph("2")
+    )) == (TEST_STRUCTURE.article("1:2").paragraph("2"),)
 
     assert TEST_STRUCTURE.at_reference(Reference(
         article="1:2",
         paragraph="2",
         point="a",
-    )) is TEST_STRUCTURE.article("1:2").paragraph("2").point("a")
+    )) == (TEST_STRUCTURE.article("1:2").paragraph("2").point("a"),)
 
     assert TEST_STRUCTURE.at_reference(Reference(
         article="1:2",
         paragraph="2",
         point="b",
         subpoint="bb",
-    )) is TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb")
+    )) == (TEST_STRUCTURE.article("1:2").paragraph("2").point("b").subpoint("bb"),)
 
     assert TEST_STRUCTURE.at_reference(Reference(
         article="2:2",
         paragraph="1",
         point="1a",
-    )) is TEST_STRUCTURE.article("2:2").paragraph("1").point("1a")
+    )) == (TEST_STRUCTURE.article("2:2").paragraph("1").point("1a"),)
+
+
+def test_at_reference_range() -> None:
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article=("1:1", "2:1")
+    )) == (
+        TEST_STRUCTURE.article("1:1"),
+        TEST_STRUCTURE.article("1:2"),
+        TEST_STRUCTURE.article("2:1"),
+    )
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article=("1:1/A", "2:1/B")
+    )) == (
+        TEST_STRUCTURE.article("1:2"),
+        TEST_STRUCTURE.article("2:1"),
+        TEST_STRUCTURE.article("2:1/A"),
+    )
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:2",
+        paragraph=("1", "2")
+    )) == (
+        TEST_STRUCTURE.article("1:2").paragraph("1"),
+        TEST_STRUCTURE.article("1:2").paragraph("2"),
+    )
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="1:2",
+        paragraph=("1/A", "3")
+    )) == (
+        TEST_STRUCTURE.article("1:2").paragraph("2"),
+    )
+
+    assert TEST_STRUCTURE.at_reference(Reference(
+        article="2:2",
+        paragraph="1",
+        point=("1a", "2")
+    )) == (
+        TEST_STRUCTURE.article("2:2").paragraph("1").point("1a"),
+        TEST_STRUCTURE.article("2:2").paragraph("1").point("2"),
+    )
 
 
 def test_map_articles() -> None:
