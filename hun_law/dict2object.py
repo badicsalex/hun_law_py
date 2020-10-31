@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set, Optional
+from typing import Type, List, Tuple, Union, Dict, Any, Iterable, Set, Optional, Generic, TypeVar
 from abc import ABC, abstractmethod
 from inspect import isclass
 from enum import Enum
@@ -52,22 +52,25 @@ def get_subclasses_recursive(cls: TypeOrGeneric) -> Iterable[TypeOrGeneric]:
             yield from get_subclasses_recursive(candidate)
 
 
-class Converter(ABC):
+_T = TypeVar('_T')
+
+
+class Converter(ABC, Generic[_T]):
     __slots__ = ()
 
     # __init__ and setup are different steps, since we need the
     # new converter object already cached in the factory to
     # properly handle recursion.
     @abstractmethod
-    def setup(self, the_type: TypeOrGeneric, converter_factory: 'ConverterFactory') -> None:
+    def setup(self, the_type: Type[_T], converter_factory: 'ConverterFactory') -> None:
         pass
 
     @abstractmethod
-    def to_object(self, data: Any) -> Any:
+    def to_object(self, data: Any) -> _T:
         pass
 
     @abstractmethod
-    def to_dict(self, data: Any) -> Any:
+    def to_dict(self, data: _T) -> Any:
         pass
 
     @abstractmethod
@@ -75,7 +78,7 @@ class Converter(ABC):
         pass
 
     @abstractmethod
-    def converted_type(self) -> Type:
+    def converted_type(self) -> Type[_T]:
         pass
 
 
@@ -357,11 +360,13 @@ class ConverterFactory:
     def __init__(self) -> None:
         self.cache = {}
 
-    def create(self, the_type: TypeOrGeneric, *, handle_subclasses: bool = True) -> Converter:
+    def create(self, the_type: Type[_T], *, handle_subclasses: bool = True) -> Converter[_T]:
         # It's called a dispatch function, pylint.
         # OK, TBH the condition / converter thing could
         # almost be a big tuple if not for the Union magic.
         # pylint: disable=too-many-branches
+        # See https://github.com/PyCQA/pylint/issues/2822
+        # pylint: disable=unsubscriptable-object
         cache_key = (the_type, handle_subclasses)
         if cache_key in self.cache:
             return self.cache[cache_key]
@@ -372,7 +377,7 @@ class ConverterFactory:
         elif is_list_type(the_type):
             converter = ListConverter()
         elif is_tuple_type(the_type):
-            if ... in the_type.__args__:
+            if ... in the_type.__args__:  # type: ignore
                 converter = VarLenTupleConverter()
             else:
                 converter = TupleConverter()
@@ -387,7 +392,7 @@ class ConverterFactory:
             converter = AttrsClassConverter()
         elif is_union_type(the_type):
             converter = UnionConverter()
-            the_types = the_type.__args__
+            the_types = tuple(the_type.__args__)  # type: ignore
         else:
             raise TypeError("Dict2object cannot handle type {}".format(the_type))
 
@@ -407,5 +412,7 @@ def to_dict(data: Any, the_type: TypeOrGeneric) -> Any:
     return get_converter(the_type).to_dict(data)
 
 
-def get_converter(the_type: TypeOrGeneric) -> Converter:
+def get_converter(the_type: Type[_T]) -> Converter[_T]:
+    # See https://github.com/PyCQA/pylint/issues/2822
+    # pylint: disable=unsubscriptable-object
     return ConverterFactory().create(the_type)

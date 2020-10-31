@@ -53,7 +53,7 @@ def test_json_output(tmpdir: Any) -> None:
     assert body["children"][36]['children'][0]['text'] == "Hatályát veszti a gondnokoltak nyilvántartásáról szóló 2010. évi XVIII. törvény."
 
     # This should not throw
-    act: Act = dict2object.to_object(body, Act)
+    act = dict2object.to_object(body, Act)
     assert act.article('27').paragraph().semantic_data == (EnforcementDate(position=None, date=Date(2014, 3, 15)),)
 
 
