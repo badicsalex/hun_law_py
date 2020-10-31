@@ -17,6 +17,7 @@
 from typing import Type, List
 import pytest
 import attr
+import re
 
 from hun_law.structure import \
     Act, Book, \
@@ -626,3 +627,4 @@ RELATIVE_ID_CASES = (
 def test_relative_id_string(ref: Reference) -> None:
     relative_str = ref.relative_id_string
     assert Reference.from_relative_id_string(relative_str) == ref
+    assert re.match('^[a-zA-Z0-9_-]*$', relative_str)

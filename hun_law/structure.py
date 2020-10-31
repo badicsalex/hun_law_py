@@ -819,10 +819,15 @@ class Reference:
                 parts.append('{}-{}'.format(part[0], part[1]))
             else:
                 parts.append(part)
-        return "_".join(parts)
+        result = "_".join(parts)
+        result = result.replace('/', 'slash')
+        result = result.replace(':', 'colon')
+        return result
 
     @classmethod
     def from_relative_id_string(cls, s: str) -> 'Reference':
+        s = s.replace('slash', '/')
+        s = s.replace('colon', ':')
         raw_parts = s.split('_')
         if len(raw_parts) != 4:
             raise ValueError("Invalid number of parts in relative id string")
