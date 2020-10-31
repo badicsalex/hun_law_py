@@ -543,3 +543,26 @@ def test_map_saes_children_first() -> None:
 
     modified_act = TEST_STRUCTURE.map_saes(text_modifier, children_first=True)
     assert modified_act.article("1:2").paragraph("2").point("b").subpoint("ba").text == "Modified"
+
+
+RELATIVE_ID_CASES = (
+    Reference(None, "1:2", "2/b", "b", "bb"),
+    Reference(None, "1:2", "2", "b"),
+    Reference(None, "1:2", "2"),
+    Reference(None, "1:2", None, "b", "bb"),
+    Reference(None, "1:2", None, "b"),
+    Reference(None, "1:2/A"),
+    Reference(None, "1:2", "2/b", "b", ("bb", "bc")),
+    Reference(None, "1:2", "2", ("b", "d")),
+    Reference(None, "1:2", ("2", "2/B")),
+    Reference(None, "1:2", None, "b", ("bb", "bd")),
+    Reference(None, "1:2", None, ("b", "d")),
+    Reference(None, "1:2/A"),
+    Reference(None),
+)
+
+
+@pytest.mark.parametrize("ref", RELATIVE_ID_CASES)
+def test_relative_id_string(ref: Reference) -> None:
+    relative_str = ref.relative_id_string
+    assert Reference.from_relative_id_string(relative_str) == ref

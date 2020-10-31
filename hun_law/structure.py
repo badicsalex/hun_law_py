@@ -16,7 +16,7 @@
 # along with Hun-Law.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any, Callable, Dict
+from typing import Type, Tuple, ClassVar, Optional, Mapping, Union, Any, Callable, Dict, List
 import gc
 import inspect
 import sys
@@ -804,14 +804,31 @@ class Reference:
 
     @property
     def relative_id_string(self) -> str:
-        result = "ref"
-        for key, id_key in (("article", "a"), ("paragraph", "p"), ("point", "pt"), ("subpoint", "sp")):
-            val = getattr(self, key)
-            if val is not None:
-                if isinstance(val, tuple):
-                    val = val[0]
-                result = "{}_{}{}".format(result, id_key, val)
-        return result
+        parts = []
+        for part in (self.article, self.paragraph, self.point, self.subpoint):
+            if part is None:
+                parts.append('')
+            elif isinstance(part, tuple):
+                parts.append('{}-{}'.format(part[0], part[1]))
+            else:
+                parts.append(part)
+        return "_".join(parts)
+
+    @classmethod
+    def from_relative_id_string(cls, s: str) -> 'Reference':
+        raw_parts = s.split('_')
+        if len(raw_parts) != 4:
+            raise ValueError("Invalid number of parts in relative id string")
+        parts: List[ReferencePartType] = []
+        for part in raw_parts:
+            if '-' in part:
+                range_parts = part.split('-')
+                parts.append((range_parts[0], range_parts[1]))
+            elif not part:
+                parts.append(None)
+            else:
+                parts.append(part)
+        return Reference(None, parts[0], parts[1], parts[2], parts[3])
 
     def first_in_range(self) -> 'Reference':
         result = self
