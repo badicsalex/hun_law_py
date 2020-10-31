@@ -438,6 +438,8 @@ class NumericPoint(SubArticleElement):
     def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
         assert reference.subpoint is not None
         if isinstance(reference.subpoint, tuple):
+            if not self.children:
+                raise KeyError("No children in Paragraph")
             return cut_by_identifier(self.children, reference.subpoint[0], reference.subpoint[1])  # type: ignore
         return (self.subpoint(reference.subpoint),)
 
@@ -466,6 +468,8 @@ class AlphabeticPoint(SubArticleElement):
     def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
         assert reference.subpoint is not None
         if isinstance(reference.subpoint, tuple):
+            if not self.children:
+                raise KeyError("No children in Paragraph")
             return cut_by_identifier(self.children, reference.subpoint[0], reference.subpoint[1])  # type: ignore
         return (self.subpoint(reference.subpoint),)
 
@@ -539,6 +543,8 @@ class Paragraph(SubArticleElement):
     def at_reference(self, reference: 'Reference') -> Tuple[SubArticleElement, ...]:
         assert reference.point is not None
         if isinstance(reference.point, tuple):
+            if not self.children:
+                raise KeyError("No children in Paragraph")
             return cut_by_identifier(self.children, reference.point[0], reference.point[1])  # type: ignore
         point = self.point(reference.point)
         if reference.subpoint is None:

@@ -497,6 +497,21 @@ def test_at_reference_range() -> None:
     )
 
 
+def test_at_reference_invalid() -> None:
+    with pytest.raises(KeyError):
+        TEST_STRUCTURE.at_reference(Reference(None, "5"))
+    with pytest.raises(KeyError):
+        TEST_STRUCTURE.at_reference(Reference(None, "."))
+    with pytest.raises(KeyError):
+        TEST_STRUCTURE.at_reference(Reference(None, "1:1", "2"))
+    with pytest.raises(KeyError):
+        TEST_STRUCTURE.at_reference(Reference(None, "1:1", None, ("2", "3")))
+    with pytest.raises(KeyError):
+        TEST_STRUCTURE.at_reference(Reference(None, "2:2", "1", "2", "a"))
+    with pytest.raises(KeyError):
+        TEST_STRUCTURE.at_reference(Reference(None, "2:2", "1", "2", ("a", "f")))
+
+
 def test_map_articles() -> None:
     times_called = 0
 
