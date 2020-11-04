@@ -1,0 +1,110 @@
+{
+    "children": [
+        {
+            "__type__": "Part",
+            "identifier": "1",
+            "special": true,
+            "title": ""
+        },
+        {
+            "__type__": "Title",
+            "identifier": "1",
+            "title": "A JOGKÉPESSÉG KEZDETE ÉS MEGSZŰNÉSE"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "text": "Dummy article blah blah."
+                }
+            ],
+            "identifier": "1"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "identifier": "1",
+                    "text": "Dummy paragraph."
+                },
+                {
+                    "identifier": "2",
+                    "text": "Dummy paragraph."
+                }
+            ],
+            "identifier": "2",
+            "title": "Dummy title"
+        },
+        {
+            "__type__": "Title",
+            "identifier": "2",
+            "title": "A HOLTNAK NYILVÁNÍTÁS"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "text": "Dummy article blah blah."
+                }
+            ],
+            "identifier": "3"
+        },
+        {
+            "__type__": "Part",
+            "identifier": "2",
+            "special": true,
+            "title": ""
+        },
+        {
+            "__type__": "Title",
+            "identifier": "1",
+            "title": "A CSELEKVŐKÉPESSÉG ÁLTALÁNOS SZABÁLYAI"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "text": "Dummy article blah blah."
+                }
+            ],
+            "identifier": "4"
+        },
+        {
+            "__type__": "Part",
+            "identifier": "3",
+            "special": true,
+            "title": ""
+        },
+        {
+            "__type__": "Title",
+            "identifier": "1",
+            "title": "ÁLTALÁNOS RENDELKEZÉSEK"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "text": "Dummy article blah blah."
+                }
+            ],
+            "identifier": "3:1"
+        },
+        {
+            "__type__": "Article",
+            "children": [
+                {
+                    "text": "Dummy article blah blah."
+                }
+            ],
+            "identifier": "3:2"
+        }
+    ],
+    "identifier": "2345 évi I. törvény",
+    "preamble": "",
+    "publication_date": {
+        "day": 7,
+        "month": 6,
+        "year": 2345
+    },
+    "subject": "A tesztelésről"
+}
