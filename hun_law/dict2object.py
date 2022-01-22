@@ -38,6 +38,8 @@ def is_type_type(t: TypeOrGeneric) -> bool:
 
 
 def is_union_type(t: TypeOrGeneric) -> bool:
+    # pylint: disable=comparison-with-callable
+    # No pylint, I really did want to compare to the Union "function"
     return t is Union or isinstance(t, type(Union[int, str])) and t.__origin__ == Union  # type: ignore
 
 

@@ -169,8 +169,7 @@ def generate_html_nodes_for_quoted_block(element: QuotedBlock, parent: Any) -> I
     indent_offset = min(l.indent for l in element.lines if l != EMPTY_LINE)
     for index, l in enumerate(element.lines):
         padding = int((l.indent-indent_offset) * 2)
-        if padding < 0:
-            padding = 0
+        padding = max(padding, 0)
         linediv = ET.SubElement(container, 'div', {'style': 'padding-left: {}px;'.format(padding)})
         text = l.content
         if index == 0:

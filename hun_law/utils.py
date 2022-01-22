@@ -191,11 +191,11 @@ def split_list(haystack: Iterable[T], needle: T) -> Iterable[List[T]]:
     result: List[T] = []
     for e in haystack:
         if e == needle:
-            if result != []:
+            if result:
                 yield result
                 result = []
         result.append(e)
-    if result != []:
+    if result:
         yield result
 
 

@@ -18,5 +18,5 @@
 
 class PDFFileDescriptor:
     def __init__(self, filename: str, cache_id: str) -> None:
-        self.fp = open(filename, 'rb')
+        self.fp = open(filename, 'rb')  # pylint: disable=consider-using-with
         self.cache_id = cache_id

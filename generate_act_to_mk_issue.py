@@ -37,7 +37,8 @@ class MkParser(HTMLParser):
 
 def parse_single_issue(year: int, issue: int) -> None:
     url_to_download = URL_PATTERN.format(year=year, issue=issue)
-    downloaded_data = request.urlopen(url_to_download).read()
+    with request.urlopen(url_to_download) as downloaded_file:
+        downloaded_data = downloaded_file.read()
     parser = MkParser()
     parser.feed(downloaded_data.decode('windows-1250'))
     parser.close()

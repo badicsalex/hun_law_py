@@ -42,6 +42,6 @@ def MagyarKozlonyHeaderExtractor(descriptor: KozlonyToDownload) -> Iterable[PDFF
     if not cache_object.exists():
         url_to_download = descriptor.get_url()
         print("Downloading {}".format(url_to_download), file=sys.stderr)
-        downloaded_data = request.urlopen(url_to_download).read()
-        cache_object.write_bytes(downloaded_data)
+        with request.urlopen(url_to_download) as downloaded_file:
+            cache_object.write_bytes(downloaded_file.read())
     yield PDFFileDescriptor(cache_object.get_filename(), cache_id)
