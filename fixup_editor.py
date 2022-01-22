@@ -69,8 +69,8 @@ def do_file_editing(body: Iterable[IndentedLine]) -> Tuple[str, ...]:
         open_at_line = 0
 
     subprocess.run([EDITOR, tempfile_name, "+{}".format(open_at_line + 1)], check=True)
-    with open(tempfile_name, "r") as f:
-        result = tuple(fl[5:].strip() for fl in f)
+    with open(tempfile_name, "r") as tempfile_opened_again:
+        result = tuple(fl[5:].strip() for fl in tempfile_opened_again)
     os.unlink(tempfile_name)
     return result
 
