@@ -37,8 +37,16 @@ class MkParser(HTMLParser):
 
 def parse_single_issue(year: int, issue: int) -> None:
     url_to_download = URL_PATTERN.format(year=year, issue=issue)
-    with request.urlopen(url_to_download) as downloaded_file:
-        downloaded_data = downloaded_file.read()
+    for _ in range(5):
+        try:
+            with request.urlopen(url_to_download) as downloaded_file:
+                downloaded_data = downloaded_file.read()
+            break
+        except Exception as e:
+            print("Problem downloading ", url_to_download, e, file=sys.stderr)
+    else:
+        raise ValueError("Could not download in 5 tries, stopping")
+
     parser = MkParser()
     parser.feed(downloaded_data.decode('utf-8'))
     parser.close()
