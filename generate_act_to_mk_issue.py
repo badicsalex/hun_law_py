@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 import re
 import sys
+import time
 from typing import List, Tuple, Any
 from urllib import request
 from html.parser import HTMLParser
 
 URL_PATTERN = "http://www.kozlonyok.hu/nkonline/index.php?menuindex=200&pageindex=kozltart&ev={year}&szam={issue}"
 ACT_ID_RE = re.compile(r'20..\. évi .* törvény')
+
+
+class NonExistentIssue(ValueError):
+    pass
 
 
 class MkParser(HTMLParser):
@@ -47,6 +52,9 @@ def parse_single_issue(year: int, issue: int) -> None:
     else:
         raise ValueError("Could not download in 5 tries, stopping")
 
+    if "Nincs ilyen közlönyszám!".encode() in downloaded_data:
+        raise NonExistentIssue("Non-existent issue")
+
     parser = MkParser()
     parser.feed(downloaded_data.decode('utf-8'))
     parser.close()
@@ -62,9 +70,14 @@ def parse_single_issue(year: int, issue: int) -> None:
 
 
 def parse_all() -> None:
-    for year in range(2009, 2022):
+    for year in range(2015, 2022):
         for issue in range(1, 360):
-            parse_single_issue(year, issue)
+            try:
+                parse_single_issue(year, issue)
+                time.sleep(0.2)
+            except NonExistentIssue:
+                print("Last issue detected for year {}: {}".format(year, issue-1), file=sys.stderr)
+                break
 
 
 print("This script will use the kozlonyok.hu server pretty heavily", file=sys.stderr)
