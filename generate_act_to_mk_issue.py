@@ -40,7 +40,7 @@ def parse_single_issue(year: int, issue: int) -> None:
     with request.urlopen(url_to_download) as downloaded_file:
         downloaded_data = downloaded_file.read()
     parser = MkParser()
-    parser.feed(downloaded_data.decode('windows-1250'))
+    parser.feed(downloaded_data.decode('utf-8'))
     parser.close()
     previous_id = None
     for _path, data in parser.tags:
@@ -49,12 +49,12 @@ def parse_single_issue(year: int, issue: int) -> None:
         elif previous_id is not None:
             if "," in data:
                 data = '"{}"'.format(data)
-            print('{},{},{},{}'.format(year, issue, previous_id, data))
+            print('{}/{},{},{}'.format(year, issue, previous_id, data))
             previous_id = None
 
 
 def parse_all() -> None:
-    for year in range(2009, 2020):
+    for year in range(2009, 2022):
         for issue in range(1, 360):
             parse_single_issue(year, issue)
 
