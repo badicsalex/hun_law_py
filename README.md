@@ -1,3 +1,7 @@
+| **:warning: WARNING** |
+| --- |
+| This project has been deprecated in favor of the [Rust version](https://github.com/badicsalex/hun_law_rs), and is currently unmaintained. |
+
 # Hun-Law
 
 A small project for parsing Hungarian Law. It does the following thigs:
